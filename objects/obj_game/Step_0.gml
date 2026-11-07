@@ -30,6 +30,18 @@ if (keyboard_check_pressed(ord("M")) && !_typing)
     else if (state == "title" || state == "credits") play_music("music_02.ogg");
 }
 
+// Secret code: typing JJNXT during a level skips straight to the next one (online: the host only).
+// Left alone while a room code or IP is being typed, which uses keyboard_string itself.
+if (!_typing)
+{
+    if (string_length(keyboard_string) > 20) keyboard_string = string_copy(keyboard_string, string_length(keyboard_string) - 9, 10);
+    if (string_pos("jjnxt", string_lower(keyboard_string)) > 0)
+    {
+        keyboard_string = "";
+        if ((state == "play" || state == "paused" || state == "clear") && net_mode != "client") skip_level();
+    }
+}
+
 switch (state)
 {
     case "title":
@@ -49,19 +61,6 @@ switch (state)
             var _step = (keyboard_check_pressed(vk_left) || keyboard_check_pressed(ord("A"))) ? -1 : 1;
             character = (character + _step + array_length(snakes)) mod array_length(snakes);
             play_sfx(sfx.select);
-        }
-        else
-        {
-            // Level select: number keys 1, 2, ... start a new game at that level.
-            for (var _i = 0; _i < min(array_length(levels), 9); _i++)
-            {
-                if (keyboard_check_pressed(ord(string(_i + 1))) || keyboard_check_pressed(vk_numpad1 + _i))
-                {
-                    play_sfx(sfx.select);
-                    new_game(_i);
-                    break;
-                }
-            }
         }
         break;
 
@@ -149,19 +148,19 @@ switch (state)
             // Online there is no pause: P / Esc asks whether to leave the game.
             if (_pause) net_quit_ask = !net_quit_ask;
             else if (net_quit_ask && keyboard_check_pressed(vk_enter)) net_leave();
-            else if (net_mode == "host" && keyboard_check_pressed(ord("N"))) skip_level();
         }
         else if (_pause)
         {
             state = "paused";
             audio_pause_all();
         }
-        else if (keyboard_check_pressed(ord("N"))) skip_level();
+        // F1: back to the last checkpoint. F2: start the level over. (Offline only.)
+        else if (keyboard_check_pressed(vk_f1)) respawn_at_checkpoints();
+        else if (keyboard_check_pressed(vk_f2)) start_level();
         break;
 
     case "paused":
-        if (keyboard_check_pressed(ord("N"))) skip_level();
-        else if (_pause || _enter)
+        if (_pause || _enter)
         {
             state = "play";
             audio_resume_all();

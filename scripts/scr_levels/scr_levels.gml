@@ -5,7 +5,9 @@ function lvl_create(_name, _w, _h, _music, _sky_top, _sky_bottom)
 {
     var _grid = array_create(_w);
     for (var _x = 0; _x < _w; _x++) _grid[_x] = array_create(_h, T_EMPTY);
-    return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0] };
+    // bg_tint colours the parallax scenery; vine_odds: a vine under 1 in (vine_odds + 1) ledge tiles.
+    return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0],
+             bg_tint: c_white, vine_odds: 3 };
 }
 
 function lvl_rect(_l, _x1, _y1, _x2, _y2, _t)
@@ -170,7 +172,90 @@ function level_mushroom()
     return L;
 }
 
+/// Level 3: deep in the jungle under a dark green canopy, thick with vines.
+/// Climbing branches, a canopy reached by spring, root steps and a hidden hollow,
+/// then the wild cat's clearing. Heights stay within a jump (4 tiles) or a spring (7).
+function level_tangleroot()
+{
+    var L = lvl_create("TANGLEROOT DEPTHS", 168, 15, "music_07.ogg", make_colour_rgb(6, 28, 24), make_colour_rgb(34, 86, 52));
+    L.bg_tint = make_colour_rgb(90, 150, 105);
+    L.vine_odds = 1;
+
+    lvl_ground(L, 0, 20, 11);
+    lvl_put(L, "start", 3, 10);
+    lvl_gems(L, 6, 9, 9);
+    lvl_put(L, "bug", 14, 10);
+    lvl_put(L, "letter", 18, 10);
+
+    // A small pit, then two branches climbing up a tree.
+    lvl_ground(L, 24, 40, 11);
+    lvl_rect(L, 26, 8, 29, 8, T_ONEWAY);
+    lvl_rect(L, 31, 5, 34, 5, T_ONEWAY);
+    lvl_put(L, "gem", 27, 7);
+    lvl_put(L, "letter", 33, 4);
+    lvl_put(L, "bee", 37, 7);
+
+    // A wide pit with one branch to hop across on.
+    lvl_rect(L, 42, 9, 44, 9, T_ONEWAY);
+    lvl_put(L, "gem", 43, 8);
+
+    lvl_ground(L, 46, 85, 11);
+    lvl_rect(L, 50, 8, 54, 10, T_SOLID);
+    lvl_put(L, "letter", 52, 7);
+    lvl_put(L, "bee", 57, 7);
+    lvl_rect(L, 58, 10, 60, 10, T_SPIKES);
+    lvl_put(L, "bug", 63, 10);
+    // A spring up to the high canopy (7 tiles up).
+    lvl_put(L, "spring", 68, 10);
+    lvl_rect(L, 70, 4, 76, 4, T_ONEWAY);
+    lvl_put(L, "egg", 71, 3);
+    lvl_put(L, "letter", 73, 3);
+    lvl_gems(L, 74, 75, 3);
+    lvl_put(L, "flag", 80, 10);
+
+    // Root steps rising out of a pit, then a drop with a branch to climb back.
+    lvl_ground(L, 89, 94, 11);
+    lvl_ground(L, 95, 100, 9);
+    lvl_ground(L, 101, 106, 7);
+    lvl_put(L, "bug", 92, 10);
+    lvl_put(L, "letter", 98, 8);
+    lvl_put(L, "bee", 100, 5);
+    lvl_put(L, "letter", 104, 6);
+    lvl_rect(L, 108, 9, 109, 9, T_ONEWAY);
+
+    lvl_ground(L, 107, 167, 11);
+    lvl_put(L, "bug", 110, 10);
+    lvl_put(L, "letter", 112, 10);
+
+    // A hollow tree: roll into the cracked bark to get in.
+    lvl_rect(L, 116, 8, 116, 10, T_CRACK);
+    lvl_rect(L, 116, 7, 121, 7, T_SOLID);
+    lvl_rect(L, 121, 8, 121, 10, T_SOLID);
+    lvl_put(L, "letter", 118, 10);
+    lvl_put(L, "gem", 119, 10);
+
+    // Thorns under a branch.
+    lvl_rect(L, 125, 10, 126, 10, T_SPIKES);
+    lvl_rect(L, 124, 7, 128, 7, T_ONEWAY);
+    lvl_put(L, "letter", 126, 6);
+    lvl_gems(L, 124, 125, 6);
+    lvl_put(L, "bee", 129, 6);
+    lvl_put(L, "flag", 132, 10);
+    lvl_put(L, "egg", 133, 10);
+
+    // Boss clearing: Wild Whiskers guards the exit and one letter of the word.
+    // Two low branches to jump onto when she pounces.
+    L.arena = [136, 158];
+    lvl_rect(L, 140, 8, 143, 8, T_ONEWAY);
+    lvl_rect(L, 150, 8, 153, 8, T_ONEWAY);
+    lvl_put(L, "letter", 141, 7);
+    lvl_put(L, "letter", 151, 7);
+    lvl_put(L, "boss_cat", 154, 10);
+    lvl_put(L, "door", 162, 10);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom];
+    return [level_greenleaf, level_mushroom, level_tangleroot];
 }

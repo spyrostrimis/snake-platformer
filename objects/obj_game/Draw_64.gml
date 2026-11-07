@@ -82,7 +82,7 @@ switch (state)
         }
         body_text(320, 286, "Gamepads: stick, A jump, X tongue, hold RB roll, B boost.  Grab the letters to open the door!", make_colour_rgb(255, 230, 140), fa_center);
         body_text(320, 302, "Up / Down: players    O: online    C: credits    M: music on/off    P: pause", make_colour_rgb(190, 210, 255), fa_center);
-        body_text(320, 317, "1-" + string(min(array_length(levels), 9)) + ": start at that level    N (in game): skip level", make_colour_rgb(190, 210, 255), fa_center);
+        body_text(320, 317, "In a level:  F1: back to the checkpoint    F2: restart the level", make_colour_rgb(190, 210, 255), fa_center);
         body_text(320, 334, "A tribute to the 90s PC platformers. Made with GameMaker.", make_colour_rgb(170, 190, 230), fa_center);
         break;
 
