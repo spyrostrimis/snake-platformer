@@ -296,10 +296,58 @@ save("spr_cheese", 22, 18,
 save("spr_feather", 14, 26,
   `<path d="M7 25 Q1 14 7 1 Q13 14 7 25 Z" fill="#ffffff" stroke="#8a7a6a" stroke-width="1.3"/>
    <path d="M7 25 L7 4" stroke="#b8a890" stroke-width="1.2"/><path d="M7 10 L3 7 M7 15 L11 12 M7 19 L3 16" stroke="#c8b8a0" stroke-width="1"/>`);
-save("spr_egg", 22, 28,
-  `<ellipse cx="11" cy="15" rx="9" ry="12" fill="#fff4dc" stroke="#b8945a" stroke-width="1.6"/>
-   <circle cx="7" cy="17" r="1.4" fill="#c89a5a"/><circle cx="13" cy="21" r="1.1" fill="#c89a5a"/><circle cx="14" cy="11" r="1.2" fill="#c89a5a"/><circle cx="9" cy="24" r="0.9" fill="#c89a5a"/>
-   <ellipse cx="7.5" cy="9" rx="2.2" ry="3.5" fill="#ffffff" opacity="0.9"/>`);
+// ---------- Eggs ----------
+// The rare egg: a white egg with a face drawn on in black marker, in three moods
+// (spr_egg_0..2 become the three frames of spr_egg). A dark outline keeps it easy to spot.
+const eggShape = "M14 1.5 C22 1.5 26.5 12 26.5 20 C26.5 28 21 32.5 14 32.5 C7 32.5 1.5 28 1.5 20 C1.5 12 6 1.5 14 1.5 Z";
+const eggDefs = `<radialGradient id="eg" cx="0.38" cy="0.3" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="0.65" stop-color="#f1eef6"/><stop offset="1" stop-color="#c9c2da"/></radialGradient>`;
+const ink = `stroke="#1b1b1b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"`;
+const eggFaces = [
+  // Googly eyes, eyebrows up, a little smirk.
+  `<circle cx="9.5" cy="16" r="4" fill="#ffffff" stroke="#1b1b1b" stroke-width="1.4"/>
+   <circle cx="18.5" cy="15.5" r="4.6" fill="#ffffff" stroke="#1b1b1b" stroke-width="1.4"/>
+   <circle cx="11" cy="17" r="1.9" fill="#1b1b1b"/><circle cx="20.2" cy="16.6" r="2.1" fill="#1b1b1b"/>
+   <path d="M6 10.5 Q9 8.5 12 10" ${ink}/><path d="M15.5 9.4 Q18.5 7.4 22 9.4" ${ink}/>
+   <path d="M11.5 25.6 Q14.5 27.2 17.6 24.8" ${ink}/>`,
+  // A wink and a big grin.
+  `<ellipse cx="9.5" cy="16.5" rx="2" ry="3" fill="#1b1b1b"/>
+   <path d="M6.5 11 Q9.5 9 12.5 10.8" ${ink}/>
+   <path d="M15.8 17 Q18.8 13.8 21.8 16.6" ${ink}/>
+   <path d="M7.5 22.5 Q14 30 20.5 22.5" ${ink}/><path d="M6.6 21.6 L8.2 23.2 M21.4 21.6 L19.8 23.2" ${ink}/>`,
+  // Eyes squeezed shut with laughing, tongue out.
+  `<path d="M6.5 13 L11 15.8 L6.5 18.6" ${ink}/><path d="M21.5 13 L17 15.8 L21.5 18.6" ${ink}/>
+   <path d="M14.6 25.8 Q15 31 18 30.6 Q20.6 30.1 19.7 25" fill="#ff6f96" stroke="#1b1b1b" stroke-width="1.3" stroke-linejoin="round"/>
+   <path d="M17.3 26.3 L17.5 28.6" stroke="#c8406a" stroke-width="0.9" stroke-linecap="round"/>
+   <path d="M8 22.5 Q14 29 20.2 22.5" ${ink}/>`,
+];
+eggFaces.forEach((face, i) => save("spr_egg_" + i, 28, 34,
+  `<path d="${eggShape}" fill="url(#eg)" stroke="#2a2238" stroke-width="2"/>
+   <ellipse cx="8.4" cy="8.6" rx="2" ry="3.3" fill="#ffffff" transform="rotate(-20 8.4 8.6)"/>
+   ${face}`, eggDefs));
+
+// The two-player super egg (32 x 40): a fat golden egg with orange spots and a heart
+// (frame 0), then hatched: the bottom of the shell with the heart floating out (frame 1).
+const goldDefs = `<linearGradient id="gold" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="#ffe86e"/><stop offset="0.55" stop-color="#ffc21e"/><stop offset="1" stop-color="#ee9410"/></linearGradient>`;
+const heartPath = (cx, cy, s) => {
+  const p = (x, y) => `${(cx + x * s).toFixed(2)} ${(cy + y * s).toFixed(2)}`;
+  return `M${p(0, 5)} C${p(-6, 0.5)} ${p(-6.5, -3)} ${p(-4.8, -4.5)} C${p(-3.2, -5.9)} ${p(-1, -5.1)} ${p(0, -3.3)} ` +
+         `C${p(1, -5.1)} ${p(3.2, -5.9)} ${p(4.8, -4.5)} C${p(6.5, -3)} ${p(6, 0.5)} ${p(0, 5)} Z`;
+};
+const sparkle = (x, y, r) => `<path d="M${x} ${y - r} L${x + r * 0.28} ${y - r * 0.28} L${x + r} ${y} L${x + r * 0.28} ${y + r * 0.28} L${x} ${y + r} L${x - r * 0.28} ${y + r * 0.28} L${x - r} ${y} L${x - r * 0.28} ${y - r * 0.28} Z" fill="#ffffff"/>`;
+save("spr_super_egg_0", 32, 40,
+  `<path d="M16 3 C26.5 3 30.8 15 30.8 24 C30.8 33 24.5 38.2 16 38.2 C7.5 38.2 1.2 33 1.2 24 C1.2 15 5.5 3 16 3 Z" fill="url(#gold)" stroke="#3a1e08" stroke-width="2"/>
+   <circle cx="8.5" cy="16" r="2.6" fill="#f08a1a"/><circle cx="23.5" cy="13.5" r="2.2" fill="#f08a1a"/>
+   <circle cx="6.5" cy="27.5" r="2.4" fill="#f08a1a"/><circle cx="25.8" cy="27" r="2.8" fill="#f08a1a"/>
+   <circle cx="15.5" cy="34" r="2.2" fill="#f08a1a"/>
+   <path d="${heartPath(16, 23.5, 1.15)}" fill="#ff3d6e" stroke="#7a0f2c" stroke-width="1.3" stroke-linejoin="round"/>
+   <ellipse cx="13" cy="20.4" rx="1.3" ry="1" fill="#ffc0d0"/>
+   <ellipse cx="9.5" cy="9.8" rx="2.4" ry="3.8" fill="#fff8d0" opacity="0.9" transform="rotate(-25 9.5 9.8)"/>
+   ${sparkle(27, 6, 4)}`, goldDefs);
+save("spr_super_egg_1", 32, 40,
+  `<path d="M1.8 24.5 L5.6 20.6 L9.4 24.6 L13 20.2 L16.6 24.6 L20.2 20.2 L23.8 24.6 L27.2 20.6 L30.2 24.5 C30.6 33 24.5 38.2 16 38.2 C7.5 38.2 1.4 33 1.8 24.5 Z" fill="url(#gold)" stroke="#3a1e08" stroke-width="2" stroke-linejoin="round"/>
+   <circle cx="8.5" cy="31" r="2.3" fill="#f08a1a"/><circle cx="22" cy="30.5" r="2.6" fill="#f08a1a"/><circle cx="15.5" cy="35" r="1.7" fill="#f08a1a"/>
+   <path d="${heartPath(16, 11.5, 1.75)}" fill="#ff3d6e" stroke="#3a1e08" stroke-width="1.8" stroke-linejoin="round"/>
+   <ellipse cx="11.3" cy="6.8" rx="1.7" ry="2.3" fill="#ffb3c8" transform="rotate(-30 11.3 6.8)"/>`, goldDefs);
 
 // ---------- Title logo: chunky 3D cartoon letters ----------
 function logo3d(text, size, y, w) {

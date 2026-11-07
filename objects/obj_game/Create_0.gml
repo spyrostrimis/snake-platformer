@@ -79,6 +79,7 @@ burst = function(_x, _y, _col, _n) { part_particles_create_colour(ps, _x, _y, pt
 // ---------- Run state ----------
 state      = "title";   // title | credits | online | play | paused | clear | gameover | victory
 levels     = level_list();
+egg_next   = 0;         // the face the next egg gets (see obj_egg); load_level sets it
 level_index = 0;
 words      = game_word_list();
 last_word  = "";
@@ -280,6 +281,7 @@ auto_tile = function(_tx, _ty)
 load_level = function(_i, _with_player)
 {
     clear_level();
+    egg_next = _i;          // eggs take the three faces in turn, from a different one each level
     lvl = levels[_i]();
     grid = lvl.grid;
     lvl_w = lvl.w;

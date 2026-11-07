@@ -8,7 +8,7 @@
     "TileSerialiseData":[],
   },
   "name":"ts_cave",
-  "out_columns":11,
+  "out_columns":3,
   "out_tilehborder":0,
   "out_tilevborder":0,
   "parent":{

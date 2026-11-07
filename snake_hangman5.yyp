@@ -27,7 +27,9 @@
   ],
   "isEcma":false,
   "LibraryEmitters":[],
-  "MetaData":{},
+  "MetaData":{
+    "IDEVersion":"2026.0.0.16",
+  },
   "name":"snake_hangman5",
   "resources":[
     {"id":{"name":"obj_bat","path":"objects/obj_bat/obj_bat.yy",},},
