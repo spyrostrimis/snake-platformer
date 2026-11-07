@@ -1,4 +1,4 @@
-/// Moves, jumps (green: hold in the air to tail-spin, red: jump again in the air), lashes the
+/// Moves, jumps (green: jump again in the air to tail-spin, red: jump again in the air), lashes the
 /// tongue, rolls, boosts (green rockets up, red dashes ahead) and drops through logs.
 /// The keys depend on the player: see read_controls() in scr_util.
 
@@ -85,6 +85,7 @@ if (ball) ball_angle -= vx * 4;
 if (on_ground) coyote = 6; else if (coyote > 0) coyote--;
 if (_jump_pressed) jump_buffer = 6; else if (jump_buffer > 0) jump_buffer--;
 drop_through = false;
+var _jumped = false;
 if (jump_buffer > 0 && coyote > 0)
 {
     if (_down && on_ground && row_oneway(y + hh + 2, x - hw + 1, x + hw - 1) && !row_blocked(y + hh + 2, x - hw + 1, x + hw - 1))
@@ -95,7 +96,8 @@ if (jump_buffer > 0 && coyote > 0)
     else
     {
         vy = -jump_speed * (ball ? 1.08 : 1);
-        vjump = (_dir == 0 && abs(vx) < 1);     // straight up (for Peto's slingshot hover)
+        vjump = (_dir == 0 && abs(vx) < 1);     // straight up (for the Slingshot)
+        _jumped = true;
         _g.play_sfx(_g.sfx.jump);
         part_particles_create(_g.ps, x, y + hh, _g.pt_dust, 4);
     }
@@ -112,6 +114,10 @@ else if (skin.double_jump && _jump_pressed && !on_ground && air_jump_ready)
     part_particles_create(_g.ps, x, y + hh, _g.pt_dust, 6);
 }
 if (on_ground) air_jump_ready = true;
+// Green snake: the helicopter needs a second press of Jump in the air (holding the jump
+// that took off isn't enough); after that, holding Jump keeps it going.
+if (on_ground) copter_arm = false;
+else if (_jump_pressed && !_jumped && !skin.double_jump) copter_arm = true;
 // Let go early for a shorter jump (but never cut a rocket boost or a spring launch short).
 if (vy >= 0) sprung = false;
 if (!_jump_held && vy < -3 && !sprung && !(boost_t > 0 && skin.boost == "up")) vy *= 0.6;
@@ -120,7 +126,7 @@ if (!_jump_held && vy < -3 && !sprung && !(boost_t > 0 && skin.boost == "up")) v
 vy = min(vy + gravity_pull, fall_max);
 // The red dash flies straight ahead, holding its height.
 if (_dashing) vy = 0;
-copter = !skin.double_jump && !ball && !on_ground && _jump_held && vy > 0;
+copter = !skin.double_jump && !ball && !on_ground && copter_arm && _jump_held && vy > 0;
 if (copter)
 {
     vy = min(vy, 1.2);

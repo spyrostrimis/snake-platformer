@@ -13,6 +13,7 @@ drop_through = false;
 coyote = 0;             // frames left to jump after running off a ledge
 jump_buffer = 0;        // frames a jump press is remembered before landing
 copter = false;         // tail-spin glide (green snake)
+copter_arm = false;     // Jump was pressed again in the air: the glide may start
 // pid (0 or 1) is set by instance_create_layer before this runs.
 stats = obj_game.pl[pid];   // this snake's score, lives, hearts, misses and checkpoint
 skin = stats.skin;          // sprites and power of this snake
@@ -44,8 +45,7 @@ sling_t = 0;            // frames in the current slingshot state
 sling_push = 1;         // the way Sockee's ball was going when it hit Peto (-1 or 1)
 sling_dir = 0;          // Sockee as an arrow: the way it points, degrees
 sling_cd = 0;           // a short wait after the slingshot before the next one
-sling_hint = 0;         // frame when the how-to message may show again
-vjump = false;          // this jump went straight up (no Left / Right): Peto may hover
+vjump = false;          // this jump went straight up (no Left / Right): Peto can be the bow
 
 // Movement tuning (pixels per frame at 60 frames a second).
 run_accel = 0.35;
@@ -128,6 +128,13 @@ smash = function(_tx, _ty)
 /// Online: the other PC's snake glides to where that PC last said it was.
 mirror_step = function()
 {
+    // The Slingshot: a caught ball sits in this PC's own Peto's bend, not where the other PC
+    // last saw it (that would trail behind as they fall).
+    if (sling == "caught")
+    {
+        var _mate = sling_partner();
+        if (instance_exists(_mate)) { sling_hold(_mate); return; }
+    }
     if (point_distance(x, y, net_tx, net_ty) > 160) { x = net_tx; y = net_ty; reset_body(); }
     else { x = lerp(x, net_tx, 0.45); y = lerp(y, net_ty, 0.45); }
     update_body();

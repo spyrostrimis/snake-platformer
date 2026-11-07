@@ -33,9 +33,9 @@ On the title screen: Up / Down picks one or two players, Left / Right the snake,
 
 A super move for when you play together, split screen or online: **Peto** is the bow, **Sockee** the arrow.
 
-1. **Peto** jumps straight up (no Left / Right) and presses **Jump again** in the air: he hovers upright like a helicopter, his tail spinning over his head (about 2.5 s; Down drops out). Sockee has to be close by.
-2. **Sockee** rolls (hold **Roll**) back towards Peto and, at full rolling speed, presses **Boost**: it leaps as a ball.
-3. If the ball hits Peto **in his middle**, he bends into a C around it and they fall together. (Too early or too late and it flies past.)
+1. **Peto** jumps straight up (no Left / Right) and presses **Jump again** in the air: his helicopter, gliding slowly down with his tail spinning.
+2. **Sockee** rolls (hold **Roll**) back towards Peto and, at full rolling speed, presses **Boost**: it leaps as a ball, just high enough to reach the middle of Peto's body.
+3. If the ball hits Peto **in his middle**, he bends into a C around it and they fall together. (Press Boost too early or too late and it flies past.)
 4. When Peto lands he **flings Sockee forward**. Sockee straightens into an arrow and **whatever it hits takes two hits**: it knocks out creatures on the way and bounces off a boss.
 
 The numbers (hover time, leap, throw, damage) are at the top of `scripts/scr_slingshot`.

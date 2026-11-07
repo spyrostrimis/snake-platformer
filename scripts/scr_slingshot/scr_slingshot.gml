@@ -1,12 +1,13 @@
 /// The Slingshot, a two-player super move: Peto (green) is the bow, Sockee (red) the arrow.
 ///
-///  1. Peto jumps straight up (no Left / Right) and presses Jump again in the air: he hovers
-///     upright as a vertical helicopter, his tail spinning over his head (about 2.5 s;
-///     Down drops out). It only works with Sockee close by.
+///  1. Peto jumps straight up (no Left / Right) and presses Jump again in the air: his
+///     ordinary helicopter, gliding slowly down with his tail spinning. That's the bow.
 ///  2. Sockee rolls (hold Roll) towards Peto and, at full rolling speed, presses Boost: it
-///     leaps as a ball.
-///  3. If the ball hits Peto in his middle, it pushes his middle back and Peto bends into a
-///     C around it; the two fall together. (Head or tail: no catch.)
+///     leaps as a ball, just high enough to reach the middle of Peto's body. Press it at
+///     the right distance and the ball arrives there.
+///  3. If the ball hits Peto in his middle (the middle of his body) while he glides, it pushes
+///     it back and Peto bends into a C around it; the two fall together. (Head or tail: no
+///     catch.)
 ///  4. When Peto lands he flings Sockee forward, back the way it came. Sockee unrolls into a
 ///     straight arrow, and whatever it hits takes two hits (a boss loses two health
 ///     points). It knocks out creatures on the way and bounces off a boss.
@@ -15,10 +16,8 @@
 /// snake and reads the other's state from the snake packets: Peto's PC sees Sockee caught
 /// and bends; Sockee's PC sees Peto throw and flies.
 
-#macro SLING_HOVER 150          // frames Peto can hover
-#macro SLING_NEAR 420           // Sockee must be this close (px) for Peto to hover
-#macro SLING_LEAP 13            // Sockee's leap (upward speed)
-#macro SLING_MID 14             // how far from Peto's middle the ball may hit (px, up or down)
+#macro SLING_LEAP_MAX 15        // Sockee's strongest leap (upward speed)
+#macro SLING_MID 22             // how far from the middle of Peto's body the ball may hit (px)
 #macro SLING_THROW_SPEED 16
 #macro SLING_THROW_LIFT 3
 #macro SLING_GRAVITY 0.2        // the arrow falls gently, not like a jump
@@ -43,8 +42,13 @@ function sling_partner()
     return _r;
 }
 
-/// Peto's middle, where the ball must hit (he hovers upright: head up, tail down).
-function sling_mid_y(_p) { return _p.y + 2; }
+/// The middle of Peto's body, where the ball must hit: [x, y].
+function sling_mid(_p)
+{
+    var _k = clamp(_p.body_len div 2, 0, array_length(_p.segs) - 1);
+    return _p.segs[_k];
+}
+
 
 /// Leaves the slingshot and is an ordinary snake again.
 function sling_end()
@@ -70,21 +74,13 @@ function sling_step(_in)
     switch (sling)
     {
         case "":
-            // Peto: after a straight-up jump, Jump again in the air starts the hover.
-            if (_green && !on_ground && vjump && _in.jump_pressed && sling_cd == 0
-                && instance_exists(_mate) && point_distance(x, y, _mate.x, _mate.y) < SLING_NEAR)
+            // Peto: gliding on his helicopter after a straight-up jump, he is the bow. (Just a
+            // mark for Sockee: he flies as he always does.)
+            if (_green && copter && vjump && sling_cd == 0 && instance_exists(_mate))
             {
                 sling = "heli";
                 sling_t = 0;
-                vx = 0;
-                copter = false;
-                _g.play_sfx(_g.sfx.copter);
-                if (_g.frame >= sling_hint)
-                {
-                    sling_hint = _g.frame + 900;
-                    _g.say(stats.skin.name + " HOVERS! " + _mate.stats.skin.name + ": ROLL AT FULL SPEED, BOOST INTO HIS MIDDLE", 180);
-                }
-                return true;
+                return false;
             }
             // Sockee: rolling at full speed towards a hovering Peto, Boost leaps instead of dashing.
             if (!_green && ball && on_ground && _in.boost && sling_cd == 0 && instance_exists(_mate) && _mate.sling == "heli"
@@ -92,7 +88,9 @@ function sling_step(_in)
             {
                 sling = "leap";
                 sling_push = sign(vx);
-                vy = -SLING_LEAP;
+                // Just high enough that the top of the leap is level with Peto's middle.
+                var _rise = max(32, y - sling_mid(_mate)[1]);
+                vy = -min(SLING_LEAP_MAX, sqrt(2 * gravity_pull * _rise));
                 boost_t = 0;
                 _g.play_sfx(_g.sfx.jump);
                 _g.burst(x, y + hh, skin.colour, 6);
@@ -101,23 +99,24 @@ function sling_step(_in)
             return false;
 
         case "heli":
-            // Hover in place, tail spinning.
+            // Peto gliding as the bow: his ordinary helicopter, until the ball hits his middle.
             sling_t++;
-            vx = 0;
-            vy = approach(vy, 0, 1);
-            if (_g.frame mod 8 == 0) _g.play_sfx(_g.sfx.copter);
-            entity_move();
             if (instance_exists(_mate) && _mate.sling == "caught")
             {
                 // The ball hit his middle: he bends round it.
                 sling = "bent";
                 sling_push = _mate.sling_push;
                 sling_t = 0;
+                vx = 0;
+                vy = 0;
+                copter = false;
                 facing = -sling_push;
                 _g.play_sfx(_g.sfx.ball);
+                return true;
             }
-            else if (sling_t > SLING_HOVER || on_ground || _in.down) sling_end();
-            return true;
+            // Stopped gliding (let go of Jump, steered or landed): just Peto again.
+            if (!copter || !vjump || on_ground) sling = "";
+            return false;
 
         case "bent":
             // Falling together, bent like a C, until he touches the ground.
@@ -152,7 +151,8 @@ function sling_step(_in)
             vy = min(vy + gravity_pull, fall_max);
             entity_move();
             if (y > _g.lvl_h * TILE + 40) { sling_end(); _g.player_died(id); return true; }
-            if (instance_exists(_mate) && _mate.sling == "heli" && abs(x - _mate.x) < 22 && abs(y - sling_mid_y(_mate)) < SLING_MID)
+            var _mid = instance_exists(_mate) ? sling_mid(_mate) : [0, 0];
+            if (instance_exists(_mate) && _mate.sling == "heli" && point_distance(x, y, _mid[0], _mid[1]) < SLING_MID)
             {
                 sling = "caught";
                 sling_t = 0;
@@ -182,11 +182,13 @@ function sling_step(_in)
     return false;
 }
 
-/// Keeps the caught ball in Peto's bend (his middle, pushed back the way the ball came).
+/// Keeps the caught ball in Peto's bend (his middle, pushed back the way the ball came):
+/// inside the C, low enough that his head shows above it. Online, both PCs pin the ball to
+/// their own Peto like this, so the two look the same.
 function sling_hold(_p)
 {
-    x = _p.x + sling_push * 9;     // inside the C (its middle is pushed 22 px back)
-    y = sling_mid_y(_p);
+    x = _p.x + sling_push * 12;    // the C's middle is pushed 22 px back
+    y = _p.y + 12;
 }
 
 /// Peto has landed: Sockee shoots forward (back the way it came) as a straight arrow.
@@ -276,28 +278,6 @@ function sling_draw_upright(_mx, _end_dx)
         else draw_sprite_ext(skin.body, 0, _bx, _by, _s, _s, 0, c_white, 1);
     }
     draw_sprite_ext(skin.head, image_index, _hx, _hy, facing, 1, 0, c_white, 1);
-}
-
-/// Peto hovering: upright and straight, his tail whirling over his head like a rotor
-/// (two blades turning, seen from the side).
-function sling_draw_heli()
-{
-    var _g = obj_game;
-    sling_draw_upright(x, 0);
-    var _ry = y - 38;
-    var _a = _g.frame * 0.6;
-    draw_set_colour(make_colour_rgb(31, 107, 18));
-    draw_line_width(x, _ry, x, _ry + 9, 3);
-    for (var _b = 0; _b < 2; _b++)
-    {
-        var _len = 26 * cos(_a + _b * pi / 2);
-        draw_set_colour(make_colour_rgb(31, 107, 18));
-        draw_line_width(x - _len, _ry, x + _len, _ry, 6);
-        draw_set_colour(make_colour_rgb(150, 230, 110));
-        draw_line_width(x - _len, _ry, x + _len, _ry, 3);
-    }
-    draw_set_colour(make_colour_rgb(31, 107, 18));
-    draw_circle(x, _ry, 3, false);
 }
 
 /// Peto bent like a C round the ball (his middle pushed back the way it came).

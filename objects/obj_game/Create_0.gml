@@ -185,7 +185,7 @@ place_parallax = function(_cx, _cy)
 // name: in capitals for the HUD font; nice: for sentences; kind: what it is.
 snakes =
 [
-    { name: "PETO", nice: "Peto", kind: "the green snake", power:"Hold jump in the air to glide.  C: rocket boost upward", double_jump: false, boost: "up",
+    { name: "PETO", nice: "Peto", kind: "the green snake", power:"Jump again in the air to glide.  C: rocket boost upward", double_jump: false, boost: "up",
       head: spr_snake_head, body: spr_snake_body, tail: spr_snake_tail, ball: spr_snake_ball,
       colour: make_colour_rgb(120, 230, 90) },
     { name: "SOCKEE", nice: "Sockee", kind: "the red snake", power:"Press jump again in the air to double jump.  C: dash boost ahead", double_jump: true, boost: "dash",
