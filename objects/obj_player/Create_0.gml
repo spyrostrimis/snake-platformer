@@ -37,6 +37,16 @@ blink = 0;
 gulp_t = 0;             // counts down while a swallowed egg travels down the body
 image_speed = 0;
 
+// ---------- The Slingshot (two players): Peto is the bow, Sockee the arrow ----------
+// See scr_slingshot.
+sling = "";             // "" | heli | bent | throw (Peto) | leap | caught | flying (Sockee)
+sling_t = 0;            // frames in the current slingshot state
+sling_push = 1;         // the way Sockee's ball was going when it hit Peto (-1 or 1)
+sling_dir = 0;          // Sockee as an arrow: the way it points, degrees
+sling_cd = 0;           // a short wait after the slingshot before the next one
+sling_hint = 0;         // frame when the how-to message may show again
+vjump = false;          // this jump went straight up (no Left / Right): Peto may hover
+
 // Movement tuning (pixels per frame at 60 frames a second).
 run_accel = 0.35;
 run_max = 3.3;
@@ -93,7 +103,8 @@ mouth_y = function() { return y + 6; };
 /// Hurt by a creature or spikes: knocked back, blinking and safe for a moment.
 take_hit = function(_dir = -facing)
 {
-    if (invuln > 0) return;
+    if (invuln > 0 || sling == "flying") return;    // a flying arrow can't be hurt
+    if (sling != "") sling_end();                   // a hit breaks the slingshot
     invuln = 110;
     vx = _dir * 3.5;
     vy = -5;

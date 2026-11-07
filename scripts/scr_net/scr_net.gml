@@ -156,6 +156,10 @@ function net_write_snake(_b, _inst)
         buffer_write(_b, buffer_u8, clamp(invuln, 0, 255));
         buffer_write(_b, buffer_u8, body_len);
         buffer_write(_b, buffer_u8, clamp(gulp_t, 0, 255));
+        // The Slingshot: the state (as its number in sling_states()), the push, the direction.
+        buffer_write(_b, buffer_u8, max(0, array_get_index(sling_states(), sling)));
+        buffer_write(_b, buffer_s8, sling_push);
+        buffer_write(_b, buffer_u16, round(sling_dir) mod 360);
     }
 }
 
@@ -177,6 +181,9 @@ function net_read_snake(_b)
     _s.invuln = buffer_read(_b, buffer_u8);
     _s.body = buffer_read(_b, buffer_u8);
     _s.gulp = buffer_read(_b, buffer_u8);
+    _s.sling = buffer_read(_b, buffer_u8);
+    _s.push = buffer_read(_b, buffer_s8);
+    _s.dir = buffer_read(_b, buffer_u16);
     return _s;
 }
 
@@ -201,5 +208,9 @@ function net_apply_snake(_inst, _s)
         invuln = _s.invuln;
         body_len = clamp(_s.body, 1, 14);
         gulp_t = _s.gulp;
+        var _states = sling_states();
+        sling = (_s.sling < array_length(_states)) ? _states[_s.sling] : "";
+        sling_push = (_s.push == 0) ? 1 : _s.push;
+        sling_dir = _s.dir;
     }
 }

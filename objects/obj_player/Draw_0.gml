@@ -5,6 +5,13 @@ if (hidden) exit;
 if (invuln > 0 && (invuln div 4) mod 2 == 0) exit;
 var _g = obj_game;
 
+// The Slingshot: Peto hovering, bent round the ball or throwing; Sockee as an arrow.
+// (Sockee leaping or caught is drawn as its ball, below.)
+if (sling == "heli") { sling_draw_heli(); exit; }
+if (sling == "bent") { sling_draw_bent(); exit; }
+if (sling == "throw") { sling_draw_throw(); exit; }
+if (sling == "flying") { sling_draw_arrow(); exit; }
+
 if (ball)
 {
     // A boosting ball glows in the snake's colour.

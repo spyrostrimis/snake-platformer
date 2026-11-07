@@ -64,6 +64,7 @@
     {"id":{"name":"scr_levels","path":"scripts/scr_levels/scr_levels.yy",},},
     {"id":{"name":"scr_net","path":"scripts/scr_net/scr_net.yy",},},
     {"id":{"name":"scr_sfx","path":"scripts/scr_sfx/scr_sfx.yy",},},
+    {"id":{"name":"scr_slingshot","path":"scripts/scr_slingshot/scr_slingshot.yy",},},
     {"id":{"name":"scr_util","path":"scripts/scr_util/scr_util.yy",},},
     {"id":{"name":"scr_word_rules","path":"scripts/scr_word_rules/scr_word_rules.yy",},},
     {"id":{"name":"spr_bat","path":"sprites/spr_bat/spr_bat.yy",},},
