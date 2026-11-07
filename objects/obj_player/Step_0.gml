@@ -103,8 +103,9 @@ else if (skin.double_jump && _jump_pressed && !on_ground && air_jump_ready)
     part_particles_create(_g.ps, x, y + hh, _g.pt_dust, 6);
 }
 if (on_ground) air_jump_ready = true;
-// Let go early for a shorter jump (but never cut a rocket boost short).
-if (!_jump_held && vy < -3 && !(boost_t > 0 && skin.boost == "up")) vy *= 0.6;
+// Let go early for a shorter jump (but never cut a rocket boost or a spring launch short).
+if (vy >= 0) sprung = false;
+if (!_jump_held && vy < -3 && !sprung && !(boost_t > 0 && skin.boost == "up")) vy *= 0.6;
 
 // ---------- Gravity and the tail-spin glide (green snake only) ----------
 vy = min(vy + gravity_pull, fall_max);
@@ -232,6 +233,7 @@ with (obj_spring)
     if (other.vy >= 0 && abs(x - other.x) < 16 + other.hw - 2 && _feet >= y - 30 && _feet <= y + 1)
     {
         other.vy = -15;     // rises ~240 px: clears 7 tiles
+        other.sprung = true;
         squash = 12;
         _g.play_sfx(_g.sfx.spring);
     }

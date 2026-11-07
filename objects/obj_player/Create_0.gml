@@ -26,6 +26,7 @@ boost_cd = 0;           // short wait after a boost before the next one
 boost_ready = true;     // one boost per jump, refilled on landing
 boost_dir = 1;          // red dash direction
 boost_speed = 9;        // red dash speed (pixels per frame)
+sprung = false;         // rising from a spring: letting go of jump must not cut it short
 invuln = 0;
 ball = false;
 ball_angle = 0;
