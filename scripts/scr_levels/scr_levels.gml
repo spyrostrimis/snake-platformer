@@ -67,6 +67,7 @@ function level_greenleaf()
 
     lvl_ground(L, 73, 82, 11);
     lvl_put(L, "flag", 75, 10);
+    lvl_put(L, "super_egg", 77, 10);    // two players only
     lvl_put(L, "letter", 79, 7);
     lvl_rect(L, 85, 9, 88, 9, T_ONEWAY);
     lvl_rect(L, 91, 7, 94, 7, T_ONEWAY);
@@ -138,6 +139,7 @@ function level_mushroom()
 
     lvl_ground(L, 75, 95, 9);
     lvl_put(L, "flag", 77, 8);
+    lvl_put(L, "super_egg", 86, 8);     // two players only
     lvl_rect(L, 82, 8, 84, 8, T_SPIKES);
     lvl_put(L, "letter", 88, 8);
     lvl_put(L, "bug", 91, 8);
@@ -212,6 +214,7 @@ function level_tangleroot()
     lvl_put(L, "letter", 73, 3);
     lvl_gems(L, 74, 75, 3);
     lvl_put(L, "flag", 80, 10);
+    lvl_put(L, "super_egg", 83, 10);    // two players only
 
     // Root steps rising out of a pit, then a drop with a branch to climb back.
     lvl_ground(L, 89, 94, 11);

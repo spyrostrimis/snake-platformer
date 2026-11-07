@@ -340,6 +340,8 @@ load_level = function(_i, _with_player)
             case "letter": _inst = instance_create_layer(_px, _py, "Instances", obj_letter); array_push(_letter_spots, _inst); break;
             case "gem":    _inst = instance_create_layer(_px, _py, "Instances", obj_gem); break;
             case "egg":    _inst = instance_create_layer(_px, _py, "Instances", obj_egg); break;
+            // The super egg only exists when two snakes play (split screen or online).
+            case "super_egg": if (_with_player && array_length(pl) == 2) _inst = instance_create_layer(_px, _py, "Instances", obj_super_egg); break;
             case "boss_mouse":
             case "boss_hen":
             case "boss_cat":
@@ -858,6 +860,18 @@ net_apply_event = function(_e)
 
         case "smash":
             smash_tile(_e.x, _e.y, (net_mode == "host" && array_length(pl) == 2) ? pl[1] : undefined);
+            break;
+
+        // ----- either way -----
+        case "shatch":
+            // The other PC's snake hatched the super egg. If both hatched it at once, the
+            // host's snake counts, so the joiner takes the host's word.
+            var _se = net_find(obj_super_egg, _e.i);
+            if (_se != noone)
+            {
+                if (!_se.hatched) with (_se) hatch(_e.by);
+                else if (net_mode == "client") _se.hatcher = _e.by;
+            }
             break;
 
         // ----- from the joiner -----
