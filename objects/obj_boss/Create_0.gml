@@ -59,6 +59,10 @@ shoot = function(_spr, _x, _y, _vx, _vy, _grav)
     return _h;
 };
 
+/// True while landing on this boss hurts the snake instead of the boss (the wild cat's
+/// bristling fur). Bosses override it; by default a stomp always counts.
+spiky_back = function() { return false; };
+
 /// Faces the nearest snake; returns the horizontal distance to it.
 face_player = function()
 {

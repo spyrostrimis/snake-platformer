@@ -26,9 +26,10 @@ if (blink > 0) blink--; else if (irandom(180) == 0) blink = 8;
 // ---------- Roll (hold Shift) and boost (press C) ----------
 // A roll is just fast travel: it can't hurt creatures and creatures hurt it.
 // A boost is a short burst that knocks out anything it touches. One boost per jump.
+// The green rocket only launches from the ground; the red dash also works in mid-air.
 if (boost_cd > 0) boost_cd--;
 if (on_ground && boost_t == 0) boost_ready = true;
-if (_boost_key && tongue_t == 0 && boost_t == 0 && boost_cd == 0 && boost_ready)
+if (_boost_key && tongue_t == 0 && boost_t == 0 && boost_cd == 0 && boost_ready && (skin.boost != "up" || on_ground))
 {
     boost_ready = false;
     if (skin.boost == "up")
@@ -203,18 +204,32 @@ with (obj_enemy)
         // A plain roll can't stomp: rolling into a creature always hurts the snake.
         else if (!other.ball && other.vy > 1.5 && other.y < y - 4)
         {
-            kill(2, other.id);
-            other.vy = _is_boss ? -10 : -7;
+            if (_is_boss && spiky_back())
+            {
+                // Bristling fur: landing on it hurts, and throws the snake off.
+                other.vy = -8;
+                if (other.invuln == 0) with (other) take_hit(sign(x - other.x));
+            }
+            else
+            {
+                kill(2, other.id);
+                other.vy = _is_boss ? -10 : -7;
+            }
         }
-        else if (other.invuln == 0 && !(_is_boss && hurt_t > 30)) with (other) take_hit(sign(x - other.x));
+        // Just after a hit a boss can't hurt the snake bouncing off it. The bristling cat stays
+        // dangerous for most of that time, so her Fur Storm pounce still counts.
+        else if (other.invuln == 0 && !(_is_boss && hurt_t > (spiky_back() ? 78 : 30))) with (other) take_hit(sign(x - other.x));
     }
 }
 
 // ---------- Items, springs, the checkpoint and the door ----------
 with (obj_pickup) if (!grabbed && abs(x - other.x) < 18 && abs(y - other.y) < 20) collect_now(other.id);
+// A spring fires the moment the snake's feet touch its pad from above: landing on it,
+// or simply walking onto it. The pad is 32 px wide, so anywhere over it counts.
 with (obj_spring)
 {
-    if (other.vy > 0 && abs(x - other.x) < 18 && other.y + other.hh >= y - 26 && other.y + other.hh <= y - 4)
+    var _feet = other.y + other.hh;
+    if (other.vy >= 0 && abs(x - other.x) < 16 + other.hw - 2 && _feet >= y - 30 && _feet <= y + 1)
     {
         other.vy = -15;     // rises ~240 px: clears 7 tiles
         squash = 12;

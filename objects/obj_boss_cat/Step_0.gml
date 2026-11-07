@@ -8,8 +8,36 @@ var _angry = hp <= hp_max / 2;   // faster, and pounces twice in a row, in the s
 var _at_edge = x <= arena_x1 || x >= arena_x2;
 timer--;
 
+// Every hit sets off the Fur Storm: fur on end (she stays spiky a while), a hiss,
+// a fan of hairballs flung into the air, then a pounce straight back.
+if (hp < last_hp)
+{
+    last_hp = hp;
+    state = "fury";
+    timer = 34;
+    vx = 0;
+    vy = -5;                    // springs up, shaking anyone off her back
+    hurt_t = max(hurt_t, 90);   // bristling (and safe) for 1.5 seconds
+    _g.play_sfx(_g.sfx.hiss);
+    var _n = _angry ? 9 : 7;
+    for (var _k = 0; _k < _n; _k++)
+    {
+        var _a = degtorad(25 + _k * (130 / (_n - 1)));
+        shoot(spr_hairball, x, y - hh, cos(_a) * 5, -sin(_a) * 6 - 2, 0.25);
+    }
+    _g.burst(x, y - hh, make_colour_rgb(255, 160, 60), 16);
+}
+
 switch (state)
 {
+    case "fury":
+        vx = 0;
+        face_player();
+        image_index = 4;
+        x += irandom_range(-1, 1);
+        if (timer <= 0 && on_ground) { state = "crouch"; timer = 12; pounces = 1; }
+        break;
+
     case "prowl":
         // Stalks towards the snake, low and steady.
         var _dist = face_player();
