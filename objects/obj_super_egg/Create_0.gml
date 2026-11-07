@@ -24,7 +24,7 @@ hatch = function(_pid)
     if (_g.net_mode != "client" && array_length(_g.pl) == 2)
     {
         _g.say(_g.pl[_pid].skin.name + " HATCHED A SUPER EGG!", 150);
-        _g.say("ONLY THE " + _g.pl[1 - _pid].skin.name + " CAN EAT IT", 150);
+        _g.say("ONLY " + _g.pl[1 - _pid].skin.name + " CAN EAT IT", 150);
     }
 };
 

@@ -1,8 +1,8 @@
-# Snake Platformer: Jungle Jam
+# SNAGMAN
 
 A side-scrolling platformer made with [GameMaker](https://gamemaker.io), a tribute to the 90s PC platformers (*Jazz Jackrabbit 2* above all), with a hangman twist. Each level hides the letters of a secret word: grab the right ones to open the exit door, and every wrong letter is a miss. A boss guards each exit and holds one letter of the word.
 
-Two snakes to play: the **Green** one glides on its spinning tail and rockets upward; the **Red** one double-jumps and dashes ahead. Play alone, two on one PC with a split screen, or **online** with a friend.
+Two snakes to play: **Peto** (green) glides on its spinning tail and rockets upward; **Sockee** (red) double-jumps and dashes ahead. Play alone, two on one PC with a split screen, or **online** with a friend.
 
 It grew out of [snake_hangman](https://github.com/spyrostrimis/snake_hangman) (v5 "Jungle Jam" and v6); its history from v6 on comes with it.
 

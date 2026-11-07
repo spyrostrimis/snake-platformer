@@ -58,7 +58,7 @@ switch (state)
             title_arrow(196, 212, -1, _arrow_col);
             title_arrow(444, 212, 1, _arrow_col);
             draw_sprite_ext(_sn.head, 0, 224, 211, 0.8, 0.8, 0, c_white, 1);
-            hud_text(334, 203, _sn.name, 0.4, fa_center, _sn.colour);
+            hud_text(334, 201, _sn.name, 0.46, fa_center, _sn.colour);    // PETO or SOCKEE
             body_text(334, 219, _sn.power, c_white, fa_center);
             if (_blink) hud_text(320, 238, "PRESS ENTER TO START", 0.42, fa_center);
             body_text(320, 256, "Arrows: move    Z / Space: jump    Left / Right on this screen: choose snake", c_white, fa_center);
@@ -72,9 +72,9 @@ switch (state)
             title_arrow(140, 212, -1, _arrow_col);
             title_arrow(500, 212, 1, _arrow_col);
             draw_sprite_ext(_s1.head, 0, 172, 211, 0.7, 0.7, 0, c_white, 1);
-            hud_text(232, 203, "P1 " + string_replace(_s1.name, " SNAKE", ""), 0.34, fa_center, _s1.colour);
+            hud_text(232, 203, "P1 " + _s1.name, 0.34, fa_center, _s1.colour);
             draw_sprite_ext(_s2.head, 0, 372, 211, 0.7, 0.7, 0, c_white, 1);
-            hud_text(432, 203, "P2 " + string_replace(_s2.name, " SNAKE", ""), 0.34, fa_center, _s2.colour);
+            hud_text(432, 203, "P2 " + _s2.name, 0.34, fa_center, _s2.colour);
             body_text(320, 219, "Shared word, own lives and misses. P1 plays on top, P2 below.", c_white, fa_center);
             if (_blink) hud_text(320, 238, "PRESS ENTER TO START", 0.42, fa_center);
             body_text(320, 256, "P1: A D move   W jump   S down   F tongue   hold G roll   H boost", _s1.colour, fa_center);
@@ -135,7 +135,7 @@ switch (state)
                     // The lobby: the host picks the snakes and starts the game.
                     var _mine = (_n.role == "host") ? snakes[character] : snakes[1 - net_lobby_c];
                     var _yours = (_n.role == "host") ? snakes[1 - character] : snakes[net_lobby_c];
-                    body_text(320, 222, "You play the " + string_lower(_mine.name) + ", your friend the " + string_lower(_yours.name) + ".", _mine.colour, fa_center);
+                    body_text(320, 222, "You play " + _mine.nice + " (" + _mine.kind + "), your friend plays " + _yours.nice + ".", _mine.colour, fa_center);
                     if (_n.role == "host")
                     {
                         if (_blink) hud_text(320, 244, "ENTER: START THE GAME", 0.45, fa_center, make_colour_rgb(160, 255, 140));
@@ -283,7 +283,7 @@ switch (state)
             {
                 var _p = pl[_k];
                 if (_p.shown < _p.bonus) _done = false;
-                var _label = (array_length(pl) == 1) ? "BONUS " : string_replace(_p.skin.name, " SNAKE", "") + " BONUS ";
+                var _label = (array_length(pl) == 1) ? "BONUS " : _p.skin.name + " BONUS ";
                 hud_text(320, 200 + _k * 22, _label + string(_p.shown), 0.5, fa_center, (array_length(pl) == 1) ? c_white : _p.skin.colour);
             }
             if (net_mode == "client") body_text(320, 256, "Waiting for your friend to carry on...", c_white, fa_center);
@@ -313,7 +313,7 @@ switch (state)
         for (var _k = 0; _k < array_length(pl); _k++)
         {
             var _p = pl[_k];
-            var _label = (array_length(pl) == 1) ? "SCORE " : string_replace(_p.skin.name, " SNAKE", "") + " ";
+            var _label = (array_length(pl) == 1) ? "SCORE " : _p.skin.name + " ";
             hud_text(320, 214 + _k * 24, _label + string(_p.score_now), 0.5, fa_center, (array_length(pl) == 1) ? c_white : _p.skin.colour);
         }
         if (_blink) hud_text(320, 274, "PRESS ENTER", 0.5, fa_center);
@@ -329,7 +329,7 @@ switch (state)
         for (var _k = 0; _k < array_length(pl); _k++)
         {
             var _p = pl[_k];
-            var _label = (array_length(pl) == 1) ? "SCORE " : string_replace(_p.skin.name, " SNAKE", "") + " ";
+            var _label = (array_length(pl) == 1) ? "SCORE " : _p.skin.name + " ";
             hud_text(320, 200 + _k * 24, _label + string(_p.score_now), 0.6, fa_center, (array_length(pl) == 1) ? c_white : _p.skin.colour);
         }
         if (_blink) hud_text(320, 270, "PRESS ENTER", 0.5, fa_center);

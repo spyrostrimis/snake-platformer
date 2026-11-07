@@ -1,10 +1,11 @@
-/// Snake Hangman v5, "Jungle Jam": a side-scrolling platformer tribute to the 90s PC platformers.
+/// SNAGMAN (formerly Snake Hangman v5, "Jungle Jam"): a side-scrolling platformer tribute to
+/// the 90s PC platformers, starring Peto and Sockee.
 /// obj_game owns the run, the levels (grid + tilemap + layers), the camera, music and HUD.
 
 randomise();
 // The GUI layer runs at the full window size; Draw GUI scales the HUD 2x and draws text sharp.
 display_set_gui_size(1280, 720);
-window_set_caption("Snake Hangman: Jungle Jam");
+window_set_caption("SNAGMAN");
 // The blank room's own black background layer would hide the sky and tiles.
 var _room_bg = layer_get_id("Background");
 if (_room_bg != -1) layer_destroy(_room_bg);
@@ -170,13 +171,14 @@ place_parallax = function(_cx, _cy)
 };
 
 // ---------- Playable snakes (chosen on the title screen with Left / Right) ----------
-// Green glides with a spinning tail; Red can jump a second time in the air instead.
+// Peto (green) glides with a spinning tail; Sockee (red) can jump a second time in the air.
+// name: in capitals for the HUD font; nice: for sentences; kind: what it is.
 snakes =
 [
-    { name: "GREEN SNAKE", power: "Hold jump in the air to glide.  C: rocket boost upward", double_jump: false, boost: "up",
+    { name: "PETO", nice: "Peto", kind: "the green snake", power:"Hold jump in the air to glide.  C: rocket boost upward", double_jump: false, boost: "up",
       head: spr_snake_head, body: spr_snake_body, tail: spr_snake_tail, ball: spr_snake_ball,
       colour: make_colour_rgb(120, 230, 90) },
-    { name: "RED SNAKE", power: "Press jump again in the air to double jump.  C: dash boost ahead", double_jump: true, boost: "dash",
+    { name: "SOCKEE", nice: "Sockee", kind: "the red snake", power:"Press jump again in the air to double jump.  C: dash boost ahead", double_jump: true, boost: "dash",
       head: sprite_swap_red_green(spr_snake_head), body: sprite_swap_red_green(spr_snake_body),
       tail: sprite_swap_red_green(spr_snake_tail), ball: sprite_swap_red_green(spr_snake_ball),
       colour: make_colour_rgb(255, 110, 90) },

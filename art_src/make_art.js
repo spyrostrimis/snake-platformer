@@ -1,6 +1,6 @@
 // Draws all of v5's art as SVG and renders it to PNG with sharp.
 // Run: node art_src/make_art.js <sharp module dir> <output dir>
-// Everything here is original art made for Snake Hangman: Jungle Jam.
+// Everything here is original art made for SNAGMAN (formerly Snake Hangman: Jungle Jam).
 const path = require("path");
 const fs = require("fs");
 const sharp = require(process.argv[2] || "sharp");
@@ -311,7 +311,7 @@ function logo3d(text, size, y, w) {
     `<text x="${w / 2}" y="${y}" text-anchor="middle" font-family="Comic Sans MS" font-weight="bold" font-size="${size}" fill="url(#lg)" stroke="#0c2a06" stroke-width="6" stroke-linejoin="round" paint-order="stroke"/>`.replace("/>", `>${text}</text>`) +
     `<text x="${w / 2 - 3}" y="${y - 4}" text-anchor="middle" font-family="Comic Sans MS" font-weight="bold" font-size="${size}" fill="none" stroke="#e8ffb0" stroke-width="2" opacity="0.6">${text}</text>`;
 }
-save("spr_logo", 640, 200, logo3d("SNAKE", 92, 86, 640) + logo3d("HANGMAN", 78, 176, 640),
+save("spr_logo", 640, 200, logo3d("SNAGMAN", 106, 136, 640),
   `<linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c6ff6a"/><stop offset="0.5" stop-color="#5cd62a"/><stop offset="1" stop-color="#2e9a14"/></linearGradient>`);
 
 // ---------- HUD font strip: one 30 x 38 cell per glyph ----------
