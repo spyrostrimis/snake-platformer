@@ -21,7 +21,7 @@ t += 0.1;
 vy += grav;
 x += vx + (sway ? sin(t) * 1.2 : 0);
 y += vy;
-image_angle += sway ? sin(t) * 3 : vx * 5;
+image_angle += sway ? sin(t) * 3 : (spin ? vx * 5 : 0);
 life--;
 
 var _t = tile_at(x, y + 6);

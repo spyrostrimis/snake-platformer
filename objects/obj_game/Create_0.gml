@@ -131,7 +131,15 @@ layers_made = [];
 cam_x = 0;              // the single view's camera (title screen, game over...)
 cam_y = 0;
 cam_snap = false;       // true: cameras jump straight to their snakes (a new level)
+shake_t = 0;            // frames of camera shake left (the mole's earthquake)
 title_pan = 0;
+
+/// Shakes every camera for _frames frames; online the host passes it on.
+shake = function(_frames)
+{
+    shake_t = max(shake_t, _frames);
+    if (net_mode == "host") net_event({ t: "shake", f: _frames });
+};
 
 // ---------- Views: one full-window view, or two halves (top / bottom) ----------
 split_on = false;
@@ -164,7 +172,7 @@ place_parallax = function(_cx, _cy)
     if (!variable_instance_exists(id, "bg_layers")) return;
     layer_x(bg_layers.Mountains, _cx * 0.82);
     layer_y(bg_layers.Mountains, _cy * 0.85 + 70);
-    layer_x(bg_layers.Clouds, _cx * 0.9 - frame * 0.15);
+    layer_x(bg_layers.Clouds, _cx * 0.9 - frame * 0.15 * lvl.cloud_drift);
     layer_y(bg_layers.Clouds, _cy * 0.92 + 8);
     layer_x(bg_layers.Hills, _cx * 0.6);
     layer_y(bg_layers.Hills, _cy * 0.75 + 190);
@@ -248,7 +256,8 @@ auto_tile = function(_tx, _ty)
         case T_CRACK:  return 8;
         case T_SPIKES: return 9;
         case T_SOLID:
-            var _open_above = !is_blocking(grid_type(_tx, _ty - 1));
+            // The top row counts as covered, so a cave ceiling has no grass on top of it.
+            var _open_above = _ty > 0 && !is_blocking(grid_type(_tx, _ty - 1));
             if (_open_above)
             {
                 var _l = !is_blocking(grid_type(_tx - 1, _ty)) || _tx == 0;
@@ -282,7 +291,8 @@ load_level = function(_i, _with_player)
     instance_create_layer(0, 0, _sky_layer, obj_sky);
     // The sky draws first in every view: place the parallax layers for that view's camera.
     layer_script_begin(_sky_layer, parallax_for_view);
-    var _defs = [["Mountains", 900, spr_bg_mountains], ["Clouds", 950, spr_bg_clouds], ["Hills", 800, spr_bg_hills]];
+    // The level picks the three pictures (the cavern has rock walls and stalactites instead).
+    var _defs = [["Mountains", 900, lvl.bg[0]], ["Clouds", 950, lvl.bg[1]], ["Hills", 800, lvl.bg[2]]];
     bg_layers = {};
     for (var _k = 0; _k < 3; _k++)
     {
@@ -297,10 +307,12 @@ load_level = function(_i, _with_player)
     // The level's tiles, in a real GameMaker tilemap.
     var _tile_layer = layer_create(100, "Tiles");
     array_push(layers_made, _tile_layer);
-    tilemap = layer_tilemap_create(_tile_layer, 0, 0, ts_jungle, lvl_w, lvl_h);
+    tilemap = layer_tilemap_create(_tile_layer, 0, 0, lvl.tileset, lvl_w, lvl_h);
     for (var _x = 0; _x < lvl_w; _x++) for (var _y = 0; _y < lvl_h; _y++) tilemap_set(tilemap, auto_tile(_x, _y), _x, _y);
 
     // Plants on the grass and vines under the ledges, as sprites on an asset layer.
+    // In the cavern: glowing crystals and mushrooms on the floor, stalactites under the rock.
+    var _cave = lvl.deco == "cave";
     var _deco = layer_create(95, "Deco");
     array_push(layers_made, _deco);
     random_set_seed(1000 + _i);
@@ -312,11 +324,11 @@ load_level = function(_i, _with_player)
             if (_here == T_SOLID && grid[_x][_y - 1] == T_EMPTY)
             {
                 var _roll = irandom(9);
-                if (_roll == 0) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_flower);
+                if (_roll == 0) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, _cave ? spr_crystal : spr_flower);
                 else if (_roll == 1) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_mushroom);
-                else if (_roll == 2 && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 6, spr_bush);
+                else if (_roll == 2 && !_cave && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 6, spr_bush);
             }
-            if (_here == T_SOLID && _y < lvl_h - 1 && grid[_x][_y + 1] == T_EMPTY && irandom(lvl.vine_odds) == 0) layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, spr_vine);
+            if (_here == T_SOLID && _y < lvl_h - 1 && grid[_x][_y + 1] == T_EMPTY && irandom(lvl.vine_odds) == 0) layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, _cave ? spr_stalactite : spr_vine);
         }
     }
     randomise();
@@ -347,7 +359,11 @@ load_level = function(_i, _with_player)
             case "boss_mouse":
             case "boss_hen":
             case "boss_cat":
-                var _boss_obj = (_s.kind == "boss_mouse") ? obj_boss_mouse : ((_s.kind == "boss_hen") ? obj_boss_hen : obj_boss_cat);
+            case "boss_mole":
+                var _boss_obj = obj_boss_mouse;
+                if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
+                else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
+                else if (_s.kind == "boss_mole") _boss_obj = obj_boss_mole;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
                 boss.arena_x2 = lvl.arena[1] * TILE;
@@ -355,6 +371,9 @@ load_level = function(_i, _with_player)
                 break;
             case "bug":    _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 12, "Instances", obj_bug); break;
             case "bee":    _inst = instance_create_layer(_px, _py, "Instances", obj_bee); break;
+            // Cavern: bats hang from the ceiling tile above them; loose rocks hang there too.
+            case "bat":    _inst = instance_create_layer(_px, _s.ty * TILE + 16, "Instances", obj_bat); break;
+            case "rockfall": instance_create_layer(_px, _s.ty * TILE + 12, "Instances", obj_rockfall); break;
             case "spring": instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_spring); break;
             case "flag":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_flag); break;
             case "door":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_door); break;
@@ -908,6 +927,10 @@ net_apply_event = function(_e)
 
         case "door":
             if (state == "play" && word_is_solved(word, guessed)) level_complete();
+            break;
+
+        case "shake":
+            shake_t = max(shake_t, _e.f);
             break;
     }
 };

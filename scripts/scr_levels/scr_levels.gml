@@ -6,8 +6,11 @@ function lvl_create(_name, _w, _h, _music, _sky_top, _sky_bottom)
     var _grid = array_create(_w);
     for (var _x = 0; _x < _w; _x++) _grid[_x] = array_create(_h, T_EMPTY);
     // bg_tint colours the parallax scenery; vine_odds: a vine under 1 in (vine_odds + 1) ledge tiles.
+    // tileset, bg (far / top / near parallax pictures), cloud_drift and deco ("jungle" or "cave")
+    // let a level look completely different, like the cavern.
     return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0],
-             bg_tint: c_white, vine_odds: 3 };
+             bg_tint: c_white, vine_odds: 3, tileset: ts_jungle, bg: [spr_bg_mountains, spr_bg_clouds, spr_bg_hills],
+             cloud_drift: 1, deco: "jungle" };
 }
 
 function lvl_rect(_l, _x1, _y1, _x2, _y2, _t)
@@ -258,7 +261,101 @@ function level_tangleroot()
     return L;
 }
 
+/// Level 4: down into a cavern, brown to orange. A rock ceiling all the way, narrow tunnels
+/// (one with cracked rock to roll through), bats hanging from the roof, loose rocks that
+/// drop when you pass, and Big Diggs the mole at the end.
+/// Reach: every step is within a jump (4 tiles), every pit at most 3 wide, and a jump never
+/// needs more headroom than the ceiling gives.
+function level_emberstone()
+{
+    var L = lvl_create("EMBERSTONE CAVERN", 160, 15, "music_06.ogg", make_colour_rgb(40, 18, 6), make_colour_rgb(190, 92, 30));
+    L.tileset = ts_cave;
+    L.bg = [spr_bg_cave_far, spr_bg_cave_top, spr_bg_cave_near];
+    L.cloud_drift = 0;
+    L.deco = "cave";
+    L.vine_odds = 1;
+
+    // The cave roof over the whole level (rows 0-1), lower in places below.
+    lvl_rect(L, 0, 0, 159, 1, T_SOLID);
+
+    // ---- The way in ----
+    lvl_rect(L, 0, 2, 24, 2, T_SOLID);
+    lvl_ground(L, 0, 24, 11);
+    lvl_put(L, "start", 3, 10);
+    lvl_gems(L, 6, 9, 9);
+    lvl_put(L, "letter", 12, 10);
+    lvl_put(L, "rockfall", 16, 3);
+    lvl_put(L, "bat", 21, 3);
+
+    // ---- Tunnel 1: a long, low crawl (one tile high: no jumping in here) ----
+    lvl_rect(L, 25, 0, 36, 9, T_SOLID);
+    lvl_ground(L, 25, 36, 11);
+    lvl_gems(L, 27, 29, 10);
+    lvl_put(L, "letter", 31, 10);
+    lvl_gems(L, 33, 35, 10);
+
+    // ---- A tall chamber with a pit, a plank and bats ----
+    lvl_ground(L, 37, 43, 11);
+    lvl_ground(L, 47, 60, 11);
+    lvl_rect(L, 49, 7, 52, 7, T_ONEWAY);
+    lvl_put(L, "letter", 50, 6);
+    lvl_put(L, "rockfall", 41, 2);
+    lvl_put(L, "bat", 45, 2);
+    lvl_put(L, "rockfall", 55, 2);
+    lvl_put(L, "bug", 57, 10);
+
+    // ---- Tunnel 2: two tiles high, blocked by cracked rock: roll into it (hold Shift) ----
+    lvl_rect(L, 61, 0, 74, 8, T_SOLID);
+    lvl_ground(L, 61, 74, 11);
+    lvl_rect(L, 68, 9, 68, 10, T_CRACK);
+    lvl_put(L, "letter", 71, 10);
+    lvl_gems(L, 72, 73, 10);
+
+    // ---- Steps up and a drop, with a plank to climb back ----
+    lvl_ground(L, 75, 82, 11);
+    lvl_put(L, "flag", 76, 10);
+    lvl_put(L, "super_egg", 79, 10);    // two players only
+    lvl_ground(L, 83, 86, 9);
+    lvl_ground(L, 87, 90, 7);
+    lvl_put(L, "letter", 88, 6);
+    lvl_put(L, "bat", 85, 2);
+    lvl_ground(L, 91, 100, 11);
+    lvl_rect(L, 92, 9, 93, 9, T_ONEWAY);
+    lvl_rect(L, 95, 10, 96, 10, T_SPIKES);
+    lvl_put(L, "letter", 98, 10);
+    lvl_put(L, "bat", 97, 2);
+
+    // ---- Tunnel 3: another low crawl ----
+    lvl_rect(L, 101, 0, 112, 9, T_SOLID);
+    lvl_ground(L, 101, 112, 11);
+    lvl_gems(L, 103, 105, 10);
+    lvl_put(L, "letter", 107, 10);
+
+    // ---- The rockfall corridor ----
+    lvl_rect(L, 113, 2, 127, 3, T_SOLID);
+    lvl_ground(L, 113, 159, 11);
+    lvl_put(L, "rockfall", 116, 4);
+    lvl_put(L, "rockfall", 120, 4);
+    lvl_put(L, "rockfall", 124, 4);
+    lvl_put(L, "bug", 118, 10);
+    lvl_put(L, "letter", 122, 10);
+    lvl_put(L, "egg", 125, 10);
+    lvl_put(L, "flag", 126, 10);
+
+    // ---- Big Diggs' den: two planks to dodge his roll and his shockwaves ----
+    lvl_rect(L, 128, 2, 159, 2, T_SOLID);
+    L.arena = [128, 150];
+    lvl_rect(L, 133, 8, 136, 8, T_ONEWAY);
+    lvl_rect(L, 142, 8, 145, 8, T_ONEWAY);
+    lvl_put(L, "letter", 134, 7);
+    lvl_put(L, "letter", 143, 7);
+    lvl_put(L, "bat", 139, 3);
+    lvl_put(L, "boss_mole", 146, 10);
+    lvl_put(L, "door", 154, 10);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone];
 }

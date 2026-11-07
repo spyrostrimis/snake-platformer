@@ -325,4 +325,176 @@ let strip = "";
 save("font_hud", GLYPHS.length * 30, 38, strip,
   `<linearGradient id="hf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.55" stop-color="#fff6a8"/><stop offset="1" stop-color="#ffb21c"/></linearGradient>`);
 
+// =====================================================================================
+// ---------- Level 4, the cavern: brown to orange ----------
+// =====================================================================================
+const K = {
+  rock: "#b0602a", rockLight: "#e89a52", rockDark: "#62300f", mortar: "#341604", deep: "#4a2410",
+  crust: "#f0a040", crustLight: "#ffd88a", crustDark: "#b0561c", crustLine: "#4a2006",
+  fur: "#7a5038", furDark: "#4a2c18", furLine: "#24120a", pink: "#f4a0ac", pinkDark: "#c85a70",
+};
+const caveGrad = `<linearGradient id="cst" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="${K.rockLight}"/><stop offset="0.5" stop-color="${K.rock}"/><stop offset="1" stop-color="${K.rockDark}"/></linearGradient>
+<linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${K.crustLight}"/><stop offset="0.6" stop-color="${K.crust}"/><stop offset="1" stop-color="${K.crustDark}"/></linearGradient>
+<linearGradient id="crk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8b080"/><stop offset="1" stop-color="#7a3a14"/></linearGradient>`;
+function caveStones(seed) {
+  const sets = [
+    [[8, 9, 7, 6], [23, 8, 7, 6], [7, 23, 6, 7], [21, 22, 9, 7], [16, 15, 4, 3]],
+    [[9, 7, 8, 5], [24, 12, 6, 7], [10, 21, 8, 7], [24, 26, 6, 4], [3, 14, 3, 4]],
+  ];
+  return sets[seed % 2].map(([x, y, rx, ry]) =>
+    `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#cst)" stroke="${K.mortar}" stroke-width="1.5"/>` +
+    `<ellipse cx="${x - rx * 0.3}" cy="${y - ry * 0.35}" rx="${rx * 0.4}" ry="${ry * 0.3}" fill="${K.rockLight}" opacity="0.6"/>`
+  ).join("");
+}
+const caveDirt = (seed) => `<rect width="32" height="32" fill="${K.deep}"/>${caveStones(seed)}`;
+const caveTop = (left, right) => {
+  // An orange mineral crust instead of grass, with little drips along its lower edge.
+  let drips = "";
+  for (let x = 2; x < 32; x += 6) drips += `<ellipse cx="${x + 1}" cy="${10 + ((x * 5) % 3)}" rx="2.4" ry="${2 + ((x * 3) % 2)}" fill="${K.crust}" stroke="${K.crustLine}" stroke-width="0.8"/>`;
+  const l = left ? `<circle cx="2" cy="6" r="5.5" fill="url(#cg)" stroke="${K.crustLine}" stroke-width="1.2"/>` : "";
+  const r = right ? `<circle cx="30" cy="6" r="5.5" fill="url(#cg)" stroke="${K.crustLine}" stroke-width="1.2"/>` : "";
+  return `<rect x="${left ? 2 : 0}" y="1" width="${32 - (left ? 2 : 0) - (right ? 2 : 0)}" height="9" fill="url(#cg)"/>
+    <line x1="${left ? 2 : 0}" y1="1" x2="${right ? 30 : 32}" y2="1" stroke="${K.crustLine}" stroke-width="1.5"/>${drips}${l}${r}
+    <path d="M5 4 q3 -2 6 0 M18 3 q3 -2 6 0" stroke="#fff0c0" stroke-width="1.2" fill="none" opacity="0.8"/>`;
+};
+const caveTiles = [
+  "",                                                   // 0 empty
+  caveDirt(0) + caveTop(false, false),                  // 1 crust
+  caveDirt(0),                                          // 2 rock A
+  caveDirt(1),                                          // 3 rock B
+  caveDirt(1) + caveTop(true, false),                   // 4 crust, left end
+  caveDirt(0) + caveTop(false, true),                   // 5 crust, right end
+  caveDirt(1) + `<rect x="0" y="22" width="32" height="10" fill="#1e0c02" opacity="0.6"/>
+    <path d="M4 32 L7 25 L10 32 Z M17 32 L20 23 L23 32 Z M27 32 L29 27 L31 32 Z" fill="${K.rockDark}" stroke="${K.mortar}" stroke-width="1"/>`, // 6 ceiling underside
+  `<rect x="0" y="2" width="32" height="11" rx="3" fill="url(#log)" stroke="#4a2608" stroke-width="1.5"/>
+    <line x1="3" y1="7.5" x2="29" y2="7.5" stroke="#5a3010" stroke-width="1"/><circle cx="4" cy="5" r="1.2" fill="#3a1a06"/><circle cx="28" cy="5" r="1.2" fill="#3a1a06"/>`, // 7 wooden plank (one-way)
+  `<rect x="1" y="1" width="30" height="30" rx="4" fill="url(#crk)" stroke="#3a1806" stroke-width="2"/>
+    <path d="M8 3 L13 12 L9 18 L15 29 M24 4 L20 13 L26 19" stroke="#3a1806" stroke-width="1.6" fill="none"/>
+    <path d="M5 6 L10 5" stroke="#fff0d0" stroke-width="1.5" opacity="0.7"/>`, // 8 cracked block (breakable)
+  `<path d="M0 32 L4 16 L8 32 L12 16 L16 32 L20 16 L24 32 L28 16 L32 32 Z" fill="url(#crk)" stroke="#3a1806" stroke-width="1.5"/>
+    <path d="M3 22 L4 17 M11 22 L12 17 M19 22 L20 17 M27 22 L28 17" stroke="#fff" stroke-width="1" opacity="0.8"/>`, // 9 spikes (stalagmite points)
+  caveDirt(0) + caveTop(true, true),                    // 10 crust, single column
+];
+save("spr_tiles_cave", 32 * caveTiles.length, 32,
+  caveTiles.map((t, i) => `<g transform="translate(${i * 32},0)" clip-path="url(#cell)">${t}</g>`).join(""),
+  stoneGrad + caveGrad + `<clipPath id="cell"><rect x="0" y="0" width="32" height="32"/></clipPath>`);
+
+// Decorations: stalactites hang under ceilings (instead of vines), crystals glow on the floor.
+save("spr_stalactite", 20, 36,
+  `<path d="M1 0 L19 0 L13 14 L11 34 L8 16 Z" fill="url(#cst)" stroke="${K.mortar}" stroke-width="1.5" stroke-linejoin="round"/>
+   <path d="M6 2 L9 14" stroke="${K.rockLight}" stroke-width="1.4" opacity="0.8"/>
+   <circle cx="11" cy="35" r="1.3" fill="#9adcff" opacity="0.9"/>`, caveGrad);
+save("spr_crystal", 24, 24,
+  `<path d="M4 24 L6 12 L9 8 L12 24 Z" fill="#ffb24a" stroke="#6a2a06" stroke-width="1.3"/>
+   <path d="M9 24 L11 6 L14 1 L17 7 L17 24 Z" fill="#ffd27a" stroke="#6a2a06" stroke-width="1.3"/>
+   <path d="M15 24 L18 12 L21 15 L21 24 Z" fill="#f08a2a" stroke="#6a2a06" stroke-width="1.3"/>
+   <path d="M12 8 L13 18" stroke="#fffbe0" stroke-width="1.6" opacity="0.9"/>`);
+
+// Cave parallax (same slots as the jungle's mountains, clouds and hills).
+let cfar = "";
+for (let i = 0; i < 18; i++) {
+  const x = i * 57 + ((i * 31) % 20);
+  const h = 60 + ((i * 47) % 90);
+  cfar += `<path d="M${x - 22} 260 L${x - 6} ${260 - h} L${x + 6} ${260 - h + 8} L${x + 22} 260 Z" fill="#5a2c12"/>`;
+}
+save("spr_bg_cave_far", 1024, 260, `<rect y="150" width="1024" height="110" fill="#4a2410"/>` + cfar +
+  `<path d="${ridge(1024, 260, 170, [20, 10], [3, 8], 0.9)}" fill="#3a1a08"/>`);
+let ctop = "";
+for (let i = 0; i < 26; i++) {
+  const x = i * 40 + ((i * 17) % 14);
+  const h = 30 + ((i * 53) % 70);
+  ctop += `<path d="M${x - 14} 0 L${x + 14} 0 L${x + 3} ${h} L${x} ${h + 6} L${x - 3} ${h} Z" fill="${i % 2 ? "#6a3414" : "#7e4018"}" stroke="#3a1806" stroke-width="2"/>`;
+}
+save("spr_bg_cave_top", 1024, 130, `<rect width="1024" height="14" fill="#3a1806"/>` + ctop);
+let cnear = "";
+for (let i = 0; i < 9; i++) {
+  const x = i * 114 + 40 + ((i * 29) % 30);
+  const w = 26 + (i % 3) * 8;
+  const top = 40 + ((i * 41) % 50);
+  cnear += `<path d="M${x - w / 2} 200 L${x - 3} ${top} L${x + 3} ${top} L${x + w / 2} 200 Z" fill="#8a4418"/>
+    <path d="M${x - w / 2 + 6} 196 L${x - 2} ${top + 14}" stroke="#c26a2a" stroke-width="3" opacity="0.7"/>`;
+}
+save("spr_bg_cave_near", 1024, 200, cnear +
+  `<path d="${ridge(1024, 200, 150, [20, 9], [2, 6], 1.3)}" fill="#a0521c"/>
+   <path d="${ridge(1024, 200, 172, [14, 6], [3, 9], 2.4)}" fill="#6e3410"/>`);
+
+// ---------- The bat (hangs under the ceiling, then swoops) ----------
+function bat(frame) {
+  const body = `<ellipse cx="20" cy="15" rx="7" ry="8" fill="#6a4058" stroke="#2a1020" stroke-width="1.6"/>
+    <path d="M14 9 L13 2 L17 7 Z M26 9 L27 2 L23 7 Z" fill="#6a4058" stroke="#2a1020" stroke-width="1.3" stroke-linejoin="round"/>
+    <circle cx="17.5" cy="13" r="2" fill="#ffb02a"/><circle cx="22.5" cy="13" r="2" fill="#ffb02a"/>
+    <circle cx="17.8" cy="13.2" r="0.8" fill="#2a1020"/><circle cx="22.8" cy="13.2" r="0.8" fill="#2a1020"/>
+    <path d="M18 18 L19 20.5 L20 18 M20 18 L21 20.5 L22 18" stroke="#fff" stroke-width="0.9" fill="#fff"/>`;
+  if (frame === 0) {
+    // Hanging upside down, wrapped in its wings, feet hooked on the rock above.
+    return `<g transform="rotate(180 20 15)">${body}</g>
+      <path d="M12 6 Q8 18 14 26 Q20 30 26 26 Q32 18 28 6 Q20 10 12 6 Z" fill="#4e2c40" stroke="#2a1020" stroke-width="1.5"/>
+      <path d="M17 1 L17 5 M23 1 L23 5" stroke="#2a1020" stroke-width="1.6"/>
+      <circle cx="17" cy="21" r="2" fill="#ffb02a"/><circle cx="23" cy="21" r="2" fill="#ffb02a"/>
+      <circle cx="17" cy="21.3" r="0.8" fill="#2a1020"/><circle cx="23" cy="21.3" r="0.8" fill="#2a1020"/>`;
+  }
+  const wy = frame === 1 ? -8 : 10;   // wings up, then down
+  const wing = (s) => `<path d="M${20 + s * 5} 13 Q${20 + s * 12} ${8 + wy} ${20 + s * 19} ${10 + wy * 0.6} Q${20 + s * 16} ${16 + wy * 0.4} ${20 + s * 14} ${18 + wy * 0.3} Q${20 + s * 10} ${17} ${20 + s * 6} 18 Z" fill="#4e2c40" stroke="#2a1020" stroke-width="1.5" stroke-linejoin="round"/>`;
+  return wing(-1) + wing(1) + body;
+}
+for (let f = 0; f < 3; f++) save("bat_" + f, 40, 32, bat(f));
+
+// ---------- The mole boss: a burly digger in a miner's helmet ----------
+const moleDefs = `<radialGradient id="mf" cx="0.4" cy="0.35" r="0.7"><stop offset="0" stop-color="#9a6a48"/><stop offset="1" stop-color="${K.furDark}"/></radialGradient>`;
+const helmet = (x, y, rot = 0) => `<g transform="rotate(${rot} ${x} ${y})">
+    <path d="M${x - 20} ${y + 4} Q${x - 18} ${y - 18} ${x} ${y - 19} Q${x + 18} ${y - 18} ${x + 20} ${y + 4} Z" fill="#f0a020" stroke="${K.furLine}" stroke-width="2.4"/>
+    <rect x="${x - 24}" y="${y + 1}" width="48" height="6" rx="3" fill="#d88410" stroke="${K.furLine}" stroke-width="2"/>
+    <circle cx="${x + 10}" cy="${y - 7}" r="6" fill="#fff6a0" stroke="${K.furLine}" stroke-width="2"/>
+    <path d="M${x - 10} ${y - 13} Q${x - 4} ${y - 16} ${x + 2} ${y - 15}" stroke="#ffe08a" stroke-width="2" fill="none"/></g>`;
+const paw = (x, y, rot = 0) => `<g transform="rotate(${rot} ${x} ${y})">
+    <ellipse cx="${x}" cy="${y}" rx="11" ry="8" fill="${K.pink}" stroke="${K.furLine}" stroke-width="2"/>
+    <path d="M${x + 6} ${y - 5} l7 -2 M${x + 8} ${y} l8 0 M${x + 6} ${y + 5} l7 2" stroke="#fff4e8" stroke-width="2.6" stroke-linecap="round"/></g>`;
+const moleEyes = (x, y, dizzy) => dizzy
+  ? `<path d="M${x - 3} ${y} a3 3 0 1 1 3 3 a2 2 0 1 1 -2 -2" stroke="${K.furLine}" stroke-width="1.6" fill="none"/>
+     <path d="M${x + 9} ${y} a3 3 0 1 1 3 3 a2 2 0 1 1 -2 -2" stroke="${K.furLine}" stroke-width="1.6" fill="none"/>`
+  : `<circle cx="${x}" cy="${y}" r="2.6" fill="#120804"/><circle cx="${x + 11}" cy="${y}" r="2.6" fill="#120804"/>
+     <circle cx="${x + 0.8}" cy="${y - 0.9}" r="0.9" fill="#fff"/><circle cx="${x + 11.8}" cy="${y - 0.9}" r="0.9" fill="#fff"/>
+     <path d="M${x - 4} ${y - 6} L${x + 3} ${y - 3} M${x + 15} ${y - 6} L${x + 8} ${y - 3}" stroke="${K.furLine}" stroke-width="2.2" stroke-linecap="round"/>`;
+const snout = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="12" ry="8" fill="${K.pink}" stroke="${K.furLine}" stroke-width="2"/>
+    <circle cx="${x + 9}" cy="${y - 1}" r="5" fill="${K.pinkDark}" stroke="${K.furLine}" stroke-width="1.8"/>
+    <path d="M${x - 4} ${y + 2} l-14 -3 M${x - 4} ${y + 4} l-14 3 M${x + 3} ${y + 5} q3 4 8 0" stroke="${K.furLine}" stroke-width="1.3" fill="none"/>`;
+function mole(f) {
+  const dizzy = f === 5;
+  if (f === 2) {
+    // Curled up into a ball for the roll (it spins in the game).
+    return `<circle cx="56" cy="54" r="26" fill="url(#mf)" stroke="${K.furLine}" stroke-width="3"/>
+      <path d="M38 54 Q44 36 60 38 Q74 42 70 56 Q66 66 54 62" stroke="${K.furLine}" stroke-width="2.2" fill="none"/>
+      ${paw(70, 68, 30)}${paw(40, 72, 150)}${helmet(60, 34, 20)}`;
+  }
+  const squash = f === 4;
+  const leap = f === 3;
+  const by = squash ? 60 : leap ? 46 : 52;
+  const ry = squash ? 20 : leap ? 28 : 26;
+  const rx = squash ? 40 : 34;
+  const step = f === 1 ? 5 : f === 0 ? -5 : 0;
+  const feet = leap
+    ? `<ellipse cx="40" cy="78" rx="8" ry="5" fill="${K.pink}" stroke="${K.furLine}" stroke-width="2"/><ellipse cx="60" cy="79" rx="8" ry="5" fill="${K.pink}" stroke="${K.furLine}" stroke-width="2"/>`
+    : `<ellipse cx="${36 + step}" cy="79" rx="9" ry="5" fill="${K.pink}" stroke="${K.furLine}" stroke-width="2"/><ellipse cx="${62 - step}" cy="79" rx="9" ry="5" fill="${K.pink}" stroke="${K.furLine}" stroke-width="2"/>`;
+  const paws = leap ? paw(72, 12, -60) + paw(92, 18, -40)
+    : squash ? paw(96, 74, 10) + paw(22, 74, 170)
+    : paw(88, 66 + step * 0.4, 0) + paw(26, 70 - step * 0.4, 180);
+  const dust = squash ? `<g fill="#e8c8a0" opacity="0.85"><circle cx="8" cy="78" r="6"/><circle cx="18" cy="74" r="5"/><circle cx="104" cy="78" r="6"/><circle cx="94" cy="73" r="5"/></g>` : "";
+  const stars = dizzy ? `<path d="M40 14 l2 5 5 1 -4 3 1 5 -4 -3 -4 3 1 -5 -4 -3 5 -1 Z M80 8 l2 5 5 1 -4 3 1 5 -4 -3 -4 3 1 -5 -4 -3 5 -1 Z" fill="#ffe04a" stroke="${K.furLine}" stroke-width="1"/>` : "";
+  return `${dust}${feet}
+    <path d="M${56 - rx} ${by + 6} q-8 2 -10 -4" stroke="${K.furLine}" stroke-width="3" fill="none"/>
+    <ellipse cx="54" cy="${by}" rx="${rx}" ry="${ry}" fill="url(#mf)" stroke="${K.furLine}" stroke-width="3"/>
+    <ellipse cx="60" cy="${by + 8}" rx="${rx * 0.5}" ry="${ry * 0.55}" fill="#c89a78"/>
+    ${moleEyes(72, by - 10, dizzy)}${snout(88, by - 2)}${helmet(70, by - ry + 6, 6)}${paws}${stars}`;
+}
+for (let f = 0; f < 6; f++) save("mole_" + f, 112, 84, mole(f), moleDefs);
+
+// ---------- Cave hazards: a falling rock and the mole's ground shockwave ----------
+save("spr_rock", 24, 24,
+  `<path d="M4 9 L9 3 L17 2 L22 8 L21 17 L14 22 L6 20 L2 14 Z" fill="url(#cst)" stroke="${K.mortar}" stroke-width="1.8" stroke-linejoin="round"/>
+   <path d="M7 8 L11 5 M15 12 L18 16" stroke="${K.rockLight}" stroke-width="1.5"/>`, caveGrad);
+save("spr_shockwave", 48, 26,
+  `<path d="M2 26 Q8 4 24 2 Q40 4 46 26 Z" fill="#e8b878" opacity="0.85" stroke="#7a3a14" stroke-width="2"/>
+   <path d="M10 26 Q14 12 24 10 Q34 12 38 26" fill="#fff0d0" opacity="0.7"/>
+   <circle cx="8" cy="20" r="2" fill="#7a3a14"/><circle cx="40" cy="18" r="2.4" fill="#7a3a14"/><circle cx="24" cy="6" r="1.8" fill="#7a3a14"/>`);
+
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

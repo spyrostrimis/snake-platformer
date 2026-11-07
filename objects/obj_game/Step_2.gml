@@ -31,9 +31,13 @@ if (_playing)
         }
         _p.cam_x = clamp(_p.cam_x, 0, lvl_w * TILE - _vw);
         _p.cam_y = clamp(_p.cam_y, 0, lvl_h * TILE - _vh);
-        camera_set_view_pos(view_camera[_view], round(_p.cam_x), round(_p.cam_y));
+        // An earthquake shakes the view (the camera's own position stays put).
+        var _sx = (shake_t > 0) ? irandom_range(-5, 5) : 0;
+        var _sy = (shake_t > 0) ? irandom_range(-4, 4) : 0;
+        camera_set_view_pos(view_camera[_view], round(_p.cam_x) + _sx, round(_p.cam_y) + _sy);
     }
     cam_snap = false;
+    if (shake_t > 0 && state == "play") shake_t--;
 }
 else
 {

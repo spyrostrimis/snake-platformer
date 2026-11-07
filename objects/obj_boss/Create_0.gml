@@ -63,6 +63,10 @@ shoot = function(_spr, _x, _y, _vx, _vy, _grav)
 /// bristling fur). Bosses override it; by default a stomp always counts.
 spiky_back = function() { return false; };
 
+/// The angle to draw the sprite at (the mole spins while it rolls). It may only use what
+/// online play shares (x, y, facing, image_index), so both PCs agree.
+draw_angle = function() { return 0; };
+
 /// Faces the nearest snake; returns the horizontal distance to it.
 face_player = function()
 {

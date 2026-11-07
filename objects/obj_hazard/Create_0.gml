@@ -4,6 +4,7 @@ vy = 0;
 grav = 0;
 life = 360;
 sway = false;
+spin = true;            // tumbles as it flies (the mole's shockwave sets this false)
 image_speed = 0;
 image_angle = random(360);
 t = random(10);
