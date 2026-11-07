@@ -226,7 +226,8 @@ function sling_fly()
     var _done = false;
     with (obj_enemy)
     {
-        if (_done || abs(x - _me.x) >= hw + _me.hw + 4 || abs(y - _me.y) >= hh + _me.hh + 4) continue;
+        // (A little mole under the ground is only a mound: the arrow flies over it.)
+        if (_done || is_harmless() || abs(x - _me.x) >= hw + _me.hw + 4 || abs(y - _me.y) >= hh + _me.hh + 4) continue;
         if (object_is_ancestor(object_index, obj_boss))
         {
             if (active && hurt_t == 0) _g.say("DOUBLE HIT!", 90);
@@ -237,9 +238,13 @@ function sling_fly()
         }
         else kill(2, _me);
     }
-    with (obj_hazard) if (point_distance(x, y, _me.x, _me.y) < 20)
+    with (obj_hazard)
     {
-        _g.burst(x, y, c_white, 6);
+        // A projectile is swatted away and a rolling boulder bursts into gravel; a poison
+        // puddle stays where it is.
+        if (!touches(_me) || sprite_index == spr_puddle) continue;
+        if (sprite_index == spr_boulder) part_particles_create(_g.ps, x, y, _g.pt_rock, 12);
+        else _g.burst(x, y, c_white, 6);
         if (_g.net_mode == "client") { _g.net_gone[$ string(net_id)] = true; _g.net_event({ t: "hazard", i: net_id }); }
         instance_destroy();
     }
