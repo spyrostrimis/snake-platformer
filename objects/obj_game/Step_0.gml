@@ -24,6 +24,14 @@ if (keyboard_check_pressed(ord("M")))
     else if (state == "title" || state == "credits") play_music("music_02.ogg");
 }
 
+// Secret code: typing JJNXT during a level skips straight to the next one.
+if (string_length(keyboard_string) > 20) keyboard_string = string_copy(keyboard_string, string_length(keyboard_string) - 9, 10);
+if (string_pos("jjnxt", string_lower(keyboard_string)) > 0)
+{
+    keyboard_string = "";
+    if (state == "play" || state == "paused" || state == "clear") skip_level();
+}
+
 switch (state)
 {
     case "title":
@@ -36,19 +44,6 @@ switch (state)
             var _step = (keyboard_check_pressed(vk_left) || keyboard_check_pressed(ord("A"))) ? -1 : 1;
             character = (character + _step + array_length(snakes)) mod array_length(snakes);
             play_sfx(sfx.select);
-        }
-        else
-        {
-            // Level select: number keys 1, 2, ... start a new game at that level.
-            for (var _i = 0; _i < min(array_length(levels), 9); _i++)
-            {
-                if (keyboard_check_pressed(ord(string(_i + 1))) || keyboard_check_pressed(vk_numpad1 + _i))
-                {
-                    play_sfx(sfx.select);
-                    new_game(_i);
-                    break;
-                }
-            }
         }
         break;
 
@@ -64,12 +59,18 @@ switch (state)
             state = "paused";
             audio_pause_all();
         }
-        else if (keyboard_check_pressed(ord("N"))) skip_level();
+        // F1: back to the last checkpoint. F2: start the level over.
+        else if (keyboard_check_pressed(vk_f1))
+        {
+            respawn_at_checkpoint();
+            messages = [];
+            say("BACK TO THE CHECKPOINT", 90);
+        }
+        else if (keyboard_check_pressed(vk_f2)) start_level();
         break;
 
     case "paused":
-        if (keyboard_check_pressed(ord("N"))) skip_level();
-        else if (keyboard_check_pressed(ord("P")) || keyboard_check_pressed(vk_escape) || _enter)
+        if (keyboard_check_pressed(ord("P")) || keyboard_check_pressed(vk_escape) || _enter)
         {
             state = "play";
             audio_resume_all();

@@ -69,6 +69,8 @@ function sfx_init()
         charge:  sfx_sweep(120, 420, "saw", 0.35, 0.14),
         throw_:  sfx_sweep(700, 350, "triangle", 0.12, 0.25),
         flap:    sfx_sweep(200, 120, "noise", 0.15, 0.18),
+        hiss:    sfx_sweep(0, 0, "noise", 0.45, 0.12),
+        growl:   sfx_sweep(95, 60, "saw", 0.35, 0.22),
         boss_win: sfx_notes([523, 659, 784, 1047, 784, 1047, 1319], "pulse", 0.9, 0.15),
         flag:    sfx_notes([659, 784, 1047], "square", 0.3, 0.12),
         door:    sfx_notes([392, 523, 659, 784, 1047], "pulse", 0.7, 0.15),

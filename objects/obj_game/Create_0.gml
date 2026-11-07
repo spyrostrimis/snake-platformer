@@ -208,6 +208,7 @@ load_level = function(_i, _with_player)
         var _lay = layer_create(_defs[_k][1], _defs[_k][0]);
         var _bg = layer_background_create(_lay, _defs[_k][2]);
         layer_background_htiled(_bg, true);
+        layer_background_blend(_bg, lvl.bg_tint);   // darker scenery for the deep jungle
         bg_layers[$ _defs[_k][0]] = _lay;
         array_push(layers_made, _lay);
     }
@@ -234,7 +235,7 @@ load_level = function(_i, _with_player)
                 else if (_roll == 1) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_mushroom);
                 else if (_roll == 2 && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 6, spr_bush);
             }
-            if (_here == T_SOLID && _y < lvl_h - 1 && grid[_x][_y + 1] == T_EMPTY && irandom(3) == 0) layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, spr_vine);
+            if (_here == T_SOLID && _y < lvl_h - 1 && grid[_x][_y + 1] == T_EMPTY && irandom(lvl.vine_odds) == 0) layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, spr_vine);
         }
     }
     randomise();
@@ -263,7 +264,9 @@ load_level = function(_i, _with_player)
             case "egg":    instance_create_layer(_px, _py, "Instances", obj_egg); break;
             case "boss_mouse":
             case "boss_hen":
-                boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", (_s.kind == "boss_mouse") ? obj_boss_mouse : obj_boss_hen);
+            case "boss_cat":
+                var _boss_obj = (_s.kind == "boss_mouse") ? obj_boss_mouse : ((_s.kind == "boss_hen") ? obj_boss_hen : obj_boss_cat);
+                boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
                 boss.arena_x2 = lvl.arena[1] * TILE;
                 break;
@@ -405,6 +408,13 @@ player_died = function()
         return;
     }
     hearts = 5;
+    respawn_at_checkpoint();
+    say("OUCH! " + string(lives) + " LIVES LEFT", 120);
+};
+
+/// Puts the snake back at the last checkpoint (used after a lost life, and by F1).
+respawn_at_checkpoint = function()
+{
     // A boss goes back to sleep (keeping its damage) until the snake returns.
     if (instance_exists(boss))
     {
@@ -420,9 +430,9 @@ player_died = function()
         vy = 0;
         invuln = 120;
         ball = false;
+        boost_t = 0;
         reset_body();
     }
-    say("OUCH! " + string(lives) + " LIVES LEFT", 120);
 };
 
 /// A boss has noticed the snake: its own music and a warning.
