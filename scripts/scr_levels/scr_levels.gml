@@ -7,10 +7,11 @@ function lvl_create(_name, _w, _h, _music, _sky_top, _sky_bottom)
     for (var _x = 0; _x < _w; _x++) _grid[_x] = array_create(_h, T_EMPTY);
     // bg_tint colours the parallax scenery; vine_odds: a vine under 1 in (vine_odds + 1) ledge tiles.
     // tileset, bg (far / top / near parallax pictures), cloud_drift and deco ("jungle" or "cave")
-    // let a level look completely different, like the cavern.
+    // let a level look completely different, like the cavern. mushrooms: false leaves them out;
+    // dark (0 to 1) lays a shadow over the view, lit by torches, crystals and the snakes.
     return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0],
              bg_tint: c_white, vine_odds: 3, tileset: ts_jungle, bg: [spr_bg_mountains, spr_bg_clouds, spr_bg_hills],
-             cloud_drift: 1, deco: "jungle" };
+             cloud_drift: 1, deco: "jungle", mushrooms: true, dark: 0 };
 }
 
 function lvl_rect(_l, _x1, _y1, _x2, _y2, _t)
@@ -355,7 +356,112 @@ function level_emberstone()
     return L;
 }
 
+/// Level 5: deeper in the caverns, where it's dark. Torches on the walls light the way.
+/// Tunnels send boulders rolling from right to left (they roll on until they drop into the
+/// next pit), mole holes keep sending out little moles and cracks in the roof keep sending
+/// out bats. No mushrooms down here. Hissandra the cobra waits at the end.
+/// Reach: every step is within a jump (4 tiles; ledges here are at most 3 up), every pit is
+/// 3 wide with the same floor height on both sides, and the low tunnel has floor on both ends.
+function level_shadowrock()
+{
+    var L = lvl_create("SHADOWROCK HOLLOW", 172, 15, "music_03.ogg", make_colour_rgb(12, 5, 4), make_colour_rgb(84, 36, 14));
+    L.tileset = ts_cave;
+    L.bg = [spr_bg_cave_far, spr_bg_cave_top, spr_bg_cave_near];
+    L.bg_tint = make_colour_rgb(140, 100, 90);
+    L.cloud_drift = 0;
+    L.deco = "cave";
+    L.vine_odds = 1;
+    L.mushrooms = false;
+    L.dark = 0.6;
+
+    // The cave roof over the whole level (rows 0-1).
+    lvl_rect(L, 0, 0, 171, 1, T_SOLID);
+
+    // ---- The way in: the first mole hole ----
+    lvl_ground(L, 0, 21, 11);
+    lvl_put(L, "start", 3, 10);
+    lvl_put(L, "torch", 2, 7);
+    lvl_gems(L, 6, 9, 9);
+    lvl_put(L, "torch", 10, 7);
+    lvl_put(L, "letter", 12, 10);
+    lvl_put(L, "mole_hole", 16, 10);
+    lvl_put(L, "torch", 19, 7);
+
+    // ---- Boulder run 1: they roll out of the tunnel at 45 and drop into the pit at 22-24.
+    //      Two planks overhead to wait on while one rolls by. ----
+    lvl_ground(L, 25, 64, 11);
+    lvl_put(L, "torch", 27, 6);
+    lvl_rect(L, 30, 8, 33, 8, T_ONEWAY);
+    lvl_put(L, "letter", 31, 7);
+    lvl_put(L, "bat_crack", 35, 2);
+    lvl_rect(L, 38, 8, 41, 8, T_ONEWAY);
+    lvl_put(L, "gem", 39, 7);
+    lvl_put(L, "gem", 40, 7);
+    lvl_put(L, "torch", 43, 6);
+    lvl_put(L, "boulders", 45, 10);
+
+    // ---- The mole field: two holes and a rock to hop over ----
+    lvl_put(L, "torch", 49, 6);
+    lvl_put(L, "mole_hole", 51, 10);
+    lvl_rect(L, 54, 9, 56, 10, T_SOLID);
+    lvl_put(L, "letter", 55, 8);
+    lvl_put(L, "mole_hole", 59, 10);
+    lvl_put(L, "torch", 58, 6);
+    lvl_put(L, "flag", 62, 10);
+    lvl_put(L, "super_egg", 63, 10);    // two players only
+
+    // ---- Boulder run 2: out of the tunnel at 95, along the high floor, off the step at 80
+    //      and on into the pit at 65-67 ----
+    lvl_ground(L, 68, 79, 11);
+    lvl_put(L, "torch", 70, 7);
+    lvl_put(L, "egg", 71, 10);
+    lvl_put(L, "letter", 74, 10);
+    lvl_put(L, "bat_crack", 76, 2);
+    lvl_ground(L, 80, 108, 9);
+    lvl_rect(L, 84, 6, 87, 6, T_ONEWAY);
+    lvl_put(L, "letter", 85, 5);
+    lvl_put(L, "torch", 89, 4);
+    lvl_put(L, "bat_crack", 91, 2);
+    lvl_put(L, "torch", 93, 5);
+    lvl_put(L, "boulders", 95, 8);
+
+    // ---- A low crawl through the rock (one tile high), lit only by the snake ----
+    lvl_rect(L, 98, 0, 107, 7, T_SOLID);
+    lvl_gems(L, 99, 101, 8);
+    lvl_put(L, "letter", 104, 8);
+    lvl_gems(L, 105, 106, 8);
+
+    // ---- Boulder run 3: out of the tunnel at 128, into the pit at 112-114, over thorns ----
+    lvl_ground(L, 109, 111, 11);        // two tiles down from the crawl: a jump back up
+    lvl_ground(L, 115, 171, 11);
+    lvl_put(L, "torch", 110, 7);
+    lvl_put(L, "letter", 117, 10);
+    lvl_rect(L, 120, 10, 121, 10, T_SPIKES);
+    lvl_put(L, "bat_crack", 121, 2);
+    lvl_put(L, "mole_hole", 124, 10);
+    lvl_put(L, "torch", 123, 6);
+    lvl_put(L, "letter", 126, 10);
+    lvl_put(L, "boulders", 128, 10);
+    lvl_put(L, "flag", 131, 10);
+    lvl_put(L, "egg", 132, 10);
+
+    // ---- Hissandra's lair: two planks to wait on while her tail and venom land ----
+    L.arena = [134, 162];
+    lvl_put(L, "torch", 136, 5);
+    lvl_rect(L, 138, 8, 141, 8, T_ONEWAY);
+    lvl_put(L, "letter", 139, 7);
+    lvl_put(L, "torch", 145, 5);
+    lvl_rect(L, 148, 8, 151, 8, T_ONEWAY);
+    lvl_put(L, "letter", 149, 7);
+    lvl_put(L, "torch", 154, 5);
+    lvl_put(L, "boss_cobra", 157, 10);
+    lvl_put(L, "torch", 163, 6);
+    lvl_put(L, "door", 167, 10);
+    lvl_put(L, "torch", 170, 7);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock];
 }

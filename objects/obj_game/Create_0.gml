@@ -133,6 +133,7 @@ cam_x = 0;              // the single view's camera (title screen, game over...)
 cam_y = 0;
 cam_snap = false;       // true: cameras jump straight to their snakes (a new level)
 shake_t = 0;            // frames of camera shake left (the mole's earthquake)
+lights = [];            // dark levels: { x, y, r (size), torch } for the torches and crystals
 title_pan = 0;
 
 /// Shakes every camera for _frames frames; online the host passes it on.
@@ -241,6 +242,11 @@ clear_level = function()
     with (obj_door) instance_destroy();
     with (obj_flag) instance_destroy();
     with (obj_sky) instance_destroy();
+    with (obj_rockfall) instance_destroy();
+    with (obj_nest) instance_destroy();
+    with (obj_boulder_drop) instance_destroy();
+    with (obj_darkness) instance_destroy();
+    lights = [];
     for (var _i = 0; _i < array_length(layers_made); _i++) layer_destroy(layers_made[_i]);
     layers_made = [];
     part_particles_clear(ps);
@@ -306,6 +312,14 @@ load_level = function(_i, _with_player)
         array_push(layers_made, _lay);
     }
 
+    // A dark level: a shadow over the view, with light around torches, crystals and snakes.
+    if (lvl.dark > 0)
+    {
+        var _dark_layer = layer_create(-900, "Dark");
+        array_push(layers_made, _dark_layer);
+        instance_create_layer(0, 0, _dark_layer, obj_darkness);
+    }
+
     // The level's tiles, in a real GameMaker tilemap.
     var _tile_layer = layer_create(100, "Tiles");
     array_push(layers_made, _tile_layer);
@@ -314,6 +328,7 @@ load_level = function(_i, _with_player)
 
     // Plants on the grass and vines under the ledges, as sprites on an asset layer.
     // In the cavern: glowing crystals and mushrooms on the floor, stalactites under the rock.
+    // (The dark hollow has no mushrooms; its crystals give off a little light.)
     var _cave = lvl.deco == "cave";
     var _deco = layer_create(95, "Deco");
     array_push(layers_made, _deco);
@@ -326,8 +341,12 @@ load_level = function(_i, _with_player)
             if (_here == T_SOLID && grid[_x][_y - 1] == T_EMPTY)
             {
                 var _roll = irandom(9);
-                if (_roll == 0) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, _cave ? spr_crystal : spr_flower);
-                else if (_roll == 1) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_mushroom);
+                if (_roll == 0)
+                {
+                    layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, _cave ? spr_crystal : spr_flower);
+                    if (_cave) array_push(lights, { x: _x * TILE + 16, y: _y * TILE - 6, r: 0.7, torch: false });
+                }
+                else if (_roll == 1 && lvl.mushrooms) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_mushroom);
                 else if (_roll == 2 && !_cave && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 6, spr_bush);
             }
             if (_here == T_SOLID && _y < lvl_h - 1 && grid[_x][_y + 1] == T_EMPTY && irandom(lvl.vine_odds) == 0) layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, _cave ? spr_stalactite : spr_vine);
@@ -362,11 +381,14 @@ load_level = function(_i, _with_player)
             case "boss_hen":
             case "boss_cat":
             case "boss_mole":
+            case "boss_cobra":
                 var _boss_obj = obj_boss_mouse;
                 if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
                 else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
                 else if (_s.kind == "boss_mole") _boss_obj = obj_boss_mole;
+                else if (_s.kind == "boss_cobra") _boss_obj = obj_boss_cobra;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
+                boss.y = _s.ty * TILE + 32 - boss.hh;     // standing on the floor, whatever its size
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
                 boss.arena_x2 = lvl.arena[1] * TILE;
                 _inst = boss;
@@ -376,6 +398,16 @@ load_level = function(_i, _with_player)
             // Cavern: bats hang from the ceiling tile above them; loose rocks hang there too.
             case "bat":    _inst = instance_create_layer(_px, _s.ty * TILE + 16, "Instances", obj_bat); break;
             case "rockfall": instance_create_layer(_px, _s.ty * TILE + 12, "Instances", obj_rockfall); break;
+            // The dark hollow: holes that keep sending out little moles, cracks that keep
+            // sending out bats, tunnels that send boulders rolling, and torches on the walls.
+            case "mole_hole": instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_nest, { kind: "mole" }); break;
+            case "bat_crack": instance_create_layer(_px, _s.ty * TILE, "Instances", obj_nest, { kind: "bat" }); break;
+            case "boulders":  instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_boulder_drop); break;
+            case "torch":
+                var _ts = layer_sprite_create(_deco, _px, _py, spr_torch);
+                layer_sprite_index(_ts, irandom(2));
+                array_push(lights, { x: _px, y: _py - 12, r: 2.3, torch: true });
+                break;
             case "spring": instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_spring); break;
             case "flag":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_flag); break;
             case "door":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_door); break;
@@ -857,6 +889,7 @@ net_apply_event = function(_e)
             break;
 
         case "kill":
+            net_gone[$ string(_e.i)] = true;
             var _en = net_find(obj_enemy, _e.i);
             if (_en != noone)
             {
@@ -966,6 +999,8 @@ net_write_world = function(_b)
         {
             var _boss = object_is_ancestor(object_index, obj_boss);
             buffer_write(_b, buffer_u16, net_id);
+            // Which kind of creature, so the joiner can make ones born during play (nests).
+            buffer_write(_b, buffer_u16, object_index);
             buffer_write(_b, buffer_s16, round(x));
             buffer_write(_b, buffer_s16, round(y));
             buffer_write(_b, buffer_s8, facing);
@@ -1042,6 +1077,7 @@ net_read_world = function(_b)
     repeat (_ne)
     {
         var _id = buffer_read(_b, buffer_u16);
+        var _obj = buffer_read(_b, buffer_u16);
         var _x = buffer_read(_b, buffer_s16);
         var _y = buffer_read(_b, buffer_s16);
         var _f = buffer_read(_b, buffer_s8);
@@ -1050,7 +1086,16 @@ net_read_world = function(_b)
         var _ac = buffer_read(_b, buffer_u8) == 1;
         var _hp = buffer_read(_b, buffer_u8);
         var _en = _map[$ string(_id)];
-        if (is_undefined(_en) || !instance_exists(_en)) continue;
+        if (is_undefined(_en) || !instance_exists(_en))
+        {
+            // A creature born during play (a bat or little mole from a nest): make it here
+            // too, unless this PC already knocked it out.
+            if (variable_struct_exists(net_gone, string(_id)) || !object_exists(_obj) || !object_is_ancestor(_obj, obj_enemy) || object_is_ancestor(_obj, obj_boss)) continue;
+            _en = instance_create_layer(_x, _y, "Instances", _obj);
+            _en.net_id = _id;
+            _en.net_tx = _x;
+            _en.net_ty = _y;
+        }
         with (_en)
         {
             net_tx = _x;

@@ -545,4 +545,156 @@ save("spr_shockwave", 48, 26,
    <path d="M10 26 Q14 12 24 10 Q34 12 38 26" fill="#fff0d0" opacity="0.7"/>
    <circle cx="8" cy="20" r="2" fill="#7a3a14"/><circle cx="40" cy="18" r="2.4" fill="#7a3a14"/><circle cx="24" cy="6" r="1.8" fill="#7a3a14"/>`);
 
+// =====================================================================================
+// ---------- Level 5, the dark hollow: torches, boulders, little moles, the cobra ----------
+// =====================================================================================
+
+// A soft round light (white in the middle, clear at the edge): cuts holes in the darkness.
+save("spr_light", 128, 128, `<circle cx="64" cy="64" r="64" fill="url(#lg)"/>`,
+  `<radialGradient id="lg"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset="0.45" stop-color="#fff" stop-opacity="0.75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`);
+
+// A wall torch: an iron bracket, a wooden stick and a flickering flame (3 frames).
+function torch(f) {
+  const fl = [[0, 0, 1], [-2, 2, 0.92], [2, -1, 1.06]][f];
+  const [dx, dy, k] = fl;
+  const fx = 12 + dx, top = 2 + dy;
+  return `<path d="M5 44 L19 44 L17 50 L7 50 Z" fill="#4a4a52" stroke="#1a1a1e" stroke-width="1.5"/>
+    <path d="M12 44 L12 50" stroke="#1a1a1e" stroke-width="1.2"/>
+    <rect x="9.5" y="22" width="5" height="24" rx="2" fill="#8a5426" stroke="#3a1c08" stroke-width="1.4"/>
+    <path d="M8 21 L16 21 L15 27 L9 27 Z" fill="#c8a070" stroke="#3a1c08" stroke-width="1.3"/>
+    <path d="M${fx} ${top} Q${fx + 8 * k} ${top + 9} ${fx + 6} ${top + 15} Q${fx + 4} ${top + 20} 12 21 Q${fx - 5} ${top + 20} ${fx - 6} ${top + 14} Q${fx - 7 * k} ${top + 8} ${fx} ${top} Z" fill="#ff8a1a" stroke="#a03a06" stroke-width="1.2"/>
+    <path d="M${fx} ${top + 7} Q${fx + 4} ${top + 12} ${fx + 2} ${top + 16} Q12 ${top + 19} ${fx - 2} ${top + 16} Q${fx - 4} ${top + 12} ${fx} ${top + 7} Z" fill="#ffe25a"/>
+    <circle cx="${fx - 1}" cy="${top + 15}" r="2" fill="#fffbe0"/>`;
+}
+for (let f = 0; f < 3; f++) save("torch_" + f, 24, 52, torch(f));
+
+// A rolling boulder (it spins in the game).
+save("spr_boulder", 40, 40,
+  `<circle cx="20" cy="20" r="18" fill="url(#cst)" stroke="${K.mortar}" stroke-width="2.4"/>
+   <path d="M8 14 L15 18 L13 26 M24 6 L22 14 L30 18 M26 28 L31 32" stroke="${K.mortar}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+   <ellipse cx="13" cy="11" rx="5" ry="3" fill="${K.rockLight}" opacity="0.7" transform="rotate(-30 13 11)"/>
+   <circle cx="27" cy="25" r="2.5" fill="${K.rockDark}"/>`, caveGrad);
+
+// The dark tunnel the boulders roll out of.
+save("spr_tunnel_mouth", 80, 76,
+  `<path d="M2 76 L4 40 Q8 6 40 4 Q72 6 76 40 L78 76 Z" fill="${K.rock}" stroke="${K.mortar}" stroke-width="2.5"/>
+   <path d="M12 76 L13 44 Q16 16 40 14 Q64 16 67 44 L68 76 Z" fill="#120602"/>
+   <path d="M18 76 L19 48 Q22 26 40 24 Q58 26 61 48 L62 76 Z" fill="#000"/>
+   <g fill="url(#cst)" stroke="${K.mortar}" stroke-width="1.5"><ellipse cx="10" cy="30" rx="7" ry="6"/><ellipse cx="26" cy="10" rx="8" ry="6"/><ellipse cx="52" cy="9" rx="8" ry="6"/><ellipse cx="70" cy="28" rx="7" ry="6"/><ellipse cx="6" cy="58" rx="5" ry="7"/><ellipse cx="74" cy="58" rx="5" ry="7"/></g>`, caveGrad);
+
+// The little moles: pop out of the ground, scurry about, dig back in (frames: walk A, walk B,
+// popping out, digging in, just the mound).
+const mound = (rx = 16) => `<ellipse cx="20" cy="33" rx="${rx}" ry="5" fill="#7a4420" stroke="${K.furLine}" stroke-width="1.8"/>
+    <ellipse cx="16" cy="31" rx="${rx * 0.4}" ry="2" fill="#a86a3a"/><circle cx="8" cy="33" r="2" fill="#5a3014"/><circle cx="30" cy="32" r="1.8" fill="#5a3014"/>`;
+function kin(f) {
+  if (f === 4) return mound(15) + `<ellipse cx="20" cy="31" rx="6" ry="2" fill="#2a1408"/>`;
+  const smallPaw = (x, y, r) => `<g transform="rotate(${r} ${x} ${y})"><ellipse cx="${x}" cy="${y}" rx="4.5" ry="3.2" fill="${K.pink}" stroke="${K.furLine}" stroke-width="1.3"/>
+      <path d="M${x + 3} ${y - 2} l3 -1 M${x + 3.5} ${y} l3.5 0 M${x + 3} ${y + 2} l3 1" stroke="#fff4e8" stroke-width="1.3" stroke-linecap="round"/></g>`;
+  const face = (by) => `<circle cx="25" cy="${by - 4}" r="1.6" fill="#120804"/><circle cx="25.5" cy="${by - 4.6}" r="0.6" fill="#fff"/>
+      <ellipse cx="32" cy="${by - 1}" rx="5.5" ry="4" fill="${K.pink}" stroke="${K.furLine}" stroke-width="1.3"/>
+      <circle cx="36" cy="${by - 1.5}" r="2.2" fill="${K.pinkDark}"/>
+      <path d="M29 ${by + 1} l-6 -1 M29 ${by + 2.5} l-6 1.5" stroke="${K.furLine}" stroke-width="0.8"/>`;
+  if (f === 2 || f === 3) {
+    // Half out of the ground (2) or half in (3), throwing dirt.
+    const by = f === 2 ? 22 : 27;
+    const dirt = f === 2
+      ? `<g fill="#9a5a2a" stroke="${K.furLine}" stroke-width="0.8"><circle cx="5" cy="18" r="2.4"/><circle cx="36" cy="14" r="2"/><circle cx="10" cy="10" r="1.6"/><circle cx="31" cy="22" r="1.8"/></g>`
+      : `<g fill="#9a5a2a" stroke="${K.furLine}" stroke-width="0.8"><circle cx="4" cy="24" r="2.6"/><circle cx="35" cy="22" r="2.2"/><circle cx="8" cy="16" r="1.8"/></g>`;
+    return `<ellipse cx="20" cy="${by + 6}" rx="12" ry="10" fill="url(#mf)" stroke="${K.furLine}" stroke-width="2"/>
+      ${face(by + 2)}${smallPaw(10, by + 7, 200)}${smallPaw(30, by + 7, -20)}${mound(17)}${dirt}`;
+  }
+  const step = f === 0 ? -2 : 2;
+  return `<ellipse cx="${13 + step}" cy="34" rx="4" ry="2.5" fill="${K.pink}" stroke="${K.furLine}" stroke-width="1.2"/>
+    <ellipse cx="${25 - step}" cy="34" rx="4" ry="2.5" fill="${K.pink}" stroke="${K.furLine}" stroke-width="1.2"/>
+    <path d="M6 27 q-5 1 -5 -3" stroke="${K.furLine}" stroke-width="1.8" fill="none"/>
+    <ellipse cx="19" cy="25" rx="14" ry="9.5" fill="url(#mf)" stroke="${K.furLine}" stroke-width="2"/>
+    <ellipse cx="21" cy="29" rx="7" ry="4" fill="#c89a78"/>
+    ${face(25)}${smallPaw(31, 31 + step * 0.5, 10)}`;
+}
+for (let f = 0; f < 5; f++) save("kin_" + f, 40, 36, kin(f), moleDefs);
+// A mole hole in the floor (where little moles keep coming from) and a crack in the roof (bats).
+save("spr_molehole", 40, 12,
+  `<ellipse cx="20" cy="6" rx="17" ry="5" fill="#7a4420" stroke="${K.furLine}" stroke-width="1.6"/><ellipse cx="20" cy="6" rx="10" ry="3" fill="#1a0a02"/>`);
+save("spr_crevice", 36, 16,
+  `<path d="M0 0 L36 0 L30 4 L24 3 L20 14 L15 4 L8 6 Z" fill="#100602" stroke="${K.mortar}" stroke-width="1.4" stroke-linejoin="round"/>
+   <circle cx="16" cy="5" r="1.2" fill="#ffb02a"/><circle cx="21" cy="5" r="1.2" fill="#ffb02a"/>`);
+
+// ---------- Hissandra, the cobra queen ----------
+// Frames: sway A, sway B (tongue out), tail raised, tail slam, rearing to spit, dizzy.
+// 300 x 152, origin (110, 92): the coil sits on the floor, the tail slams far in front.
+const CB = { scale: "#d8a640", light: "#f6d77e", band: "#5e3208", line: "#241002", belly: "#fff2c0", hood: "#c48a2c", hoodIn: "#f0c060", eye: "#ff3a2a" };
+const cobraDefs = `<radialGradient id="ch" cx="0.4" cy="0.35" r="0.7"><stop offset="0" stop-color="${CB.light}"/><stop offset="1" stop-color="${CB.scale}"/></radialGradient>`;
+const body = (d, w, bands = true) => `
+  <path d="${d}" fill="none" stroke="${CB.line}" stroke-width="${w + 5}" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="${d}" fill="none" stroke="${CB.scale}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>
+  ${bands ? `<path d="${d}" fill="none" stroke="${CB.band}" stroke-width="${w}" stroke-dasharray="5 13" stroke-linejoin="round" opacity="0.85"/>` : ""}
+  <path d="${d}" fill="none" stroke="${CB.light}" stroke-width="${Math.max(2, w * 0.22)}" stroke-linecap="round" opacity="0.75" transform="translate(-1,-3)"/>`;
+const hood = (cx, cy, k = 1) => `
+  <path d="M${cx} ${cy - 28 * k} Q${cx + 26 * k} ${cy - 26 * k} ${cx + 28 * k} ${cy} Q${cx + 26 * k} ${cy + 26 * k} ${cx} ${cy + 32 * k} Q${cx - 26 * k} ${cy + 26 * k} ${cx - 28 * k} ${cy} Q${cx - 26 * k} ${cy - 26 * k} ${cx} ${cy - 28 * k} Z" fill="${CB.hood}" stroke="${CB.line}" stroke-width="3"/>
+  <path d="M${cx} ${cy - 20 * k} Q${cx + 18 * k} ${cy - 18 * k} ${cx + 20 * k} ${cy} Q${cx + 18 * k} ${cy + 18 * k} ${cx} ${cy + 23 * k} Q${cx - 18 * k} ${cy + 18 * k} ${cx - 20 * k} ${cy} Q${cx - 18 * k} ${cy - 18 * k} ${cx} ${cy - 20 * k} Z" fill="${CB.hoodIn}"/>
+  <g fill="none" stroke="${CB.band}" stroke-width="3"><circle cx="${cx - 11 * k}" cy="${cy}" r="${6 * k}"/><circle cx="${cx + 11 * k}" cy="${cy}" r="${6 * k}"/><path d="M${cx - 6 * k} ${cy + 4 * k} Q${cx} ${cy + 9 * k} ${cx + 6 * k} ${cy + 4 * k}"/></g>
+  <circle cx="${cx - 11 * k}" cy="${cy}" r="${2.2 * k}" fill="${CB.band}"/><circle cx="${cx + 11 * k}" cy="${cy}" r="${2.2 * k}" fill="${CB.band}"/>`;
+function cobraHead(cx, cy, o = {}) {
+  const eye = o.dizzy
+    ? `<path d="M${cx + 2} ${cy - 5} a3 3 0 1 1 3 3 a2 2 0 1 1 -2 -2" stroke="${CB.line}" stroke-width="1.6" fill="none"/>`
+    : `<ellipse cx="${cx + 5}" cy="${cy - 5}" rx="4.5" ry="4" fill="${CB.eye}" stroke="${CB.line}" stroke-width="1.5"/>
+       <ellipse cx="${cx + 6}" cy="${cy - 5}" rx="1.1" ry="3.2" fill="#120400"/>
+       <path d="M${cx - 2} ${cy - 11} L${cx + 11} ${cy - 8}" stroke="${CB.line}" stroke-width="2.6" stroke-linecap="round"/>`;
+  const tongue = o.tongue ? `<path d="M${cx + 24} ${cy + 3} l10 0 l5 -4 M${cx + 34} ${cy + 3} l5 4" stroke="#e02040" stroke-width="2" fill="none" stroke-linecap="round"/>` : "";
+  if (o.open) {
+    // Jaws wide open: the venom is coming.
+    return `<path d="M${cx - 18} ${cy + 4} Q${cx} ${cy + 22} ${cx + 22} ${cy + 16} L${cx + 20} ${cy + 10} Q${cx} ${cy + 12} ${cx - 10} ${cy + 2} Z" fill="${CB.belly}" stroke="${CB.line}" stroke-width="2.4"/>
+      <path d="M${cx - 12} ${cy + 2} Q${cx + 4} ${cy + 12} ${cx + 20} ${cy + 10} Q${cx + 12} ${cy + 2} ${cx - 2} ${cy} Z" fill="#c8304a"/>
+      <path d="M${cx - 20} ${cy + 4} Q${cx - 20} ${cy - 12} ${cx} ${cy - 15} Q${cx + 20} ${cy - 16} ${cx + 27} ${cy - 6} Q${cx + 26} ${cy} ${cx + 18} ${cy + 1} Q${cx} ${cy + 1} ${cx - 20} ${cy + 4} Z" fill="url(#ch)" stroke="${CB.line}" stroke-width="2.6"/>
+      <path d="M${cx + 14} ${cy + 1} l2 7 l2 -7 M${cx + 4} ${cy + 1} l1.6 5 l1.6 -5" fill="#fff" stroke="${CB.line}" stroke-width="0.8"/>
+      ${eye}<circle cx="${cx + 22}" cy="${cy - 7}" r="1.3" fill="${CB.line}"/>`;
+  }
+  return `<path d="M${cx - 20} ${cy + 2} Q${cx - 19} ${cy - 13} ${cx} ${cy - 14} Q${cx + 20} ${cy - 13} ${cx + 26} ${cy - 2} Q${cx + 26} ${cy + 5} ${cx + 16} ${cy + 7} L${cx - 14} ${cy + 9} Q${cx - 20} ${cy + 7} ${cx - 20} ${cy + 2} Z" fill="url(#ch)" stroke="${CB.line}" stroke-width="2.6"/>
+    <path d="M${cx - 12} ${cy + 6} Q${cx + 4} ${cy + 3} ${cx + 22} ${cy + 3}" stroke="${CB.line}" stroke-width="1.6" fill="none"/>
+    ${eye}<circle cx="${cx + 21}" cy="${cy - 4}" r="1.3" fill="${CB.line}"/>${tongue}`;
+}
+function cobra(f) {
+  const coil = body("M68 126 Q68 110 110 110 Q152 110 152 126 Q152 140 110 138 Q68 138 68 126", 24) +
+               body("M80 112 Q84 98 110 98 Q136 98 140 110", 22);
+  let tail, neck, head, hd, extra = "";
+  const s = f === 1 ? 4 : f === 0 ? -3 : 0;
+  if (f === 2) {
+    tail = body("M72 122 Q30 112 32 62 Q36 22 78 12", 15) + body("M78 12 Q98 6 108 18", 8, false);
+    extra = `<path d="M18 40 q-8 10 -4 22 M10 30 q-10 14 -6 30" stroke="#fff0c0" stroke-width="2" fill="none" opacity="0.7"/>`;
+    hd = [-8, 0];
+  } else if (f === 3) {
+    tail = body("M146 140 Q190 148 232 142", 15) + body("M232 142 Q262 137 288 142", 8, false);
+    extra = `<g fill="#e8c8a0" opacity="0.9" stroke="#7a3a14" stroke-width="1.2"><circle cx="250" cy="138" r="7"/><circle cx="268" cy="134" r="8"/><circle cx="286" cy="138" r="7"/><circle cx="236" cy="142" r="5"/></g>
+      <path d="M250 122 l-4 -10 M268 118 l0 -12 M286 122 l4 -10" stroke="#fff0c0" stroke-width="2.4" stroke-linecap="round"/>`;
+    hd = [8, 4];
+  } else {
+    tail = body("M72 138 Q52 146 36 141", 15) + body("M36 141 Q22 137 16 126", 8, false);
+    hd = [s, 0];
+  }
+  const [dx, dy] = hd;
+  if (f === 4) {
+    neck = body(`M138 112 Q158 80 132 58 Q114 42 128 22`, 20);
+    return tail + coil + hood(124, 40, 1.22) + neck + cobraHead(144, 12, { open: true }) +
+      `<g fill="#8cff3a" stroke="#1e5a06" stroke-width="1.2"><circle cx="176" cy="22" r="3.5"/><circle cx="186" cy="16" r="2.4"/><circle cx="170" cy="32" r="2"/></g>`;
+  }
+  if (f === 5) {
+    neck = body(`M138 112 Q164 98 156 78 Q148 64 162 60`, 20);
+    return tail + coil + hood(150, 76, 0.85) + neck + cobraHead(172, 64, { dizzy: true }) +
+      `<path d="M140 30 l2 5 5 1 -4 3 1 5 -4 -3 -4 3 1 -5 -4 -3 5 -1 Z M184 22 l2 5 5 1 -4 3 1 5 -4 -3 -4 3 1 -5 -4 -3 5 -1 Z" fill="#ffe04a" stroke="${CB.line}" stroke-width="1"/>`;
+  }
+  neck = body(`M138 112 Q152 86 ${126 + dx} 70 Q${108 + dx} 58 ${120 + dx} ${42 + dy}`, 20);
+  head = cobraHead(132 + dx, 32 + dy, { tongue: f === 1 });
+  return extra + tail + coil + hood(118 + dx, 50 + dy) + neck + head;
+}
+for (let f = 0; f < 6; f++) save("cobra_" + f, 300, 152, cobra(f), cobraDefs);
+
+// Her venom: a glob that flies in an arc, and the puddle it leaves on the floor.
+save("spr_venom", 20, 22,
+  `<path d="M10 2 Q17 9 16.5 14 A6.5 6.5 0 1 1 3.5 14 Q3 9 10 2 Z" fill="#8cff3a" stroke="#1e5a06" stroke-width="1.8"/>
+   <ellipse cx="7.5" cy="13" rx="2" ry="3" fill="#e8ffc0" opacity="0.85"/>`);
+save("spr_puddle", 52, 14,
+  `<path d="M3 10 Q4 4 14 4 Q20 1 28 3 Q40 1 48 6 Q52 10 46 12 L8 12 Q2 12 3 10 Z" fill="#7aea2a" stroke="#1e5a06" stroke-width="1.6"/>
+   <ellipse cx="18" cy="6" rx="6" ry="1.6" fill="#d8ffa0" opacity="0.8"/>
+   <circle cx="34" cy="5" r="2.4" fill="#b8ff6a" stroke="#1e5a06" stroke-width="1"/><circle cx="42" cy="7" r="1.6" fill="#b8ff6a" stroke="#1e5a06" stroke-width="0.8"/>`);
+
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

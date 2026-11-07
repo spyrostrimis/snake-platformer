@@ -15,6 +15,7 @@ music = "music_09.ogg";
 arena_x1 = x - 360;   // how far it may roam (the level sets these)
 arena_x2 = x + 160;
 gravity_pull = 0.45;
+orb_dy = 74;          // how far above its middle the letter bubble floats
 
 /// Each hit takes _dmg health; after the last one the boss bursts and drops its letter.
 kill = function(_dmg = 1, _by = noone)

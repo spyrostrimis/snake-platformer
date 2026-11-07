@@ -171,10 +171,10 @@ if (tongue_t > 0)
     if (tongue_t <= 11)
     {
         // Anything the tongue touches: creatures are knocked out, items are pulled in.
-        with (obj_enemy) if (point_segment_distance(x, y, _mx, _my, _tip, _my) < hh + 4) kill(1, other.id);
+        with (obj_enemy) if (!is_harmless() && point_segment_distance(x, y, _mx, _my, _tip, _my) < hh + 4) kill(1, other.id);
         with (obj_pickup) if (!grabbed && point_segment_distance(x, y, _mx, _my, _tip, _my) < 16) { grabbed = true; grabber = other.id; _g.play_sfx(_g.sfx.slurp); }
-        // The tongue also swats a boss's cheese and feathers out of the air.
-        with (obj_hazard) if (point_segment_distance(x, y, _mx, _my, _tip, _my) < 12)
+        // The tongue also swats a boss's cheese and feathers out of the air (not boulders or puddles).
+        with (obj_hazard) if (!lasts() && point_segment_distance(x, y, _mx, _my, _tip, _my) < 12)
         {
             _g.burst(x, y, c_white, 6);
             if (_g.net_mode == "client") { _g.net_gone[$ string(net_id)] = true; _g.net_event({ t: "hazard", i: net_id }); }
@@ -186,7 +186,8 @@ if (tongue_t > 0)
 // ---------- Creatures ----------
 with (obj_enemy)
 {
-    if (abs(x - other.x) < hw + other.hw && abs(y - other.y) < hh + other.hh)
+    // A little mole under the ground is only a mound: nothing happens.
+    if (!is_harmless() && abs(x - other.x) < hw + other.hw && abs(y - other.y) < hh + other.hh)
     {
         var _is_boss = object_is_ancestor(object_index, obj_boss);
         if (other.boost_t > 0)

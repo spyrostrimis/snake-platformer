@@ -24,6 +24,10 @@ mirror_step = function()
     y = lerp(y, net_ty, 0.4);
 };
 
+/// True while it can't touch or be touched (a little mole under the ground). Only uses what
+/// online play shares (image_index), so both PCs agree.
+is_harmless = function() { return false; };
+
 /// Knocked out by the tongue, a boost or a stomp of snake _by: a puff of stars, points for
 /// that snake and a gem left behind.
 kill = function(_dmg = 1, _by = noone)
@@ -36,6 +40,8 @@ kill = function(_dmg = 1, _by = noone)
         // Online, the host keeps the score; here it goes at once.
         _g.add_popup(x, y - 20, string(points));
         _g.net_event({ t: "hit", i: net_id, d: _dmg });
+        // The host's next world updates may still list it: don't bring it back.
+        _g.net_gone[$ string(net_id)] = true;
         instance_destroy();
         return;
     }
