@@ -16,7 +16,7 @@ var _flick = 1 + sin(_g.frame * 0.21) * 0.04 + sin(_g.frame * 0.53) * 0.03;
 var _ls = sprite_get_width(spr_light) / 2;     // a light of size 1 reaches this far
 
 surface_set_target(surf);
-draw_clear_alpha(make_colour_rgb(10, 4, 16), _g.lvl.dark);
+draw_clear_alpha(_g.lvl.dark_col, _g.lvl.dark);
 // Lights take the shadow away where they are (multiply the shadow by 1 - the light).
 gpu_set_blendmode_ext(bm_zero, bm_inv_src_alpha);
 for (var _i = 0; _i < array_length(_g.lights); _i++)

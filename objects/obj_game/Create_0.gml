@@ -329,7 +329,9 @@ load_level = function(_i, _with_player)
     // Plants on the grass and vines under the ledges, as sprites on an asset layer.
     // In the cavern: glowing crystals and mushrooms on the floor, stalactites under the rock.
     // (The dark hollow has no mushrooms; its crystals give off a little light.)
-    var _cave = lvl.deco == "cave";
+    // The bone pit ("bone"): violet crystals and piles of bones, purple-tinted stalactites.
+    var _bonez = lvl.deco == "bone";
+    var _cave = lvl.deco == "cave" || _bonez;
     var _deco = layer_create(95, "Deco");
     array_push(layers_made, _deco);
     random_set_seed(1000 + _i);
@@ -343,13 +345,18 @@ load_level = function(_i, _with_player)
                 var _roll = irandom(9);
                 if (_roll == 0)
                 {
-                    layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, _cave ? spr_crystal : spr_flower);
+                    layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, _bonez ? spr_crystal_violet : (_cave ? spr_crystal : spr_flower));
                     if (_cave) array_push(lights, { x: _x * TILE + 16, y: _y * TILE - 6, r: 0.7, torch: false });
                 }
+                else if (_roll == 1 && _bonez) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_bones);
                 else if (_roll == 1 && lvl.mushrooms) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_mushroom);
                 else if (_roll == 2 && !_cave && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 6, spr_bush);
             }
-            if (_here == T_SOLID && _y < lvl_h - 1 && grid[_x][_y + 1] == T_EMPTY && irandom(lvl.vine_odds) == 0) layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, _cave ? spr_stalactite : spr_vine);
+            if (_here == T_SOLID && _y < lvl_h - 1 && grid[_x][_y + 1] == T_EMPTY && irandom(lvl.vine_odds) == 0)
+            {
+                var _hang = layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, _cave ? spr_stalactite : spr_vine);
+                if (_bonez) layer_sprite_blend(_hang, make_colour_rgb(190, 140, 200));
+            }
         }
     }
     randomise();
@@ -382,11 +389,13 @@ load_level = function(_i, _with_player)
             case "boss_cat":
             case "boss_mole":
             case "boss_cobra":
+            case "boss_dino":
                 var _boss_obj = obj_boss_mouse;
                 if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
                 else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
                 else if (_s.kind == "boss_mole") _boss_obj = obj_boss_mole;
                 else if (_s.kind == "boss_cobra") _boss_obj = obj_boss_cobra;
+                else if (_s.kind == "boss_dino") _boss_obj = obj_boss_dino;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.y = _s.ty * TILE + 32 - boss.hh;     // standing on the floor, whatever its size
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
@@ -402,6 +411,9 @@ load_level = function(_i, _with_player)
             // sending out bats, tunnels that send boulders rolling, and torches on the walls.
             case "mole_hole": instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_nest, { kind: "mole" }); break;
             case "bat_crack": instance_create_layer(_px, _s.ty * TILE, "Instances", obj_nest, { kind: "bat" }); break;
+            // The bone pit: skeletons with swords (standing on the floor) and skeleton birds.
+            case "skel":     _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 16, "Instances", obj_skel); break;
+            case "bonebird": _inst = instance_create_layer(_px, _py, "Instances", obj_bonebird); break;
             case "boulders":  instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_boulder_drop); break;
             case "torch":
                 var _ts = layer_sprite_create(_deco, _px, _py, spr_torch);

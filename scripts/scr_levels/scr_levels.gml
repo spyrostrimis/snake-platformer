@@ -8,10 +8,11 @@ function lvl_create(_name, _w, _h, _music, _sky_top, _sky_bottom)
     // bg_tint colours the parallax scenery; vine_odds: a vine under 1 in (vine_odds + 1) ledge tiles.
     // tileset, bg (far / top / near parallax pictures), cloud_drift and deco ("jungle" or "cave")
     // let a level look completely different, like the cavern. mushrooms: false leaves them out;
-    // dark (0 to 1) lays a shadow over the view, lit by torches, crystals and the snakes.
+    // dark (0 to 1) lays a shadow of colour dark_col over the view, lit by torches, crystals
+    // and the snakes.
     return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0],
              bg_tint: c_white, vine_odds: 3, tileset: ts_jungle, bg: [spr_bg_mountains, spr_bg_clouds, spr_bg_hills],
-             cloud_drift: 1, deco: "jungle", mushrooms: true, dark: 0 };
+             cloud_drift: 1, deco: "jungle", mushrooms: true, dark: 0, dark_col: make_colour_rgb(10, 4, 16) };
 }
 
 function lvl_rect(_l, _x1, _y1, _x2, _y2, _t)
@@ -461,7 +462,121 @@ function level_shadowrock()
     return L;
 }
 
+/// Level 6: the last stage of the caverns, an ancient bone pit. Dim again, purple-brown.
+/// Little skeletons with swords and skeleton birds: only a boost breaks them (jump over
+/// them or boost into them). Loose rocks in the roof, a low crawl, and at the bottom
+/// Rex Bonejaw, the dinosaur skeleton, who can only be beaten with boosts too.
+/// Reach: every step is 2 tiles, planks at most 3 above their floor, pits 3 wide with the same
+/// floor height on both sides. No skeleton waits in the crawl (Peto can't boost in there).
+function level_bonepit()
+{
+    var L = lvl_create("BONEYARD DEPTHS", 182, 15, "music_06.ogg", make_colour_rgb(16, 6, 18), make_colour_rgb(70, 34, 60));
+    L.tileset = ts_bone;
+    L.bg = [spr_bg_cave_far, spr_bg_cave_top, spr_bg_cave_near];
+    L.bg_tint = make_colour_rgb(150, 105, 150);
+    L.cloud_drift = 0;
+    L.deco = "bone";
+    L.vine_odds = 1;
+    L.mushrooms = false;
+    L.dark = 0.55;
+    L.dark_col = make_colour_rgb(26, 6, 30);
+
+    // The cave roof over the whole level (rows 0-1).
+    lvl_rect(L, 0, 0, 181, 1, T_SOLID);
+
+    // ---- The way down: the first skeleton ----
+    lvl_ground(L, 0, 20, 11);
+    lvl_put(L, "start", 3, 10);
+    lvl_put(L, "torch", 2, 7);
+    lvl_gems(L, 6, 9, 9);
+    lvl_put(L, "torch", 11, 7);
+    lvl_put(L, "letter", 12, 10);
+    lvl_put(L, "skel", 17, 10);
+    lvl_put(L, "torch", 19, 7);
+
+    // ---- A pit, a plank and the first skeleton bird ----
+    lvl_ground(L, 24, 40, 11);
+    lvl_rect(L, 28, 8, 31, 8, T_ONEWAY);
+    lvl_put(L, "letter", 29, 7);
+    lvl_gems(L, 30, 31, 7);
+    lvl_put(L, "bonebird", 33, 4);
+    lvl_put(L, "torch", 35, 6);
+    lvl_put(L, "skel", 37, 10);
+
+    // ---- Up onto a long ledge: skeletons on patrol, rocks in the roof ----
+    lvl_ground(L, 41, 60, 9);
+    lvl_put(L, "letter", 43, 8);
+    lvl_put(L, "rockfall", 47, 2);
+    lvl_put(L, "skel", 50, 8);
+    lvl_put(L, "torch", 52, 5);
+    lvl_put(L, "bonebird", 54, 3);
+    lvl_gems(L, 54, 56, 6);
+    lvl_put(L, "letter", 55, 8);
+    lvl_put(L, "flag", 58, 8);
+    lvl_put(L, "super_egg", 59, 8);     // two players only
+
+    // ---- Down two, then a low crawl through the bones (one tile high) ----
+    lvl_ground(L, 61, 75, 11);
+    lvl_put(L, "torch", 62, 7);
+    lvl_rect(L, 64, 0, 72, 9, T_SOLID);
+    lvl_gems(L, 65, 67, 10);
+    lvl_put(L, "letter", 68, 10);
+    lvl_gems(L, 69, 71, 10);
+    lvl_put(L, "torch", 74, 7);
+
+    // ---- The ossuary: a pit, planks to hide on, skeletons and birds ----
+    lvl_ground(L, 76, 79, 11);
+    lvl_ground(L, 83, 100, 11);
+    lvl_put(L, "bonebird", 81, 4);
+    lvl_put(L, "skel", 86, 10);
+    lvl_put(L, "letter", 85, 10);
+    lvl_rect(L, 89, 8, 92, 8, T_ONEWAY);
+    lvl_put(L, "letter", 90, 7);
+    lvl_put(L, "torch", 88, 5);
+    lvl_put(L, "skel", 95, 10);
+    lvl_put(L, "bonebird", 96, 4);
+    lvl_put(L, "egg", 98, 10);
+    lvl_put(L, "torch", 99, 6);
+
+    // ---- Steps up to a skeleton's lookout and down again ----
+    lvl_ground(L, 101, 106, 9);
+    lvl_ground(L, 107, 112, 7);
+    lvl_put(L, "skel", 110, 6);
+    lvl_put(L, "letter", 109, 6);
+    lvl_put(L, "torch", 106, 4);
+    lvl_ground(L, 113, 120, 9);
+    lvl_rect(L, 114, 6, 116, 6, T_ONEWAY);
+    lvl_put(L, "letter", 115, 5);
+    lvl_gems(L, 117, 119, 8);
+
+    // ---- The rockfall gallery ----
+    lvl_ground(L, 121, 181, 11);
+    lvl_put(L, "rockfall", 124, 2);
+    lvl_put(L, "bonebird", 126, 4);
+    lvl_put(L, "letter", 127, 10);
+    lvl_put(L, "rockfall", 129, 2);
+    lvl_put(L, "skel", 131, 10);
+    lvl_put(L, "torch", 132, 6);
+    lvl_put(L, "flag", 135, 10);
+    lvl_put(L, "egg", 136, 10);
+
+    // ---- Rex Bonejaw's den: two planks, out of reach of his tail ----
+    L.arena = [139, 170];
+    lvl_put(L, "torch", 140, 5);
+    lvl_rect(L, 144, 8, 147, 8, T_ONEWAY);
+    lvl_put(L, "letter", 145, 7);
+    lvl_put(L, "torch", 151, 5);
+    lvl_rect(L, 157, 8, 160, 8, T_ONEWAY);
+    lvl_put(L, "letter", 158, 7);
+    lvl_put(L, "torch", 162, 5);
+    lvl_put(L, "boss_dino", 164, 10);
+    lvl_put(L, "torch", 171, 6);
+    lvl_put(L, "door", 176, 10);
+    lvl_put(L, "torch", 180, 7);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit];
 }

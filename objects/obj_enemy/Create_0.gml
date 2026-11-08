@@ -24,6 +24,19 @@ mirror_step = function()
     y = lerp(y, net_ty, 0.4);
 };
 
+/// Skeletons: only a boost (or the Slingshot) breaks them. The tongue and stomps just clank
+/// off their bones (a stomp bounces the snake off without hurting it).
+boost_only = false;
+clank_t = -100;
+clank = function()
+{
+    var _g = obj_game;
+    if (_g.frame - clank_t < 14) return;
+    clank_t = _g.frame;
+    _g.play_sfx(_g.sfx.clank);
+    _g.burst(x, y - 6, c_white, 4);
+};
+
 /// True while it can't touch or be touched (a little mole under the ground). Only uses what
 /// online play shares (image_index), so both PCs agree.
 is_harmless = function() { return false; };

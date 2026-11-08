@@ -186,7 +186,11 @@ if (tongue_t > 0)
     if (tongue_t <= 11)
     {
         // Anything the tongue touches: creatures are knocked out, items are pulled in.
-        with (obj_enemy) if (!is_harmless() && point_segment_distance(x, y, _mx, _my, _tip, _my) < hh + 4) kill(1, other.id);
+        with (obj_enemy) if (!is_harmless() && point_segment_distance(x, y, _mx, _my, _tip, _my) < hh + 4)
+        {
+            if (boost_only) clank();    // a skeleton: the tongue just clanks off its bones
+            else kill(1, other.id);
+        }
         with (obj_pickup) if (!grabbed && point_segment_distance(x, y, _mx, _my, _tip, _my) < 16) { grabbed = true; grabber = other.id; _g.play_sfx(_g.sfx.slurp); }
         // The tongue also swats a boss's cheese and feathers out of the air (not boulders or puddles).
         with (obj_hazard) if (!lasts() && point_segment_distance(x, y, _mx, _my, _tip, _my) < 12)
@@ -221,7 +225,13 @@ with (obj_enemy)
         // A plain roll can't stomp: rolling into a creature always hurts the snake.
         else if (!other.ball && other.vy > 1.5 && other.y < y - 4)
         {
-            if (_is_boss && spiky_back())
+            if (boost_only)
+            {
+                // A skeleton: the snake bounces off its skull, and nobody gets hurt.
+                clank();
+                other.vy = -8;
+            }
+            else if (_is_boss && spiky_back())
             {
                 // Bristling fur: landing on it hurts, and throws the snake off.
                 other.vy = -8;

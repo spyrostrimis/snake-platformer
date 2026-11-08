@@ -697,4 +697,158 @@ save("spr_puddle", 52, 14,
    <ellipse cx="18" cy="6" rx="6" ry="1.6" fill="#d8ffa0" opacity="0.8"/>
    <circle cx="34" cy="5" r="2.4" fill="#b8ff6a" stroke="#1e5a06" stroke-width="1"/><circle cx="42" cy="7" r="1.6" fill="#b8ff6a" stroke="#1e5a06" stroke-width="0.8"/>`);
 
+// =====================================================================================
+// ---------- Level 6, the bone pit: purple-brown rock, skeletons ----------
+// =====================================================================================
+// The cave tiles recoloured from orange-brown to purple-brown, with fossils in the rock.
+const KP = {
+  [K.rock]: "#7c5468", [K.rockLight]: "#bc90a8", [K.rockDark]: "#422438", [K.mortar]: "#1e0c1a", [K.deep]: "#2e1628",
+  [K.crust]: "#a47896", [K.crustLight]: "#e2c4d6", [K.crustDark]: "#6a3c5e", [K.crustLine]: "#220c1c",
+  "#e8b080": "#c8a0c0", "#7a3a14": "#4a2244", "#3a1806": "#200c1c", "#1e0c02": "#12060f", "#fff0c0": "#f4e0f0",
+  "#fff0d0": "#f4e4f2",
+};
+const recolor = (s) => Object.entries(KP).reduce((t, [a, b]) => t.split(a).join(b), s);
+const fossil = `<g stroke="#2a1424" stroke-width="1" fill="#d8ccb0" opacity="0.85">
+    <path d="M6 22 L20 14 M5 20 a2 2 0 1 0 2 3 M19 12 a2 2 0 1 1 2 3" stroke-width="2.6" stroke="#d8ccb0" fill="none"/>
+    <circle cx="25" cy="25" r="3.2"/><circle cx="24" cy="25" r="0.9" fill="#2a1424"/></g>`;
+const boneTiles = caveTiles.map(recolor);
+boneTiles[3] += fossil;
+save("spr_tiles_bone", 32 * boneTiles.length, 32,
+  boneTiles.map((t, i) => `<g transform="translate(${i * 32},0)" clip-path="url(#cell)">${t}</g>`).join(""),
+  stoneGrad + recolor(caveGrad) + `<clipPath id="cell"><rect x="0" y="0" width="32" height="32"/></clipPath>`);
+
+// Floor decorations: violet crystals (they glow) and little piles of bones.
+save("spr_crystal_violet", 24, 24,
+  `<path d="M4 24 L6 12 L9 8 L12 24 Z" fill="#b46aff" stroke="#2a0a40" stroke-width="1.3"/>
+   <path d="M9 24 L11 6 L14 1 L17 7 L17 24 Z" fill="#dcb0ff" stroke="#2a0a40" stroke-width="1.3"/>
+   <path d="M15 24 L18 12 L21 15 L21 24 Z" fill="#8a3ae0" stroke="#2a0a40" stroke-width="1.3"/>
+   <path d="M12 8 L13 18" stroke="#f6e8ff" stroke-width="1.6" opacity="0.9"/>`);
+const B = { bone: "#efe4c8", shade: "#c9b892", line: "#2a1824", glow: "#d070ff" };
+const bone = (d, w) => `<path d="${d}" fill="none" stroke="${B.line}" stroke-width="${w + 3}" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="${d}" fill="none" stroke="${B.bone}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const glowEye = (x, y, r = 2.6) => `<circle cx="${x}" cy="${y}" r="${r * 2.2}" fill="${B.glow}" opacity="0.35"/><circle cx="${x}" cy="${y}" r="${r}" fill="#f4c8ff"/>`;
+save("spr_bones", 34, 20,
+  bone("M4 17 L22 12", 3.5) + bone("M10 9 L28 17", 3.5) +
+  `<path d="M14 18 Q12 6 20 5 Q28 5 27 14 L25 18 Z" fill="${B.bone}" stroke="${B.line}" stroke-width="1.4"/>
+   <circle cx="18" cy="11" r="2.2" fill="${B.line}"/><circle cx="23.5" cy="11" r="2.2" fill="${B.line}"/>
+   <path d="M18 17 v-2 M21 17 v-2 M24 17 v-2" stroke="${B.line}" stroke-width="1"/>`);
+
+// ---------- Little skeletons with swords (frames: walk A, walk B, sword up, slash) ----------
+// 76 x 52, origin (26, 34): feet at the bottom, the sword reaches far ahead when it slashes.
+function skel(f) {
+  const step = f === 0 ? -4 : f === 1 ? 4 : 0;
+  const legs = bone(`M24 38 L${22 + step} 50`, 3.4) + bone(`M28 38 L${30 - step} 50`, 3.4) +
+    `<path d="M${18 + step} 50 h6 M${28 - step} 50 h6" stroke="${B.line}" stroke-width="2.6" stroke-linecap="round"/>`;
+  const ribs = `<g>${[25, 29, 33].map((y) => bone(`M19 ${y} Q26 ${y - 3} 33 ${y}`, 2.2)).join("")}</g>`;
+  const spine = bone("M26 22 L26 39", 3.2) + `<path d="M20 38 Q26 35 32 38 L30 42 L22 42 Z" fill="${B.bone}" stroke="${B.line}" stroke-width="1.4"/>`;
+  const skull = `<path d="M17 15 Q16 3 27 3 Q38 4 37 15 Q36 21 32 22 L22 22 Q17 21 17 15 Z" fill="${B.bone}" stroke="${B.line}" stroke-width="1.8"/>
+    <path d="M17 9 Q27 0 37 9 L38 11 L16 11 Z" fill="#7a6a78" stroke="${B.line}" stroke-width="1.6"/>
+    <circle cx="25" cy="14" r="3.4" fill="${B.line}"/><circle cx="33" cy="14" r="3" fill="${B.line}"/>
+    ${glowEye(25.5, 14, 1.4)}${glowEye(33, 14, 1.3)}
+    <path d="M23 22 v-3 M26 22 v-3 M29 22 v-3 M32 22 v-3" stroke="${B.line}" stroke-width="1"/>`;
+  const blade = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${B.line}" stroke-width="5.2" stroke-linecap="round"/>
+    <path d="M${x1} ${y1} L${x2} ${y2}" stroke="#d6dbe6" stroke-width="3" stroke-linecap="round"/>`;
+  const hilt = (x, y, rot) => `<g transform="rotate(${rot} ${x} ${y})"><rect x="${x - 1.6}" y="${y - 6}" width="3.2" height="12" rx="1" fill="#8a5a2a" stroke="${B.line}" stroke-width="1"/></g>`;
+  let arms, sword, extra = "";
+  if (f === 2) {
+    // Sword raised high behind the head: the slash is coming.
+    arms = bone("M24 24 L18 30", 2.4) + bone("M28 24 L22 12 L18 6", 2.4);
+    sword = blade(16, 4, 4, -2 + 6) + hilt(17, 5, 60);
+    sword = blade(17, 5, 2, 22) + hilt(17, 5, 30);
+  } else if (f === 3) {
+    // The slash: arm straight out, blade far ahead, a swoosh.
+    arms = bone("M24 24 L18 30", 2.4) + bone("M28 24 L38 26 L44 26", 2.4);
+    sword = blade(46, 26, 74, 26) + hilt(45, 26, 90);
+    extra = `<path d="M44 8 Q72 10 74 24" stroke="#f4e8ff" stroke-width="3" fill="none" opacity="0.7" stroke-linecap="round"/>
+      <path d="M48 14 Q66 15 68 23" stroke="#f4e8ff" stroke-width="2" fill="none" opacity="0.5" stroke-linecap="round"/>`;
+  } else {
+    arms = bone("M24 24 L18 31", 2.4) + bone(`M28 24 L36 ${30 + step * 0.3} L40 ${30 + step * 0.3}`, 2.4);
+    sword = blade(42, 28 + step * 0.3, 52, 12 + step * 0.3) + hilt(41, 30 + step * 0.3, 32);
+  }
+  return extra + (f === 2 ? sword : "") + legs + spine + ribs + skull + arms + (f === 2 ? "" : sword);
+}
+for (let f = 0; f < 4; f++) save("skel_" + f, 76, 52, skel(f));
+
+// ---------- Skeleton birds (frames: wings up, wings down, diving) ----------
+// 56 x 40, origin (26, 20). The bird faces right.
+function bonebird(f) {
+  const skull = (x, y, rot) => `<g transform="rotate(${rot} ${x} ${y})">
+    <path d="M${x - 7} ${y} Q${x - 6} ${y - 8} ${x + 1} ${y - 8} Q${x + 7} ${y - 7} ${x + 8} ${y - 3} L${x + 22} ${y + 1} L${x + 7} ${y + 4} Q${x - 4} ${y + 6} ${x - 7} ${y} Z" fill="${B.bone}" stroke="${B.line}" stroke-width="1.6" stroke-linejoin="round"/>
+    <circle cx="${x + 1}" cy="${y - 2}" r="3" fill="${B.line}"/>${glowEye(x + 1.5, y - 2, 1.4)}</g>`;
+  const body = bone("M10 22 L16 21", 2.6) + bone("M4 25 L10 22 M6 28 L10 22", 1.8) +
+    `<ellipse cx="22" cy="21" rx="8" ry="6" fill="none" stroke="${B.line}" stroke-width="3.6"/><ellipse cx="22" cy="21" rx="8" ry="6" fill="none" stroke="${B.bone}" stroke-width="1.8"/>
+     <path d="M17 17 v8 M21 15.5 v11 M25 16 v10" stroke="${B.bone}" stroke-width="1.4"/>` + bone("M29 19 Q32 15 34 14", 2.4);
+  const legs = bone("M20 26 L18 33 L15 35 M18 33 L20 36", 1.6);
+  if (f === 2) {
+    // Wings folded back, beak first: the dive.
+    return bone("M22 18 L10 10 L2 12", 2.6) + bone("M10 10 L4 6", 1.8) + body + legs + skull(38, 16, 35);
+  }
+  const up = f === 0;
+  const wing = up
+    ? bone("M22 18 L18 6 L8 1", 2.8) + bone("M18 6 L12 4 M8 1 L2 2 M8 1 L4 6", 1.6)
+    : bone("M22 20 L16 30 L6 37", 2.8) + bone("M16 30 L10 31 M6 37 L1 35 M6 37 L4 32", 1.6);
+  return wing + body + legs + skull(38, 13, 0);
+}
+for (let f = 0; f < 3; f++) save("bonebird_" + f, 56, 40, bonebird(f));
+
+// ---------- Rex Bonejaw, the dinosaur skeleton ----------
+// Frames: walk A, walk B, crouch (before a long jump), leap, tail whip, roar.
+// 280 x 160, origin (140, 110): feet on the floor at the bottom, facing right.
+function dino(f) {
+  const crouch = f === 2, leap = f === 3, whip = f === 4, roar = f === 5;
+  const dy = crouch ? 16 : leap ? -6 : whip ? 6 : 0;
+  const hip = [118, 86 + dy];
+  // Legs: hip -> knee -> ankle -> toes; the back leg is darker and drawn first.
+  const legPose = (front) => {
+    if (leap) return front ? [[142, 108], [152, 126], [172, 124]] : [[132, 112], [138, 132], [158, 130]];
+    if (crouch) return front ? [[150, 124], [128, 148], [154, 156]] : [[134, 126], [110, 148], [134, 156]];
+    const s = (f === 1 ? 1 : -1) * (front ? 1 : -1);
+    return [[128 + s * 12, 118], [118 + s * 14, 146], [142 + s * 14, 156]];
+  };
+  const leg = (front) => {
+    const [k, a, t] = legPose(front);
+    const g = bone(`M${hip[0]} ${hip[1]} L${k[0]} ${k[1]}`, 11) + bone(`M${k[0]} ${k[1]} L${a[0]} ${a[1]}`, 8) + bone(`M${a[0]} ${a[1]} L${t[0]} ${t[1]}`, 6) +
+      `<path d="M${t[0]} ${t[1]} l7 -2 M${t[0] - 2} ${t[1]} l6 3" stroke="${B.line}" stroke-width="3" stroke-linecap="round"/>`;
+    return front ? g : `<g opacity="0.75">${g}</g>`;
+  };
+  // The tail: swaying behind, or lashing low and straight in the tail whip.
+  const tailD = whip ? `M${hip[0]} ${hip[1] - 2} Q80 ${110} 40 ${112} Q18 ${113} 2 ${106}`
+    : leap ? `M${hip[0]} ${hip[1] - 4} Q80 ${66} 44 ${60} Q22 56 6 46`
+    : `M${hip[0]} ${hip[1] - 4} Q80 ${72 + dy} 48 ${76 + dy} Q24 ${80 + dy} 6 ${72 + dy}`;
+  const tail = bone(tailD, 10) + `<path d="${tailD}" fill="none" stroke="${B.line}" stroke-width="10" stroke-dasharray="2 9" opacity="0.55"/>`;
+  const whipLines = whip ? `<g stroke="#f0e0ff" stroke-width="3" fill="none" opacity="0.65" stroke-linecap="round">
+      <path d="M20 84 Q8 96 6 120"/><path d="M44 88 Q30 100 30 124"/><path d="M70 92 Q58 104 58 126"/></g>
+      <g fill="#c8a0c0" opacity="0.8"><circle cx="16" cy="150" r="6"/><circle cx="40" cy="154" r="5"/><circle cx="64" cy="152" r="5"/></g>` : "";
+  // Back, neck, ribs and the little arms.
+  const lean = whip ? 8 : roar ? -8 : 0;
+  const back = `M${hip[0]} ${hip[1] - 6} Q150 ${62 + dy + lean * 0.5} 186 ${58 + dy + lean}`;
+  const neck = `M186 ${58 + dy + lean} Q200 ${50 + dy + lean} 206 ${46 + dy + lean}`;
+  let ribs = "";
+  for (let i = 0; i < 5; i++) {
+    const x = 134 + i * 11;
+    const y = 70 + dy - i * 2 + lean * (i / 5);
+    ribs += bone(`M${x} ${y} Q${x + 12} ${y + 22} ${x + 2} ${y + 40 - i * 3}`, 4.5);
+  }
+  const pelvis = `<path d="M100 ${hip[1] - 10} Q118 ${hip[1] - 22} 136 ${hip[1] - 10} L128 ${hip[1] + 8} L106 ${hip[1] + 8} Z" fill="${B.bone}" stroke="${B.line}" stroke-width="2.4"/>
+    <circle cx="118" cy="${hip[1] - 2}" r="5" fill="${B.line}"/>`;
+  const arms = bone(`M184 ${84 + dy + lean} L194 ${96 + dy + lean} L201 ${93 + dy + lean}`, 4);
+  // The skull: jaw shut, or open wide in the roar.
+  const hx = 0, hy = dy + lean + (roar ? -10 : 0);
+  const jawRot = roar ? 26 : crouch ? 6 : 0;
+  const skull = `<g transform="translate(${hx} ${hy})">
+    <g transform="rotate(${jawRot} 208 56)">
+      <path d="M206 56 L266 54 Q262 68 236 70 Q214 70 206 62 Z" fill="${B.shade}" stroke="${B.line}" stroke-width="2.6"/>
+      <path d="M214 56 l3 -6 l3 6 M226 56 l3 -6 l3 6 M238 56 l3 -6 l3 6 M250 55 l3 -6 l3 6" fill="#fff" stroke="${B.line}" stroke-width="1"/>
+    </g>
+    <path d="M200 42 Q204 22 232 24 Q262 26 272 44 L270 54 L206 57 Q198 52 200 42 Z" fill="${B.bone}" stroke="${B.line}" stroke-width="2.8"/>
+    <path d="M212 56 l3 7 l3 -7 M224 56 l3 7 l3 -7 M236 56 l3 7 l3 -7 M248 55 l3 7 l3 -7 M260 54 l3 6 l3 -6" fill="#fff" stroke="${B.line}" stroke-width="1"/>
+    <path d="M208 30 Q216 22 230 24" stroke="${B.shade}" stroke-width="3" fill="none"/>
+    <ellipse cx="222" cy="38" rx="8" ry="7" fill="${B.line}"/>${glowEye(223, 38, 3)}
+    <ellipse cx="258" cy="36" rx="3.5" ry="2.5" fill="${B.line}"/>
+    <path d="M238 30 L244 42" stroke="${B.line}" stroke-width="1.6"/></g>`;
+  const dust = crouch ? `<g fill="#c8a0c0" opacity="0.8"><circle cx="104" cy="154" r="7"/><circle cx="168" cy="154" r="7"/></g>` : "";
+  return whipLines + leg(false) + tail + pelvis + ribs + bone(back, 10) + bone(neck, 8) + arms + leg(true) + skull + dust;
+}
+for (let f = 0; f < 6; f++) save("dino_" + f, 280, 160, dino(f));
+
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

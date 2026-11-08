@@ -75,7 +75,10 @@ function sfx_init()
         flag:    sfx_notes([659, 784, 1047], "square", 0.3, 0.12),
         door:    sfx_notes([392, 523, 659, 784, 1047], "pulse", 0.7, 0.15),
         die:     sfx_sweep(800, 60, "square", 0.9, 0.15),
-        select:  sfx_notes([880, 1320], "square", 0.1, 0.08)
+        select:  sfx_notes([880, 1320], "square", 0.1, 0.08),
+        oneup:   sfx_notes([1047, 1319, 1568, 2093, 1568, 2093], "square", 0.5, 0.12),
+        clank:   sfx_notes([1900, 1400], "square", 0.08, 0.1),
+        rattle:  sfx_sweep(0, 0, "noise", 0.2, 0.1)
     };
 }
 

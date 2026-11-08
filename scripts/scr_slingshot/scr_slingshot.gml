@@ -9,8 +9,8 @@
 ///     it back and Peto bends into a C around it; the two fall together. (Head or tail: no
 ///     catch.)
 ///  4. When Peto lands he flings Sockee forward, back the way it came. Sockee unrolls into a
-///     straight arrow, and whatever it hits takes two hits (a boss loses two health
-///     points). It knocks out creatures on the way and bounces off a boss.
+///     straight arrow, and whatever it hits takes a huge hit (a boss loses a third of its
+///     health bar). It knocks out creatures on the way and bounces off a boss.
 ///
 /// The functions run on obj_player (called from its events). Online, each PC runs its own
 /// snake and reads the other's state from the snake packets: Peto's PC sees Sockee caught
@@ -22,7 +22,7 @@
 #macro SLING_THROW_LIFT 3
 #macro SLING_GRAVITY 0.2        // the arrow falls gently, not like a jump
 #macro SLING_FLIGHT 75          // frames before the arrow is just a snake again
-#macro SLING_BOSS_DAMAGE 2      // two of a boss's health points (8 for Big Cheese)
+#macro SLING_BOSS_DAMAGE 2      // the least it takes off a boss; it takes a third of the boss's health bar
 
 /// The slingshot states, in the order the snake packets number them.
 function sling_states() { return ["", "heli", "bent", "throw", "leap", "caught", "flying"]; }
@@ -232,8 +232,9 @@ function sling_fly()
         if (_done || is_harmless() || abs(x - _me.x) >= hw + _me.hw + 4 || abs(y - _me.y) >= hh + _me.hh + 4) continue;
         if (object_is_ancestor(object_index, obj_boss))
         {
-            if (active && hurt_t == 0) _g.say("DOUBLE HIT!", 90);
-            kill(SLING_BOSS_DAMAGE, _me);
+            // A huge hit: a third of the boss's whole health bar.
+            if (active && hurt_t == 0) _g.say("HUGE HIT!", 90);
+            kill(max(SLING_BOSS_DAMAGE, ceil(hp_max / 3)), _me);
             _me.vx = -sign(_me.vx) * 3;
             _me.vy = -6;
             _done = true;
