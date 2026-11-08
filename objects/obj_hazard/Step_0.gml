@@ -47,6 +47,32 @@ if (roll)
     exit;
 }
 
+// ---------- A banknote boomerang: out, slowing, and back again ----------
+if (boomer != 0)
+{
+    t += 1;
+    vx -= boomer * 0.13;
+    x += vx;
+    y += vy + sin(t * 0.1) * 1.3;
+    image_angle += 15;
+    life--;
+    if (life <= 0 || (t > 40 && sign(vx) == -boomer && abs(x - home_x) < 20) || x < -40 || x > _g.lvl_w * TILE + 40)
+    {
+        _g.burst(x, y, make_colour_rgb(150, 220, 140), 4);
+        instance_destroy();
+        exit;
+    }
+    var _hb = noone;
+    with (obj_player) if (!remote && !hidden && _hb == noone && other.touches(id)) _hb = id;
+    if (_hb != noone)
+    {
+        if (_hb.ball) _g.burst(x, y, c_white, 6);
+        else with (_hb) take_hit(sign(x - other.x));
+        instance_destroy();
+    }
+    exit;
+}
+
 t += 0.1;
 vy += grav;
 x += vx + (sway ? sin(t) * 1.2 : 0);

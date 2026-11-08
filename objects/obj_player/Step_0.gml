@@ -81,6 +81,29 @@ vx = clamp(vx, -_max, _max);
 if (_dashing) vx = boost_dir * boost_speed;
 if (ball) ball_angle -= vx * 4;
 
+// ---------- Water: swimming at the surface ----------
+// In water the snake is held up (it floats with its head out), swims a little slower and
+// can jump out from the surface as if from the ground.
+var _swim = water_at(x, y);
+var _surface = _swim && !water_at(x, y - 14);
+if (_swim)
+{
+    if (!_dashing)
+    {
+        vx = clamp(vx, -2.6, 2.6);
+        if (_dir == 0) vx = approach(vx, 0, 0.12);
+    }
+    if (_surface) coyote = 6;
+    air_jump_ready = true;
+    copter_arm = false;
+    if (!was_swim && vy > 2)
+    {
+        _g.burst(x, y - 4, make_colour_rgb(170, 230, 255), 12);
+        _g.play_sfx(_g.sfx.splash);
+    }
+}
+was_swim = _swim;
+
 // ---------- Jump, coyote time, jump buffer, drop through logs ----------
 if (on_ground) coyote = 6; else if (coyote > 0) coyote--;
 if (_jump_pressed) jump_buffer = 6; else if (jump_buffer > 0) jump_buffer--;
@@ -126,7 +149,14 @@ if (!_jump_held && vy < -3 && !sprung && !(boost_t > 0 && skin.boost == "up")) v
 vy = min(vy + gravity_pull, fall_max);
 // The red dash flies straight ahead, holding its height.
 if (_dashing) vy = 0;
-copter = !skin.double_jump && !ball && !on_ground && copter_arm && _jump_held && vy > 0;
+if (_swim && !_jumped)
+{
+    vy -= gravity_pull;                                  // the water holds the snake up...
+    if (!_surface) { if (vy > -3) vy = max(vy - 0.4, -3); }  // ...under: it floats up
+    else if (vy > 0) vy *= 0.7;                          // at the surface it bobs to rest
+    if (vy > 3) vy = lerp(vy, 3, 0.3);                   // diving in: the water slows the fall
+}
+copter = !skin.double_jump && !ball && !on_ground && !_swim && copter_arm && _jump_held && vy > 0;
 if (copter)
 {
     vy = min(vy, 1.2);
@@ -144,10 +174,21 @@ if (ball)
     if (vy > 2) for (var _xx = x - hw + 2; _xx <= x + hw - 2; _xx += 9) if (tile_at(_xx, y + hh + 4) == T_CRACK) smash(floor(_xx / TILE), floor((y + hh + 4) / TILE));
 }
 
+// ---------- Currents drag the snake along (sideways in a lake, up a spout, down a fall) ----------
+var _cur = current_at(x, y);
+var _own_vx = vx;
+if (!is_undefined(_cur))
+{
+    vx += _cur.vx;
+    if (_cur.vy != 0) vy = approach(vy, _cur.vy, 0.8);
+}
+
 // ---------- Move ----------
 var _was_air = !on_ground;
 var _fall_speed = vy;
 entity_move();
+// The drag isn't the snake's own speed: it keeps only its own (unless a wall stopped it).
+if (!is_undefined(_cur) && hit_wall == 0) vx = _own_vx;
 if (on_ground && _was_air && _fall_speed > 4) part_particles_create(_g.ps, x, y + hh, _g.pt_dust, 5);
 if (ball && hit_wall != 0)
 {

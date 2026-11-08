@@ -78,7 +78,9 @@ function sfx_init()
         select:  sfx_notes([880, 1320], "square", 0.1, 0.08),
         oneup:   sfx_notes([1047, 1319, 1568, 2093, 1568, 2093], "square", 0.5, 0.12),
         clank:   sfx_notes([1900, 1400], "square", 0.08, 0.1),
-        rattle:  sfx_sweep(0, 0, "noise", 0.2, 0.1)
+        rattle:  sfx_sweep(0, 0, "noise", 0.2, 0.1),
+        splash:  sfx_sweep(0, 0, "noise", 0.35, 0.16),
+        snip:    sfx_notes([1400, 900, 1400], "square", 0.12, 0.1)
     };
 }
 

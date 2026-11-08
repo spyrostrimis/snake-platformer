@@ -12,7 +12,22 @@ function lvl_create(_name, _w, _h, _music, _sky_top, _sky_bottom)
     // and the snakes.
     return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0],
              bg_tint: c_white, vine_odds: 3, tileset: ts_jungle, bg: [spr_bg_mountains, spr_bg_clouds, spr_bg_hills],
-             cloud_drift: 1, deco: "jungle", mushrooms: true, dark: 0, dark_col: make_colour_rgb(10, 4, 16) };
+             cloud_drift: 1, deco: "jungle", mushrooms: true, dark: 0, dark_col: make_colour_rgb(10, 4, 16),
+             water: [], currents: [] };
+}
+
+/// Water in tiles _x1.._x2, rows _y1.._y2 (the top row is the surface). Snakes float and swim
+/// in it; it doesn't block anything.
+function lvl_water(_l, _x1, _y1, _x2, _y2)
+{
+    array_push(_l.water, [_x1, _y1, _x2, _y2]);
+}
+
+/// A current in tiles _x1.._x2, rows _y1.._y2 that drags snakes by (_vx, _vy) pixels a step:
+/// sideways in a lake, upwards in a water spout, downwards in a waterfall.
+function lvl_current(_l, _x1, _y1, _x2, _y2, _vx, _vy)
+{
+    array_push(_l.currents, { x1: _x1 * TILE, y1: _y1 * TILE, x2: (_x2 + 1) * TILE, y2: (_y2 + 1) * TILE, vx: _vx, vy: _vy });
 }
 
 function lvl_rect(_l, _x1, _y1, _x2, _y2, _t)
@@ -100,7 +115,6 @@ function level_greenleaf()
     // Boss arena: Big Cheese guards the exit and one letter of the word.
     L.arena = [146, 163];
     lvl_rect(L, 151, 8, 155, 8, T_ONEWAY);
-    lvl_put(L, "letter", 153, 7);
     lvl_put(L, "boss_mouse", 158, 10);
     lvl_put(L, "door", 165, 10);
     return L;
@@ -147,6 +161,7 @@ function level_mushroom()
     lvl_put(L, "super_egg", 86, 8);     // two players only
     lvl_rect(L, 82, 8, 84, 8, T_SPIKES);
     lvl_put(L, "letter", 88, 8);
+    lvl_put(L, "letter", 93, 8);
     lvl_put(L, "bug", 91, 8);
     lvl_gems(L, 79, 81, 6);
 
@@ -170,9 +185,7 @@ function level_mushroom()
 
     // Boss arena: the Hothead Hen guards the exit and one letter of the word.
     L.arena = [132, 146];
-    lvl_put(L, "letter", 134, 10);
     lvl_rect(L, 137, 7, 141, 7, T_ONEWAY);
-    lvl_put(L, "letter", 139, 6);
     lvl_put(L, "egg", 144, 10);
     lvl_put(L, "boss_hen", 141, 10);
     lvl_put(L, "door", 148, 10);
@@ -214,6 +227,7 @@ function level_tangleroot()
     lvl_put(L, "bug", 63, 10);
     // A spring up to the high canopy (7 tiles up).
     lvl_put(L, "spring", 68, 10);
+    lvl_put(L, "letter", 66, 7);
     lvl_rect(L, 70, 4, 76, 4, T_ONEWAY);
     lvl_put(L, "egg", 71, 3);
     lvl_put(L, "letter", 73, 3);
@@ -256,8 +270,6 @@ function level_tangleroot()
     L.arena = [136, 158];
     lvl_rect(L, 140, 8, 143, 8, T_ONEWAY);
     lvl_rect(L, 150, 8, 153, 8, T_ONEWAY);
-    lvl_put(L, "letter", 141, 7);
-    lvl_put(L, "letter", 151, 7);
     lvl_put(L, "boss_cat", 154, 10);
     lvl_put(L, "door", 162, 10);
     return L;
@@ -293,7 +305,6 @@ function level_emberstone()
     lvl_rect(L, 25, 0, 36, 9, T_SOLID);
     lvl_ground(L, 25, 36, 11);
     lvl_gems(L, 27, 29, 10);
-    lvl_put(L, "letter", 31, 10);
     lvl_gems(L, 33, 35, 10);
 
     // ---- A tall chamber with a pit, a plank and bats ----
@@ -302,27 +313,30 @@ function level_emberstone()
     lvl_rect(L, 49, 7, 52, 7, T_ONEWAY);
     lvl_put(L, "letter", 50, 6);
     lvl_put(L, "rockfall", 41, 2);
+    lvl_put(L, "letter", 40, 8);
     lvl_put(L, "bat", 45, 2);
     lvl_put(L, "rockfall", 55, 2);
+    lvl_put(L, "letter", 56, 8);
     lvl_put(L, "bug", 57, 10);
 
     // ---- Tunnel 2: two tiles high, blocked by cracked rock: roll into it (hold Shift) ----
     lvl_rect(L, 61, 0, 74, 8, T_SOLID);
     lvl_ground(L, 61, 74, 11);
     lvl_rect(L, 68, 9, 68, 10, T_CRACK);
-    lvl_put(L, "letter", 71, 10);
     lvl_gems(L, 72, 73, 10);
 
     // ---- Steps up and a drop, with a plank to climb back ----
     lvl_ground(L, 75, 82, 11);
     lvl_put(L, "flag", 76, 10);
     lvl_put(L, "super_egg", 79, 10);    // two players only
+    lvl_put(L, "letter", 78, 8);
     lvl_ground(L, 83, 86, 9);
     lvl_ground(L, 87, 90, 7);
     lvl_put(L, "letter", 88, 6);
     lvl_put(L, "bat", 85, 2);
     lvl_ground(L, 91, 100, 11);
     lvl_rect(L, 92, 9, 93, 9, T_ONEWAY);
+    lvl_put(L, "letter", 92, 8);
     lvl_rect(L, 95, 10, 96, 10, T_SPIKES);
     lvl_put(L, "letter", 98, 10);
     lvl_put(L, "bat", 97, 2);
@@ -331,12 +345,12 @@ function level_emberstone()
     lvl_rect(L, 101, 0, 112, 9, T_SOLID);
     lvl_ground(L, 101, 112, 11);
     lvl_gems(L, 103, 105, 10);
-    lvl_put(L, "letter", 107, 10);
 
     // ---- The rockfall corridor ----
     lvl_rect(L, 113, 2, 127, 3, T_SOLID);
     lvl_ground(L, 113, 159, 11);
     lvl_put(L, "rockfall", 116, 4);
+    lvl_put(L, "letter", 117, 8);
     lvl_put(L, "rockfall", 120, 4);
     lvl_put(L, "rockfall", 124, 4);
     lvl_put(L, "bug", 118, 10);
@@ -349,8 +363,6 @@ function level_emberstone()
     L.arena = [128, 150];
     lvl_rect(L, 133, 8, 136, 8, T_ONEWAY);
     lvl_rect(L, 142, 8, 145, 8, T_ONEWAY);
-    lvl_put(L, "letter", 134, 7);
-    lvl_put(L, "letter", 143, 7);
     lvl_put(L, "bat", 139, 3);
     lvl_put(L, "boss_mole", 146, 10);
     lvl_put(L, "door", 154, 10);
@@ -398,6 +410,7 @@ function level_shadowrock()
     lvl_rect(L, 38, 8, 41, 8, T_ONEWAY);
     lvl_put(L, "gem", 39, 7);
     lvl_put(L, "gem", 40, 7);
+    lvl_put(L, "letter", 41, 7);
     lvl_put(L, "torch", 43, 6);
     lvl_put(L, "boulders", 45, 10);
 
@@ -421,6 +434,7 @@ function level_shadowrock()
     lvl_ground(L, 80, 108, 9);
     lvl_rect(L, 84, 6, 87, 6, T_ONEWAY);
     lvl_put(L, "letter", 85, 5);
+    lvl_put(L, "letter", 87, 5);
     lvl_put(L, "torch", 89, 4);
     lvl_put(L, "bat_crack", 91, 2);
     lvl_put(L, "torch", 93, 5);
@@ -429,13 +443,13 @@ function level_shadowrock()
     // ---- A low crawl through the rock (one tile high), lit only by the snake ----
     lvl_rect(L, 98, 0, 107, 7, T_SOLID);
     lvl_gems(L, 99, 101, 8);
-    lvl_put(L, "letter", 104, 8);
     lvl_gems(L, 105, 106, 8);
 
     // ---- Boulder run 3: out of the tunnel at 128, into the pit at 112-114, over thorns ----
     lvl_ground(L, 109, 111, 11);        // two tiles down from the crawl: a jump back up
     lvl_ground(L, 115, 171, 11);
     lvl_put(L, "torch", 110, 7);
+    lvl_put(L, "letter", 110, 8);
     lvl_put(L, "letter", 117, 10);
     lvl_rect(L, 120, 10, 121, 10, T_SPIKES);
     lvl_put(L, "bat_crack", 121, 2);
@@ -450,10 +464,8 @@ function level_shadowrock()
     L.arena = [134, 162];
     lvl_put(L, "torch", 136, 5);
     lvl_rect(L, 138, 8, 141, 8, T_ONEWAY);
-    lvl_put(L, "letter", 139, 7);
     lvl_put(L, "torch", 145, 5);
     lvl_rect(L, 148, 8, 151, 8, T_ONEWAY);
-    lvl_put(L, "letter", 149, 7);
     lvl_put(L, "torch", 154, 5);
     lvl_put(L, "boss_cobra", 157, 10);
     lvl_put(L, "torch", 163, 6);
@@ -520,7 +532,6 @@ function level_bonepit()
     lvl_put(L, "torch", 62, 7);
     lvl_rect(L, 64, 0, 72, 9, T_SOLID);
     lvl_gems(L, 65, 67, 10);
-    lvl_put(L, "letter", 68, 10);
     lvl_gems(L, 69, 71, 10);
     lvl_put(L, "torch", 74, 7);
 
@@ -528,6 +539,7 @@ function level_bonepit()
     lvl_ground(L, 76, 79, 11);
     lvl_ground(L, 83, 100, 11);
     lvl_put(L, "bonebird", 81, 4);
+    lvl_put(L, "letter", 78, 8);
     lvl_put(L, "skel", 86, 10);
     lvl_put(L, "letter", 85, 10);
     lvl_rect(L, 89, 8, 92, 8, T_ONEWAY);
@@ -564,10 +576,8 @@ function level_bonepit()
     L.arena = [139, 170];
     lvl_put(L, "torch", 140, 5);
     lvl_rect(L, 144, 8, 147, 8, T_ONEWAY);
-    lvl_put(L, "letter", 145, 7);
     lvl_put(L, "torch", 151, 5);
     lvl_rect(L, 157, 8, 160, 8, T_ONEWAY);
-    lvl_put(L, "letter", 158, 7);
     lvl_put(L, "torch", 162, 5);
     lvl_put(L, "boss_dino", 164, 10);
     lvl_put(L, "torch", 171, 6);
@@ -576,7 +586,128 @@ function level_bonepit()
     return L;
 }
 
+/// Level 7: under the caverns, a sunken grotto of sand, rocks and water. Lakes to swim
+/// across (snakes float and can jump out of the water), currents that drag the snakes along
+/// (a friendly one across the first lake, a water spout up to a high ledge, a flooded tunnel
+/// that sweeps you through; and a dangerous one pulling towards a waterfall), jumping
+/// piranhas, and Baron Clawbucks the giant crab at the end.
+/// Reach: steps are 2 tiles, letters at most 3 above a floor or the water surface, log gaps
+/// at most 3 wide; the high ledge is reached by the spout, and left again by steps (and back).
+/// No letters in the flooded tunnel or the crab's arena.
+function level_grotto()
+{
+    var L = lvl_create("SUNKEN GROTTO", 190, 15, "music_05.ogg", make_colour_rgb(4, 20, 30), make_colour_rgb(30, 92, 112));
+    L.tileset = ts_sand;
+    L.bg = [spr_bg_cave_far, spr_bg_cave_top, spr_bg_cave_near];
+    L.bg_tint = make_colour_rgb(110, 170, 185);
+    L.cloud_drift = 0;
+    L.deco = "sea";
+    L.vine_odds = 1;
+    L.mushrooms = false;
+    L.dark = 0.3;
+    L.dark_col = make_colour_rgb(2, 16, 26);
+
+    // The cave roof over the whole level (rows 0-1).
+    lvl_rect(L, 0, 0, 189, 1, T_SOLID);
+
+    // ---- The shore ----
+    lvl_ground(L, 0, 24, 11);
+    lvl_put(L, "start", 3, 10);
+    lvl_put(L, "torch", 2, 7);
+    lvl_gems(L, 6, 9, 9);
+    lvl_put(L, "letter", 12, 8);
+    lvl_put(L, "torch", 14, 7);
+    lvl_rect(L, 18, 9, 19, 10, T_SOLID);
+    lvl_put(L, "bat_crack", 21, 2);
+    lvl_put(L, "letter", 22, 8);
+
+    // ---- Lake 1: a gentle current carries you across; piranhas below ----
+    lvl_ground(L, 25, 40, 13);
+    lvl_water(L, 25, 11, 40, 12);
+    lvl_current(L, 25, 11, 40, 12, 1.3, 0);
+    lvl_put(L, "piranha", 29, 11);
+    lvl_put(L, "letter", 33, 8);
+    lvl_put(L, "piranha", 36, 11);
+
+    // ---- Sand and rocks, then a pool with a water spout up the cliff ----
+    lvl_ground(L, 41, 56, 11);
+    lvl_put(L, "torch", 43, 7);
+    lvl_gems(L, 45, 47, 9);
+    lvl_put(L, "letter", 47, 8);
+    lvl_put(L, "bat_crack", 50, 2);
+    lvl_rect(L, 52, 9, 53, 10, T_SOLID);
+    lvl_ground(L, 57, 60, 13);
+    lvl_water(L, 57, 11, 60, 12);
+    lvl_current(L, 58, 2, 59, 12, 0, -6.5);   // the spout lifts you up past the ledge
+    lvl_put(L, "torch", 56, 7);
+
+    // ---- The high ledge, and steps down its far side (and back up) ----
+    lvl_ground(L, 61, 75, 5);
+    lvl_put(L, "torch", 64, 2);
+    lvl_put(L, "letter", 68, 3);
+    lvl_gems(L, 70, 72, 3);
+    lvl_ground(L, 76, 78, 7);
+    lvl_ground(L, 79, 81, 9);
+    lvl_put(L, "letter", 80, 6);
+    lvl_ground(L, 82, 86, 11);
+    lvl_put(L, "flag", 84, 10);
+    lvl_put(L, "super_egg", 85, 10);    // two players only
+
+    // ---- Lake 2, the falls: a strong current drags you under the floating logs and on to
+    //      the waterfall. Hop from log to log (gaps 2-3 wide); in the water, swim hard or jump. ----
+    lvl_ground(L, 87, 103, 13);
+    lvl_water(L, 87, 11, 103, 12);
+    lvl_current(L, 87, 11, 103, 12, 1.8, 0);
+    lvl_rect(L, 89, 10, 90, 10, T_ONEWAY);
+    lvl_rect(L, 93, 10, 94, 10, T_ONEWAY);
+    lvl_rect(L, 97, 10, 98, 10, T_ONEWAY);
+    lvl_rect(L, 101, 10, 102, 10, T_ONEWAY);
+    lvl_put(L, "piranha", 92, 11);
+    lvl_put(L, "letter", 98, 6);
+    lvl_put(L, "piranha", 100, 11);
+    lvl_put(L, "torch", 96, 6);
+    lvl_current(L, 104, 11, 105, 14, 0, 5);   // the waterfall into the pit
+
+    // ---- Sand, then a flooded tunnel: no air, and a current sweeps you through ----
+    lvl_ground(L, 106, 114, 11);
+    lvl_put(L, "torch", 107, 7);
+    lvl_rect(L, 109, 9, 110, 10, T_SOLID);
+    lvl_put(L, "letter", 112, 8);
+    lvl_rect(L, 115, 0, 126, 9, T_SOLID);
+    lvl_ground(L, 115, 126, 13);
+    lvl_water(L, 115, 10, 126, 12);
+    lvl_current(L, 115, 10, 126, 12, 2.2, 0);
+    lvl_gems(L, 117, 124, 10);
+
+    // ---- A piranha pool under a plank, and the beach ----
+    lvl_ground(L, 127, 130, 11);
+    lvl_ground(L, 131, 134, 13);
+    lvl_water(L, 131, 11, 134, 12);
+    lvl_rect(L, 130, 8, 135, 8, T_ONEWAY);
+    lvl_put(L, "letter", 132, 6);
+    lvl_put(L, "piranha", 133, 11);
+    lvl_ground(L, 135, 189, 11);
+    lvl_put(L, "torch", 128, 7);
+    lvl_put(L, "letter", 137, 8);
+    lvl_put(L, "flag", 139, 10);
+    lvl_put(L, "egg", 140, 10);
+    lvl_put(L, "bat_crack", 140, 2);
+
+    // ---- Baron Clawbucks' beach: two planks to get above his claws and banknotes ----
+    L.arena = [143, 175];
+    lvl_put(L, "torch", 145, 5);
+    lvl_rect(L, 149, 8, 152, 8, T_ONEWAY);
+    lvl_put(L, "torch", 158, 5);
+    lvl_rect(L, 164, 8, 167, 8, T_ONEWAY);
+    lvl_put(L, "torch", 171, 5);
+    lvl_put(L, "boss_crab", 170, 10);
+    lvl_put(L, "torch", 178, 6);
+    lvl_put(L, "door", 184, 10);
+    lvl_put(L, "torch", 187, 7);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto];
 }

@@ -14,6 +14,11 @@ net_id = -1;            // online: the same number on both PCs
 net_tx = x;             // joiner: where the host says it is
 net_ty = y;
 
+// The crab's banknote flies out like a boomerang (boomer: the side it was thrown to, 1 or -1)
+// and turns back towards where it was thrown from.
+boomer = 0;
+home_x = x;
+
 // A boulder rolls along the floor like a creature (entity_move needs these).
 roll = false;
 hw = 16;
@@ -34,6 +39,7 @@ touches = function(_p)
     var _sh = 7;
     if (sprite_index == spr_boulder) { _sw = 16; _sh = 16; }
     else if (sprite_index == spr_puddle) { _sw = 22; _sh = 6; }
+    else if (sprite_index == spr_banknote) { _sw = 13; _sh = 9; }
     return abs(_p.x - x) < _p.hw + _sw && abs(_p.y - y) < _p.hh + _sh;
 };
 

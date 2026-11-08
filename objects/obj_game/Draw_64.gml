@@ -198,8 +198,11 @@ switch (state)
                 hud_text(_wx + _i * 26, _oy + 13, _found ? _ch : "?", 0.42, fa_center, _found ? c_white : make_colour_rgb(160, 170, 210));
             }
 
-            // A boss's name and health bar, under the word.
-            if (instance_exists(boss) && boss.active)
+            // A boss's name and health bar, under the word: only on the screen of a snake that
+            // is in the boss area (the other snake may still be far behind).
+            var _sees_boss = instance_exists(boss) && boss.active;
+            if (_sees_boss && instance_exists(_p.inst)) _sees_boss = _p.inst.x > boss.arena_x1 - 200 && _p.inst.x < boss.arena_x2 + 200;
+            if (_sees_boss)
             {
                 var _bw = 220;
                 var _bx = 320 - _bw / 2;

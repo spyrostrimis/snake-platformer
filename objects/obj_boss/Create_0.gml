@@ -15,7 +15,21 @@ music = "music_09.ogg";
 arena_x1 = x - 360;   // how far it may roam (the level sets these)
 arena_x2 = x + 160;
 gravity_pull = 0.45;
-orb_dy = 74;          // how far above its middle the letter bubble floats
+orb_dy = 74;          // (no longer drawn: the letter only shows once the boss is beaten)
+
+/// True if snake _p is in this boss's area (its arena, about level with the boss).
+snake_in_arena = function(_p)
+{
+    return instance_exists(_p) && !_p.hidden && _p.x > arena_x1 - 16 && _p.x < arena_x2 + 16 && abs(_p.y - y) < 240;
+};
+
+/// A snake in the boss area, or noone. The boss wakes only when one arrives there.
+in_arena_snake = function()
+{
+    var _r = noone;
+    with (obj_player) if (_r == noone && other.snake_in_arena(id)) _r = id;
+    return _r;
+};
 
 /// Each hit takes _dmg health; after the last one the boss bursts and drops its letter.
 kill = function(_dmg = 1, _by = noone)

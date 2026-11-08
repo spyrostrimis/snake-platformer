@@ -134,6 +134,8 @@ cam_y = 0;
 cam_snap = false;       // true: cameras jump straight to their snakes (a new level)
 shake_t = 0;            // frames of camera shake left (the mole's earthquake)
 lights = [];            // dark levels: { x, y, r (size), torch } for the torches and crystals
+water = [[false]];      // water[tx][ty]: true where the level has water (load_level fills it)
+currents = [];          // the level's currents: { x1, y1, x2, y2 (pixels), vx, vy }
 title_pan = 0;
 
 /// Shakes every camera for _frames frames; online the host passes it on.
@@ -246,6 +248,7 @@ clear_level = function()
     with (obj_nest) instance_destroy();
     with (obj_boulder_drop) instance_destroy();
     with (obj_darkness) instance_destroy();
+    with (obj_water) instance_destroy();
     lights = [];
     for (var _i = 0; _i < array_length(layers_made); _i++) layer_destroy(layers_made[_i]);
     layers_made = [];
@@ -312,6 +315,23 @@ load_level = function(_i, _with_player)
         array_push(layers_made, _lay);
     }
 
+    // Water (a grid of wet cells) and currents, drawn by obj_water over the creatures.
+    water = array_create(lvl_w);
+    for (var _x = 0; _x < lvl_w; _x++) water[_x] = array_create(lvl_h, false);
+    for (var _k = 0; _k < array_length(lvl.water); _k++)
+    {
+        var _wr = lvl.water[_k];
+        for (var _x = max(0, _wr[0]); _x <= min(lvl_w - 1, _wr[2]); _x++)
+            for (var _y = max(0, _wr[1]); _y <= min(lvl_h - 1, _wr[3]); _y++) water[_x][_y] = true;
+    }
+    currents = lvl.currents;
+    if (array_length(lvl.water) > 0 || array_length(currents) > 0)
+    {
+        var _water_layer = layer_create(-60, "Water");
+        array_push(layers_made, _water_layer);
+        instance_create_layer(0, 0, _water_layer, obj_water);
+    }
+
     // A dark level: a shadow over the view, with light around torches, crystals and snakes.
     if (lvl.dark > 0)
     {
@@ -330,8 +350,10 @@ load_level = function(_i, _with_player)
     // In the cavern: glowing crystals and mushrooms on the floor, stalactites under the rock.
     // (The dark hollow has no mushrooms; its crystals give off a little light.)
     // The bone pit ("bone"): violet crystals and piles of bones, purple-tinted stalactites.
+    // The sunken grotto ("sea"): sea-blue crystals, shells and seaweed, blue-grey stalactites.
     var _bonez = lvl.deco == "bone";
-    var _cave = lvl.deco == "cave" || _bonez;
+    var _sea = lvl.deco == "sea";
+    var _cave = lvl.deco == "cave" || _bonez || _sea;
     var _deco = layer_create(95, "Deco");
     array_push(layers_made, _deco);
     random_set_seed(1000 + _i);
@@ -345,10 +367,13 @@ load_level = function(_i, _with_player)
                 var _roll = irandom(9);
                 if (_roll == 0)
                 {
-                    layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, _bonez ? spr_crystal_violet : (_cave ? spr_crystal : spr_flower));
+                    var _cr = layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, _bonez ? spr_crystal_violet : (_cave ? spr_crystal : spr_flower));
+                    if (_sea) layer_sprite_blend(_cr, make_colour_rgb(120, 230, 255));
                     if (_cave) array_push(lights, { x: _x * TILE + 16, y: _y * TILE - 6, r: 0.7, torch: false });
                 }
                 else if (_roll == 1 && _bonez) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_bones);
+                else if (_roll == 1 && _sea) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_shell);
+                else if ((_roll == 2 || _roll == 3) && _sea) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_weed);
                 else if (_roll == 1 && lvl.mushrooms) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_mushroom);
                 else if (_roll == 2 && !_cave && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 6, spr_bush);
             }
@@ -356,6 +381,7 @@ load_level = function(_i, _with_player)
             {
                 var _hang = layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, _cave ? spr_stalactite : spr_vine);
                 if (_bonez) layer_sprite_blend(_hang, make_colour_rgb(190, 140, 200));
+                if (_sea) layer_sprite_blend(_hang, make_colour_rgb(140, 190, 210));
             }
         }
     }
@@ -390,12 +416,14 @@ load_level = function(_i, _with_player)
             case "boss_mole":
             case "boss_cobra":
             case "boss_dino":
+            case "boss_crab":
                 var _boss_obj = obj_boss_mouse;
                 if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
                 else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
                 else if (_s.kind == "boss_mole") _boss_obj = obj_boss_mole;
                 else if (_s.kind == "boss_cobra") _boss_obj = obj_boss_cobra;
                 else if (_s.kind == "boss_dino") _boss_obj = obj_boss_dino;
+                else if (_s.kind == "boss_crab") _boss_obj = obj_boss_crab;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.y = _s.ty * TILE + 32 - boss.hh;     // standing on the floor, whatever its size
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
@@ -414,6 +442,8 @@ load_level = function(_i, _with_player)
             // The bone pit: skeletons with swords (standing on the floor) and skeleton birds.
             case "skel":     _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 16, "Instances", obj_skel); break;
             case "bonebird": _inst = instance_create_layer(_px, _py, "Instances", obj_bonebird); break;
+            // The sunken grotto: piranhas wait at the surface of the water in their tile.
+            case "piranha":  _inst = instance_create_layer(_px, _s.ty * TILE, "Instances", obj_piranha); break;
             case "boulders":  instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_boulder_drop); break;
             case "torch":
                 var _ts = layer_sprite_create(_deco, _px, _py, spr_torch);
@@ -630,7 +660,7 @@ player_died = function(_inst)
     {
         var _b = boss;
         var _near = false;
-        with (obj_player) if (id != _inst && abs(x - _b.x) < 300 && abs(y - _b.y) < 200) _near = true;
+        with (obj_player) if (id != _inst && _b.snake_in_arena(id)) _near = true;
         if (!_near)
         {
             boss.active = false;

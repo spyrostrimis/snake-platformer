@@ -851,4 +851,126 @@ function dino(f) {
 }
 for (let f = 0; f < 6; f++) save("dino_" + f, 280, 160, dino(f));
 
+// =====================================================================================
+// ---------- Level 7, the sunken grotto: sand, blue-grey rock, water ----------
+// =====================================================================================
+const KS = {
+  [K.rock]: "#5e7c8c", [K.rockLight]: "#a2c6d2", [K.rockDark]: "#2e4654", [K.mortar]: "#122028", [K.deep]: "#1a2c36",
+  [K.crust]: "#e4c884", [K.crustLight]: "#fff2c4", [K.crustDark]: "#b8964e", [K.crustLine]: "#4a3410",
+  "#e8b080": "#b8d0d8", "#7a3a14": "#2e4654", "#3a1806": "#102028", "#1e0c02": "#0a161c", "#fff0c0": "#fff8e0",
+  "#fff0d0": "#f0fbff",
+};
+const recolorSea = (s) => Object.entries(KS).reduce((t, [a, b]) => t.split(a).join(b), s);
+const sandTiles = caveTiles.map(recolorSea);
+// Sea urchins instead of stone spikes.
+sandTiles[9] = `<g stroke="#140a24" stroke-width="1.6">${[6, 16, 26].map((x) => `<path d="M${x} 32 L${x} 14 M${x} 32 L${x - 8} 18 M${x} 32 L${x + 8} 18 M${x} 32 L${x - 10} 26 M${x} 32 L${x + 10} 26" />`).join("")}</g>
+  ${[6, 16, 26].map((x) => `<ellipse cx="${x}" cy="29" rx="6" ry="5" fill="#3a2060" stroke="#140a24" stroke-width="1.4"/><circle cx="${x - 2}" cy="27" r="1.5" fill="#a080e0"/>`).join("")}`;
+save("spr_tiles_sand", 32 * sandTiles.length, 32,
+  sandTiles.map((t, i) => `<g transform="translate(${i * 32},0)" clip-path="url(#cell)">${t}</g>`).join(""),
+  stoneGrad + recolorSea(caveGrad) + `<clipPath id="cell"><rect x="0" y="0" width="32" height="32"/></clipPath>`);
+save("spr_shell", 20, 14,
+  `<path d="M2 13 Q2 3 10 2 Q18 3 18 13 Z" fill="#f4b8a8" stroke="#6a3030" stroke-width="1.4"/>
+   <path d="M10 13 L10 3 M6 13 L5 5 M14 13 L15 5" stroke="#c87868" stroke-width="1.2"/><rect x="7" y="11" width="6" height="3" rx="1" fill="#e89888" stroke="#6a3030" stroke-width="1"/>`);
+save("spr_weed", 18, 34,
+  `<path d="M5 34 Q1 24 6 16 Q11 8 6 1" stroke="#1e6a52" stroke-width="5" fill="none" stroke-linecap="round"/>
+   <path d="M5 34 Q1 24 6 16 Q11 8 6 1" stroke="#3aa880" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+   <path d="M11 34 Q16 26 12 19 Q9 13 13 8" stroke="#1e6a52" stroke-width="4.4" fill="none" stroke-linecap="round"/>
+   <path d="M11 34 Q16 26 12 19 Q9 13 13 8" stroke="#52c494" stroke-width="2.2" fill="none" stroke-linecap="round"/>`);
+
+// ---------- Piranhas (frames: leaping, biting, just the fin above the water) ----------
+// 40 x 32, origin (20, 16), facing right.
+function piranha(f) {
+  if (f === 2) return `<path d="M12 18 Q20 4 28 18 Z" fill="#c03040" stroke="#3a0a14" stroke-width="1.8"/>
+    <path d="M6 19 Q20 15 34 19" stroke="#bfefff" stroke-width="2" fill="none" opacity="0.8"/>`;
+  const open = f === 1;
+  const jaw = open
+    ? `<path d="M26 18 L38 24 L24 24 Z" fill="#7a1420" stroke="#3a0a14" stroke-width="1.4"/><path d="M28 19 l2 3 l2 -3 M31 21 l2 3 l2 -3" fill="#fff" stroke="#3a0a14" stroke-width="0.7"/>`
+    : "";
+  return `<path d="M8 16 L1 8 L2 24 Z" fill="#8a2030" stroke="#3a0a14" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M14 8 Q18 1 24 6" fill="#8a2030" stroke="#3a0a14" stroke-width="1.6"/>
+    <path d="M7 16 Q10 5 24 5 Q36 7 38 ${open ? 14 : 17} L24 ${open ? 18 : 19} Q32 ${open ? 18 : 21} 36 21 Q30 27 20 27 Q10 27 7 16 Z" fill="#c43c4c" stroke="#3a0a14" stroke-width="2"/>
+    <path d="M10 18 Q18 25 30 22" fill="#f08a5a" opacity="0.85"/>
+    ${jaw}
+    <circle cx="28" cy="11" r="3.2" fill="#fff4c0" stroke="#3a0a14" stroke-width="1.2"/><circle cx="29" cy="11" r="1.4" fill="#140406"/>
+    <path d="M24 7 L31 9" stroke="#3a0a14" stroke-width="1.8" stroke-linecap="round"/>
+    ${open ? "" : `<path d="M27 19 l2 3 l2 -3 M31 19 l1.6 2.6 l1.6 -2.6" fill="#fff" stroke="#3a0a14" stroke-width="0.7"/>`}`;
+}
+for (let f = 0; f < 3; f++) save("piranha_" + f, 40, 32, piranha(f));
+
+// ---------- The banknote the crab throws like a boomerang ----------
+save("spr_banknote", 36, 20,
+  `<rect x="1.5" y="1.5" width="33" height="17" rx="2" fill="#8ed08a" stroke="#1e4a1c" stroke-width="1.6"/>
+   <rect x="4" y="4" width="28" height="12" rx="1" fill="none" stroke="#3a8a3a" stroke-width="1"/>
+   <circle cx="18" cy="10" r="4.6" fill="#d8f4c8" stroke="#1e4a1c" stroke-width="1.2"/>
+   <path d="M15 11 q3 -5 6 0 M14 9 l-2 -2 M22 9 l2 -2" stroke="#c03030" stroke-width="1.3" fill="none"/>
+   <path d="M6 7 h4 M6 10 h3 M26 10 h4 M27 13 h3" stroke="#1e4a1c" stroke-width="1.2"/>`);
+
+// ---------- Baron Clawbucks, the giant red crab ----------
+// Frames: idle A, idle B, claw up with a banknote, throw, claw snap, claws up, claws smash, dizzy.
+// 300 x 180, origin (150, 138): legs on the floor at the bottom; the big claw is on the right.
+const CR = { red: "#e0402e", light: "#ff8a5a", dark: "#8a1c14", line: "#3a0a06", belly: "#ffd0a0" };
+const crabDefs = `<radialGradient id="cs" cx="0.45" cy="0.35" r="0.7"><stop offset="0" stop-color="${CR.light}"/><stop offset="0.6" stop-color="${CR.red}"/><stop offset="1" stop-color="${CR.dark}"/></radialGradient>`;
+function crabClaw(x, y, rot, open, big) {
+  const k = big ? 1.25 : 1;
+  const gap = open ? 16 : 3;
+  return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${k})">
+    <path d="M-6 0 Q10 -24 34 -${12 + gap / 2} Q40 -8 32 -4 Q20 -6 14 0 Z" fill="url(#cs)" stroke="${CR.line}" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M-6 0 Q10 ${18} 30 ${8 + gap / 2} Q36 4 28 2 Q18 4 14 0 Z" fill="url(#cs)" stroke="${CR.line}" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M20 -10 l3 3 M24 -9 l3 3 M20 6 l3 -3 M24 5 l3 -3" stroke="${CR.line}" stroke-width="1.4"/>
+    <ellipse cx="-4" cy="0" rx="14" ry="12" fill="url(#cs)" stroke="${CR.line}" stroke-width="2.4"/>
+    <ellipse cx="-8" cy="-4" rx="5" ry="3" fill="${CR.light}" opacity="0.7"/></g>`;
+}
+const crabArm = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${CR.line}" stroke-width="13" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${CR.red}" stroke-width="9" stroke-linecap="round"/>`;
+function crab(f) {
+  const step = f === 1 ? 4 : 0;
+  const squash = f === 6 ? 8 : 0;
+  const cy = 86 + squash;
+  // Legs: four a side, jointed.
+  let legs = "";
+  for (let i = 0; i < 4; i++) {
+    const s = (i % 2 ? step : -step);
+    const lx = 96 - i * 10, rx = 164 + i * 10;
+    legs += `<path d="M${lx} ${cy + 10} L${lx - 26 - i * 6} ${cy + 2 + s} L${lx - 34 - i * 8} 148" stroke="${CR.line}" stroke-width="8" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M${lx} ${cy + 10} L${lx - 26 - i * 6} ${cy + 2 + s} L${lx - 34 - i * 8} 148" stroke="${CR.dark}" stroke-width="4.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M${rx} ${cy + 10} L${rx + 26 + i * 6} ${cy + 2 - s} L${rx + 34 + i * 8} 148" stroke="${CR.line}" stroke-width="8" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M${rx} ${cy + 10} L${rx + 26 + i * 6} ${cy + 2 - s} L${rx + 34 + i * 8} 148" stroke="${CR.dark}" stroke-width="4.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  const shell = `<path d="M70 ${cy} Q74 ${cy - 46} 130 ${cy - 50} Q186 ${cy - 46} 190 ${cy} Q186 ${cy + 26} 130 ${cy + 28} Q74 ${cy + 26} 70 ${cy} Z" fill="url(#cs)" stroke="${CR.line}" stroke-width="3"/>
+    <path d="M84 ${cy + 8} Q130 ${cy + 26} 176 ${cy + 8}" stroke="${CR.dark}" stroke-width="2.4" fill="none"/>
+    <path d="M90 ${cy - 26} Q130 ${cy - 44} 170 ${cy - 26}" stroke="${CR.light}" stroke-width="4" fill="none" opacity="0.7"/>
+    <g fill="${CR.dark}"><circle cx="100" cy="${cy - 12}" r="3"/><circle cx="160" cy="${cy - 12}" r="3"/><circle cx="130" cy="${cy - 24}" r="3.4"/><circle cx="116" cy="${cy + 6}" r="2.4"/><circle cx="144" cy="${cy + 6}" r="2.4"/></g>`;
+  const dizzy = f === 7;
+  const eye = (x) => `<path d="M${x} ${cy - 44} L${x} ${cy - 66}" stroke="${CR.line}" stroke-width="7" stroke-linecap="round"/><path d="M${x} ${cy - 44} L${x} ${cy - 66}" stroke="${CR.red}" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="${x}" cy="${cy - 70}" r="9" fill="#fffbe8" stroke="${CR.line}" stroke-width="2.2"/>
+    ${dizzy ? `<path d="M${x - 4} ${cy - 70} a4 4 0 1 1 4 4 a2.6 2.6 0 1 1 -2.6 -2.6" stroke="${CR.line}" stroke-width="1.6" fill="none"/>` : `<circle cx="${x + 3}" cy="${cy - 69}" r="4" fill="#140404"/><circle cx="${x + 4}" cy="${cy - 71}" r="1.3" fill="#fff"/>`}`;
+  const brow = dizzy ? "" : `<path d="M108 ${cy - 82} L124 ${cy - 76} M152 ${cy - 82} L136 ${cy - 76}" stroke="${CR.line}" stroke-width="4" stroke-linecap="round"/>`;
+  const mouth = `<path d="M118 ${cy - 6} Q130 ${cy + 2} 142 ${cy - 6}" stroke="${CR.line}" stroke-width="2.6" fill="${CR.dark}"/>
+    <path d="M122 ${cy - 4} v4 M130 ${cy - 2} v4 M138 ${cy - 4} v4" stroke="#fff" stroke-width="1.6"/>`;
+  // Claws: the small one on the left, the big one on the right.
+  let arms = "", note = "", fx = "";
+  if (f === 2) {
+    arms = crabArm(80, cy - 4, 60, cy - 30) + crabClaw(56, cy - 36, -120, false, false) + crabArm(182, cy - 8, 196, cy - 58) + crabClaw(198, cy - 66, -70, true, true);
+    note = `<g transform="translate(212 ${cy - 102}) rotate(-20)"><rect x="-17" y="-9" width="34" height="18" rx="2" fill="#8ed08a" stroke="#1e4a1c" stroke-width="1.6"/><circle cx="0" cy="0" r="4.4" fill="#d8f4c8" stroke="#1e4a1c" stroke-width="1"/></g>`;
+  } else if (f === 3) {
+    arms = crabArm(80, cy - 4, 60, cy - 26) + crabClaw(56, cy - 32, -130, false, false) + crabArm(182, cy - 8, 214, cy - 30) + crabClaw(222, cy - 34, -20, true, true);
+    fx = `<path d="M232 ${cy - 70} Q256 ${cy - 50} 250 ${cy - 20}" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.6"/>`;
+  } else if (f === 4) {
+    // The snap: the big claw thrust out far ahead, pincers clacking shut.
+    arms = crabArm(80, cy - 4, 62, cy - 22) + crabClaw(58, cy - 28, -140, true, false) + crabArm(182, cy, 222, cy + 4) + crabClaw(232, cy + 2, 0, false, true);
+    fx = `<path d="M252 ${cy - 22} l6 -8 M256 ${cy + 2} l8 0 M252 ${cy + 24} l6 8" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>`;
+  } else if (f === 5) {
+    arms = crabArm(80, cy - 6, 62, cy - 56) + crabClaw(60, cy - 66, -100, true, true) + crabArm(180, cy - 6, 198, cy - 56) + crabClaw(200, cy - 66, -80, true, true);
+  } else if (f === 6) {
+    arms = crabArm(80, cy, 50, cy + 30) + crabClaw(40, cy + 36, 160, false, true) + crabArm(180, cy, 210, cy + 30) + crabClaw(220, cy + 36, 20, false, true);
+    fx = `<g fill="#e8d4a0" opacity="0.9"><circle cx="20" cy="140" r="8"/><circle cx="44" cy="146" r="6"/><circle cx="216" cy="146" r="6"/><circle cx="240" cy="140" r="8"/></g>`;
+  } else {
+    const b = dizzy ? 10 : step * 0.6;
+    arms = crabArm(80, cy - 2, 62, cy - 18 + b) + crabClaw(56, cy - 22 + b, -150, f === 1, false) + crabArm(182, cy - 4, 202, cy - 22 - b) + crabClaw(210, cy - 28 - b, -30, f === 0, true);
+  }
+  const stars = dizzy ? `<path d="M100 10 l2 5 5 1 -4 3 1 5 -4 -3 -4 3 1 -5 -4 -3 5 -1 Z M160 6 l2 5 5 1 -4 3 1 5 -4 -3 -4 3 1 -5 -4 -3 5 -1 Z" fill="#ffe04a" stroke="${CR.line}" stroke-width="1"/>` : "";
+  // Drawn on a 260 x 150 grid, placed with room around it for the raised and thrust claws.
+  return `<g transform="translate(20 30)">${legs + eye(116) + eye(144) + shell + brow + mouth + arms + note + fx + stars}</g>`;
+}
+for (let f = 0; f < 8; f++) save("crab_" + f, 300, 180, crab(f), crabDefs);
+
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

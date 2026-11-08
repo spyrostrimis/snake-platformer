@@ -99,6 +99,28 @@ function entity_move()
     y = _ny;
 }
 
+/// True if the point (_px, _py) is in water.
+function water_at(_px, _py)
+{
+    var _g = obj_game;
+    var _tx = floor(_px / TILE);
+    var _ty = floor(_py / TILE);
+    if (_tx < 0 || _ty < 0 || _tx >= _g.lvl_w || _ty >= _g.lvl_h) return false;
+    return _g.water[_tx][_ty];
+}
+
+/// The current at the point (_px, _py) (a struct with vx, vy), or undefined.
+function current_at(_px, _py)
+{
+    var _c = obj_game.currents;
+    for (var _i = 0; _i < array_length(_c); _i++)
+    {
+        var _k = _c[_i];
+        if (_px >= _k.x1 && _px < _k.x2 && _py >= _k.y1 && _py < _k.y2) return _k;
+    }
+    return undefined;
+}
+
 /// True if the calling instance's box overlaps a spike tile.
 function touching_spikes()
 {

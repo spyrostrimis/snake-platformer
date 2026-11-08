@@ -36,6 +36,7 @@ tongue_t = 0;           // 0 = tongue in; counts up while it lashes out and back
 tongue_len = 0;
 blink = 0;
 gulp_t = 0;             // counts down while a swallowed egg travels down the body
+was_swim = false;       // in water last step (for the splash)
 image_speed = 0;
 
 // ---------- The Slingshot (two players): Peto is the bow, Sockee the arrow ----------
