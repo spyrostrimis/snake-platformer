@@ -374,6 +374,7 @@ load_level = function(_i, _with_player)
                 else if (_roll == 1 && _bonez) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_bones);
                 else if (_roll == 1 && _sea) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_shell);
                 else if ((_roll == 2 || _roll == 3) && _sea) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_weed);
+                else if (_roll == 4 && _sea && lvl.swim == "free") layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_coral);
                 else if (_roll == 1 && lvl.mushrooms) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_mushroom);
                 else if (_roll == 2 && !_cave && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 6, spr_bush);
             }
@@ -417,6 +418,7 @@ load_level = function(_i, _with_player)
             case "boss_cobra":
             case "boss_dino":
             case "boss_crab":
+            case "boss_jelly":
                 var _boss_obj = obj_boss_mouse;
                 if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
                 else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
@@ -424,6 +426,7 @@ load_level = function(_i, _with_player)
                 else if (_s.kind == "boss_cobra") _boss_obj = obj_boss_cobra;
                 else if (_s.kind == "boss_dino") _boss_obj = obj_boss_dino;
                 else if (_s.kind == "boss_crab") _boss_obj = obj_boss_crab;
+                else if (_s.kind == "boss_jelly") _boss_obj = obj_boss_jelly;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.y = _s.ty * TILE + 32 - boss.hh;     // standing on the floor, whatever its size
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
@@ -444,6 +447,19 @@ load_level = function(_i, _with_player)
             case "bonebird": _inst = instance_create_layer(_px, _py, "Instances", obj_bonebird); break;
             // The sunken grotto: piranhas wait at the surface of the water in their tile.
             case "piranha":  _inst = instance_create_layer(_px, _s.ty * TILE, "Instances", obj_piranha); break;
+            // The deep: octopuses and jellyfish float in the water; glowing anemones light the
+            // sea floor; the sunken ship lies behind the tiles, half buried in the sand.
+            case "octopus":  _inst = instance_create_layer(_px, _py, "Instances", obj_octopus); break;
+            case "jelly":    _inst = instance_create_layer(_px, _py, "Instances", obj_jelly); break;
+            case "anemone":
+                layer_sprite_create(_deco, _px, _s.ty * TILE + 32 + 2, spr_anemone);
+                array_push(lights, { x: _px, y: _s.ty * TILE + 16, r: 1.6, torch: false });
+                break;
+            case "wreck":
+                var _wl = layer_create(105, "Wreck");
+                array_push(layers_made, _wl);
+                layer_sprite_create(_wl, _s.tx * TILE, (_s.ty + 1) * TILE + 48, spr_wreck);
+                break;
             case "boulders":  instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_boulder_drop); break;
             case "torch":
                 var _ts = layer_sprite_create(_deco, _px, _py, spr_torch);

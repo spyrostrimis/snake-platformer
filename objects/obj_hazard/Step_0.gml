@@ -17,6 +17,7 @@ if (net_mirror())
         }
         else if (_me.ball) _g.burst(x, y, c_white, 6);
         else with (_me) take_hit(sign(x - other.x));
+        if (sprite_index == spr_ink && !_me.ball) _me.inked = 170;
         _g.net_gone[$ string(net_id)] = true;
         _g.net_event({ t: "hazard", i: net_id });
         instance_destroy();
@@ -111,6 +112,9 @@ if (_hit != noone)
     {
         if (_hit.ball) _g.burst(x, y, c_white, 6);
         else with (_hit) take_hit(sign(x - other.x));
+        // Octopus ink blots the snake's screen for a while.
+        if (sprite_index == spr_ink && !_hit.ball) _hit.inked = 170;
+        if (sprite_index == spr_ink) _g.burst(x, y, make_colour_rgb(40, 20, 60), 14);
         instance_destroy();
     }
 }

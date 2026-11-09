@@ -16,3 +16,18 @@ timer = 40 + irandom(60);
 facing = -1;
 
 is_harmless = function() { return floor(image_index) == 2; };
+
+// In deep water (a "free" swimming level) there's no surface to hide under: it swims about
+// its home, chases a snake that comes near and lunges at it with its jaws open.
+deep = obj_game.lvl.swim == "free";
+if (deep)
+{
+    y = home_y;
+    state = "swim";
+    image_index = 0;
+    t = random(10);
+    lunge_t = 0;
+    rest = 30;
+    vx = 0;
+    vy = 0;
+}

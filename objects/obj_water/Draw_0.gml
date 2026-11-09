@@ -13,30 +13,64 @@ var _ty1 = max(0, floor(_cy / TILE));
 var _ty2 = min(_g.lvl_h - 1, floor((_cy + _ch) / TILE));
 var _deep = make_colour_rgb(20, 90, 140);
 var _shallow = make_colour_rgb(60, 170, 210);
+var _foam = make_colour_rgb(210, 245, 255);
+// All the water cells as one batch of triangles sharing their corners exactly, so there are
+// no seams between the cells. The top cell of a body of water has a wavy surface.
+// (A batch holds about a thousand corners: start a new one every 150 cells.)
+var _cells = 0;
+draw_primitive_begin(pr_trianglelist);
 for (var _x = _tx1; _x <= _tx2; _x++)
 {
     for (var _y = _ty1; _y <= _ty2; _y++)
     {
         if (!_g.water[_x][_y] || is_blocking(_g.grid[_x][_y])) continue;
+        if (++_cells mod 150 == 0) { draw_primitive_end(); draw_primitive_begin(pr_trianglelist); }
         var _px = _x * TILE;
         var _py = _y * TILE;
         var _top = _y == 0 || !_g.water[_x][_y - 1];
+        var _y1 = _py;
+        var _y2 = _py;
+        var _c = _deep;
         if (_top)
         {
-            // The surface: a wave line and a light band.
-            var _w1 = sin((_px) * 0.09 + _t * 0.07) * 2;
-            var _w2 = sin((_px + 32) * 0.09 + _t * 0.07) * 2;
-            draw_set_alpha(0.45);
-            draw_triangle_colour(_px, _py + 4 + _w1, _px + 32, _py + 4 + _w2, _px, _py + 32, _shallow, _shallow, _deep, false);
-            draw_triangle_colour(_px + 32, _py + 4 + _w2, _px + 32, _py + 32, _px, _py + 32, _shallow, _deep, _deep, false);
-            draw_set_alpha(0.8);
-            draw_line_width_colour(_px, _py + 4 + _w1, _px + 32, _py + 4 + _w2, 2, make_colour_rgb(210, 245, 255), make_colour_rgb(210, 245, 255));
+            _y1 = _py + 4 + sin(_px * 0.09 + _t * 0.07) * 2;
+            _y2 = _py + 4 + sin((_px + 32) * 0.09 + _t * 0.07) * 2;
+            _c = _shallow;
         }
-        else
-        {
-            draw_set_alpha(0.45);
-            draw_rectangle_colour(_px, _py, _px + 31, _py + 31, _deep, _deep, _deep, _deep, false);
-        }
+        draw_vertex_colour(_px, _y1, _c, 0.45);
+        draw_vertex_colour(_px + 32, _y2, _c, 0.45);
+        draw_vertex_colour(_px, _py + 32, _deep, 0.45);
+        draw_vertex_colour(_px + 32, _y2, _c, 0.45);
+        draw_vertex_colour(_px + 32, _py + 32, _deep, 0.45);
+        draw_vertex_colour(_px, _py + 32, _deep, 0.45);
+    }
+}
+draw_primitive_end();
+// The surface line on top.
+draw_set_alpha(0.8);
+for (var _x = _tx1; _x <= _tx2; _x++)
+{
+    for (var _y = _ty1; _y <= _ty2; _y++)
+    {
+        if (!_g.water[_x][_y] || is_blocking(_g.grid[_x][_y]) || (_y > 0 && _g.water[_x][_y - 1])) continue;
+        var _px = _x * TILE;
+        var _py = _y * TILE;
+        draw_line_width_colour(_px, _py + 4 + sin(_px * 0.09 + _t * 0.07) * 2, _px + 32, _py + 4 + sin((_px + 32) * 0.09 + _t * 0.07) * 2, 2, _foam, _foam);
+    }
+}
+
+// ---------- Deep water: bubbles drifting up ----------
+if (_g.lvl.swim == "free")
+{
+    draw_set_alpha(0.55);
+    for (var _i = 0; _i < 26; _i++)
+    {
+        var _a = (_i * 7919) mod 997 / 997;
+        var _b = (_i * 3571) mod 991 / 991;
+        var _bx = _cx + _a * _cw + sin(_t * 0.05 + _i) * 6;
+        var _by = _cy + _ch - ((_b * (_ch + 60) + _t * (0.5 + _a)) mod (_ch + 60)) + 30;
+        if (!water_at(_bx, _by) || is_blocking(tile_at(_bx, _by))) continue;
+        draw_circle_colour(_bx, _by, 2 + (_i mod 3), c_white, c_white, true);
     }
 }
 

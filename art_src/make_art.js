@@ -973,4 +973,155 @@ function crab(f) {
 }
 for (let f = 0; f < 8; f++) save("crab_" + f, 300, 180, crab(f), crabDefs);
 
+// =====================================================================================
+// ---------- Level 8, the deep: octopus, jellyfish, the jellyfish queen, a sunken ship ----------
+// =====================================================================================
+// Glowing sea anemone (a light on the sea floor) and coral.
+save("spr_anemone", 32, 30,
+  `${[4, 9, 14, 19, 24, 28].map((x, i) => `<path d="M16 28 Q${x} ${16 - (i % 2) * 4} ${x + (i < 3 ? -2 : 2)} ${4 + (i % 3) * 3}" stroke="#ff6ad8" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+     <circle cx="${x + (i < 3 ? -2 : 2)}" cy="${4 + (i % 3) * 3}" r="2.6" fill="#fff0fc"/>`).join("")}
+   <ellipse cx="16" cy="27" rx="9" ry="4" fill="#a02a8a" stroke="#3a0a30" stroke-width="1.4"/>`);
+save("spr_coral", 34, 30,
+  `<path d="M17 30 L17 18 L9 10 L9 3 M17 18 L25 9 L25 2 M17 22 L28 16 M13 14 L5 13" stroke="#3a0c14" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+   <path d="M17 30 L17 18 L9 10 L9 3 M17 18 L25 9 L25 2 M17 22 L28 16 M13 14 L5 13" stroke="#ff7a5a" stroke-width="4.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+   <g fill="#ffd0a0"><circle cx="9" cy="3" r="1.6"/><circle cx="25" cy="2" r="1.6"/><circle cx="28" cy="16" r="1.4"/><circle cx="5" cy="13" r="1.4"/></g>`);
+
+// ---------- The octopus (frames: idle A, idle B, puffed up to squirt ink) ----------
+// 60 x 56, origin (30, 24). It faces right (its eyes look that way).
+function octo(f) {
+  const puff = f === 2;
+  const k = puff ? 1.15 : 1;
+  let legs = "";
+  for (let i = 0; i < 6; i++) {
+    const x = 12 + i * 7.2;
+    const sway = (f === 1 ? 1 : -1) * ((i % 2) ? 4 : -4);
+    legs += `<path d="M${x} 32 Q${x + sway} 44 ${x - sway * 0.6} 54" stroke="#3a0c2a" stroke-width="6.6" fill="none" stroke-linecap="round"/>
+      <path d="M${x} 32 Q${x + sway} 44 ${x - sway * 0.6} 54" stroke="#c4407e" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  }
+  return `${legs}
+    <ellipse cx="30" cy="${22 - (puff ? 2 : 0)}" rx="${17 * k}" ry="${17 * k}" fill="#d85a94" stroke="#3a0c2a" stroke-width="2.4"/>
+    <ellipse cx="25" cy="13" rx="6" ry="4" fill="#f4a0c8" opacity="0.8"/>
+    <circle cx="20" cy="18" r="1.6" fill="#f4a0c8"/><circle cx="38" cy="12" r="1.8" fill="#f4a0c8"/>
+    <ellipse cx="36" cy="25" rx="5" ry="6" fill="#fff6e0" stroke="#3a0c2a" stroke-width="1.6"/><circle cx="38" cy="26" r="2.6" fill="#140410"/>
+    <ellipse cx="25" cy="25" rx="4.4" ry="5.4" fill="#fff6e0" stroke="#3a0c2a" stroke-width="1.6"/><circle cx="27" cy="26" r="2.3" fill="#140410"/>
+    <path d="M21 18 L29 21 M41 17 L34 20" stroke="#3a0c2a" stroke-width="2" stroke-linecap="round"/>
+    ${puff ? `<ellipse cx="46" cy="33" rx="5" ry="4" fill="#7a1a50" stroke="#3a0c2a" stroke-width="1.6"/><circle cx="52" cy="33" r="3" fill="#2a1030"/>` : `<path d="M28 33 Q32 35 36 33" stroke="#3a0c2a" stroke-width="1.6" fill="none"/>`}`;
+}
+for (let f = 0; f < 3; f++) save("octo_" + f, 60, 56, octo(f));
+save("spr_ink", 24, 24,
+  `<path d="M12 2 Q20 4 21 11 Q23 19 14 22 Q5 23 3 15 Q1 6 12 2 Z" fill="#2a1438" stroke="#0a0410" stroke-width="1.6"/>
+   <ellipse cx="9" cy="9" rx="3" ry="2" fill="#6a4a8a" opacity="0.8"/>`);
+
+// ---------- Jellyfish (frames: pulse A, pulse B, electrified) ----------
+// 44 x 60, origin (22, 18).
+function jelly(f) {
+  if (f === 3) return jelly(0).split("#8ac8ff").join("#f6e8a0").split("#2a5a9a").join("#a08020");   // charging: yellowing, no sparks yet
+  const zap = f === 2, squeeze = f === 1;
+  const w = squeeze ? 15 : 18, h = squeeze ? 15 : 13;
+  let tent = "";
+  for (let i = 0; i < 5; i++) {
+    const x = 10 + i * 6;
+    const s = (squeeze ? 2 : -2) * ((i % 2) ? 1 : -1);
+    tent += `<path d="M${x} 20 Q${x + s} 34 ${x - s} 44 Q${x + s} 52 ${x} 58" stroke="${zap ? "#fff6a0" : "#9ad8ff"}" stroke-width="2.2" fill="none" opacity="0.9"/>`;
+  }
+  const bolts = zap ? `<g stroke="#fff27a" stroke-width="2.2" fill="none" stroke-linecap="round">
+      <path d="M2 8 L7 12 L3 16 L9 20"/><path d="M42 8 L37 12 L41 16 L35 20"/><path d="M22 -2 L20 3 L24 5 L21 9" transform="translate(0 2)"/></g>` : "";
+  return `${tent}
+    <path d="M${22 - w} 20 Q${22 - w} ${20 - h * 1.5} 22 ${20 - h * 1.5} Q${22 + w} ${20 - h * 1.5} ${22 + w} 20 Q${22 + w * 0.5} 23 22 21 Q${22 - w * 0.5} 23 ${22 - w} 20 Z"
+      fill="${zap ? "#fff0a0" : "#8ac8ff"}" fill-opacity="0.8" stroke="${zap ? "#c08a10" : "#2a5a9a"}" stroke-width="1.8"/>
+    <ellipse cx="17" cy="${20 - h}" rx="4" ry="2.4" fill="#ffffff" opacity="0.7"/>
+    <circle cx="18" cy="15" r="1.6" fill="#16264a"/><circle cx="26" cy="15" r="1.6" fill="#16264a"/>${bolts}`;
+}
+for (let f = 0; f < 4; f++) save("jelly_" + f, 44, 60, jelly(f));
+save("spr_spark", 22, 22,
+  `<circle cx="11" cy="11" r="9" fill="#fff27a" opacity="0.45"/>
+   <path d="M11 1 L13 8 L20 6 L14 11 L21 15 L13 14 L11 21 L9 14 L1 15 L8 11 L2 6 L9 8 Z" fill="#fff8c0" stroke="#c08a10" stroke-width="1.2" stroke-linejoin="round"/>`);
+
+// ---------- Queen Voltella, the giant jellyfish ----------
+// Frames: drifting, pulse, charging, zap, diving, hurt. 260 x 340, origin (130, 108): the bell.
+function queen(f) {
+  const zap = f === 3, charge = f === 2, dive = f === 4, hurt = f === 5, pulse = f === 1;
+  const bw = dive ? 74 : pulse ? 82 : 92;
+  const bh = dive ? 82 : pulse ? 66 : 70;
+  const bell = zap || charge ? "#fff0a0" : "#c49aff";
+  const rim = zap || charge ? "#c08a10" : "#4a2a8a";
+  let tent = "";
+  for (let i = 0; i < 9; i++) {
+    const x = 130 - 72 + i * 18;
+    const s = (pulse ? 10 : -10) * ((i % 2) ? 1 : -1);
+    const len = dive ? 196 : 180 + (i % 3) * 12;
+    tent += `<path d="M${x} 104 Q${x + s} ${140} ${x - s} ${170} Q${x + s} ${200} ${x + (dive ? 0 : -s * 0.5)} ${104 + len}" stroke="${rim}" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.8"/>
+      <path d="M${x} 104 Q${x + s} ${140} ${x - s} ${170} Q${x + s} ${200} ${x + (dive ? 0 : -s * 0.5)} ${104 + len}" stroke="${zap ? "#fff6a0" : "#e8c8ff"}" stroke-width="3.6" fill="none" stroke-linecap="round"/>`;
+  }
+  // Frilly mouth-arms in the middle.
+  const arms = `<path d="M112 100 Q100 150 118 190 Q104 220 122 250" stroke="#ff8ad8" stroke-width="9" fill="none" stroke-linecap="round" opacity="0.85"/>
+    <path d="M148 100 Q160 150 142 190 Q156 220 138 250" stroke="#ff8ad8" stroke-width="9" fill="none" stroke-linecap="round" opacity="0.85"/>`;
+  const glow = (zap || charge) ? `<ellipse cx="130" cy="70" rx="${bw + 26}" ry="${bh + 20}" fill="#fff27a" opacity="${zap ? 0.35 : 0.2}"/>` : "";
+  const bolts = zap ? `<g stroke="#fff27a" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 40 L40 58 L26 70 L46 88"/><path d="M238 40 L220 58 L234 70 L214 88"/><path d="M130 -6 L122 10 L136 16 L126 30" transform="translate(0 4)"/>
+      <path d="M40 120 L58 116 L52 134 L72 130"/><path d="M220 120 L202 116 L208 134 L188 130"/></g>` : "";
+  const sparks = charge ? `<g fill="#fff8c0">${[[40, 30], [220, 36], [70, 120], [196, 124], [130, 6]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3"/>`).join("")}</g>` : "";
+  const eyes = hurt
+    ? `<path d="M100 60 l12 12 M112 60 l-12 12 M148 60 l12 12 M160 60 l-12 12" stroke="#2a0a40" stroke-width="4" stroke-linecap="round"/>`
+    : `<ellipse cx="106" cy="66" rx="9" ry="11" fill="#fffaf0" stroke="#2a0a40" stroke-width="2.4"/><circle cx="108" cy="68" r="4.6" fill="#1a0630"/>
+       <ellipse cx="154" cy="66" rx="9" ry="11" fill="#fffaf0" stroke="#2a0a40" stroke-width="2.4"/><circle cx="152" cy="68" r="4.6" fill="#1a0630"/>
+       <path d="M92 50 L114 56 M168 50 L146 56" stroke="#2a0a40" stroke-width="4" stroke-linecap="round"/>`;
+  const mouth = hurt ? `<path d="M118 92 Q130 84 142 92" stroke="#2a0a40" stroke-width="3" fill="none"/>`
+    : `<path d="M116 86 Q130 98 144 86 Z" fill="#7a1a5a" stroke="#2a0a40" stroke-width="2.4"/><path d="M122 88 l2 4 l2 -4 M134 88 l2 4 l2 -4" fill="#fff" stroke="none"/>`;
+  const crown = `<g transform="translate(0 ${-bh + 70})"><path d="M108 4 L112 -14 L120 -2 L130 -20 L140 -2 L148 -14 L152 4 Z" fill="#ffb84a" stroke="#6a3a06" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="130" cy="-8" r="3.4" fill="#ff4a8a"/><circle cx="116" cy="-2" r="2.2" fill="#6af0ff"/><circle cx="144" cy="-2" r="2.2" fill="#6af0ff"/></g>`;
+  return `${glow}${tent}${arms}
+    <path d="M${130 - bw} 104 Q${130 - bw} ${104 - bh * 1.45} 130 ${104 - bh * 1.45} Q${130 + bw} ${104 - bh * 1.45} ${130 + bw} 104
+      Q${130 + bw * 0.75} 114 ${130 + bw * 0.5} 106 Q${130 + bw * 0.25} 116 130 106 Q${130 - bw * 0.25} 116 ${130 - bw * 0.5} 106 Q${130 - bw * 0.75} 114 ${130 - bw} 104 Z"
+      fill="${bell}" fill-opacity="0.88" stroke="${rim}" stroke-width="3.4"/>
+    <ellipse cx="${130 - bw * 0.45}" cy="${104 - bh * 1.05}" rx="${bw * 0.22}" ry="${bh * 0.16}" fill="#ffffff" opacity="0.6"/>
+    ${crown}${eyes}${mouth}${bolts}${sparks}`;
+}
+for (let f = 0; f < 6; f++) save("queen_" + f, 260, 340, `<g transform="translate(0 40)">${queen(f)}</g>`);
+
+// ---------- The sunken ship: the bow of a huge wreck, sunk in the sand ----------
+// 980 x 600, origin (0, 600). Only the front shows; the rest is beyond the level's end.
+function wreck() {
+  const plank = "#4e3c30", plankD = "#33261e", plankL = "#6a5644", rust = "#8a5a30", algae = "#3e6a48";
+  // Hull: the bow at the left, rising to a high forecastle, running off to the right.
+  const hull = `M60 600 L70 470 Q90 380 150 330 L210 300 L980 286 L980 600 Z`;
+  let planks = "";
+  for (let y = 320; y < 600; y += 22) planks += `<path d="M${y < 380 ? 160 - (y - 320) * 0.6 : 72} ${y} L980 ${y - 8}" stroke="${plankD}" stroke-width="2.4"/>`;
+  let ribs = "";
+  for (let x = 260; x < 980; x += 120) ribs += `<path d="M${x} 296 L${x + 6} 600" stroke="${plankD}" stroke-width="5" opacity="0.6"/>`;
+  let ports = "";
+  for (let x = 420; x < 980; x += 92) ports += `<circle cx="${x}" cy="380" r="17" fill="#1a1612" stroke="${rust}" stroke-width="6"/><circle cx="${x - 4}" cy="376" r="6" fill="#3a6a7a" opacity="0.7"/>`;
+  let barn = "";
+  for (let i = 0; i < 40; i++) {
+    const x = 90 + ((i * 97) % 880), y = 430 + ((i * 53) % 160);
+    barn += `<circle cx="${x}" cy="${y}" r="${3 + (i % 3)}" fill="#c8c0a8" stroke="#4a4438" stroke-width="1.2"/>`;
+  }
+  let weed = "";
+  for (let i = 0; i < 14; i++) {
+    const x = 100 + i * 64 + ((i * 29) % 30);
+    weed += `<path d="M${x} 600 Q${x - 12} ${540} ${x + 4} ${500 - (i % 3) * 20} Q${x + 14} ${470} ${x} ${440 - (i % 4) * 16}" stroke="${algae}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+  }
+  // The big hole in the hull (the way in) and broken planks round it.
+  const hole = `<path d="M250 600 L244 520 L262 470 L292 452 L330 462 L352 500 L360 548 L366 600 Z" fill="#0a0806" stroke="${plankD}" stroke-width="5"/>
+    <path d="M244 520 L226 506 M262 470 L250 446 M330 462 L346 440 M352 500 L376 494" stroke="${plankL}" stroke-width="7" stroke-linecap="round"/>`;
+  // Deck rail, the broken bowsprit, the masts and a torn sail.
+  const deck = `<path d="M150 330 L210 300 L980 286" stroke="${plankL}" stroke-width="8" fill="none"/>
+    ${[230, 300, 370, 440, 510, 580, 650, 720, 790, 860, 930].map((x) => `<path d="M${x} ${300 - (x - 230) * 0.02} l0 -26" stroke="${plankL}" stroke-width="5"/>`).join("")}
+    <path d="M200 276 L980 262" stroke="${plankL}" stroke-width="6"/>`;
+  const bowsprit = `<path d="M160 318 L10 236" stroke="${plankD}" stroke-width="16" stroke-linecap="round"/><path d="M160 318 L10 236" stroke="${plank}" stroke-width="10" stroke-linecap="round"/>
+    <path d="M14 238 L160 300" stroke="#8a8070" stroke-width="2" opacity="0.7"/>`;
+  const mast = (x, top, broken) => `<rect x="${x - 11}" y="${top}" width="22" height="${290 - top}" fill="${plank}" stroke="${plankD}" stroke-width="3"/>
+    ${broken ? `<path d="M${x - 11} ${top} L${x - 4} ${top - 22} L${x + 3} ${top - 6} L${x + 11} ${top - 18} L${x + 11} ${top}" fill="${plank}" stroke="${plankD}" stroke-width="3"/>` : ""}
+    <rect x="${x - 70}" y="${top + 60}" width="140" height="12" rx="4" fill="${plank}" stroke="${plankD}" stroke-width="3" transform="rotate(-8 ${x} ${top + 66})"/>`;
+  const sail = `<path d="M560 110 L700 98 L690 170 L650 150 L640 210 L600 180 L572 230 Z" fill="#c8bca0" opacity="0.65" stroke="#7a705a" stroke-width="2.4"/>
+    <path d="M590 120 L610 200 M640 112 L650 150" stroke="#7a705a" stroke-width="1.6" opacity="0.7"/>`;
+  const chain = `<path d="M120 380 Q110 470 140 600" stroke="#5a5048" stroke-width="5" fill="none" stroke-dasharray="8 4"/>`;
+  return `${mast(330, 40, true)}${mast(640, -40, false)}${sail}${bowsprit}
+    <path d="${hull}" fill="${plank}" stroke="${plankD}" stroke-width="5"/>${planks}${ribs}
+    <path d="M70 470 Q90 380 150 330" stroke="${plankL}" stroke-width="6" fill="none"/>
+    ${deck}${ports}${hole}${barn}${weed}${chain}
+    <path d="M60 600 L70 470 Q90 380 150 330 L210 300 L980 286 L980 600 Z" fill="${algae}" opacity="0.18"/>`;
+}
+save("spr_wreck", 980, 600, wreck());
+
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

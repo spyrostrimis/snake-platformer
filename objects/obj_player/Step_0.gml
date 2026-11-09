@@ -20,6 +20,7 @@ var _roll_held = _in.roll_held;
 var _boost_key = _in.boost;
 
 if (invuln > 0) invuln--;
+if (inked > 0) inked--;
 if (gulp_t > 0) gulp_t--;
 if (blink > 0) blink--; else if (irandom(180) == 0) blink = 8;
 
@@ -36,7 +37,9 @@ if (sling_step(_in))
 // The green rocket only launches from the ground; the red dash also works in mid-air.
 if (boost_cd > 0) boost_cd--;
 if (on_ground && boost_t == 0) boost_ready = true;
-if (_boost_key && tongue_t == 0 && boost_t == 0 && boost_cd == 0 && boost_ready && (skin.boost != "up" || on_ground))
+// (Under water the green rocket works anywhere: there's no ground to push off in the deep.)
+if (water_at(x, y) && boost_t == 0 && boost_cd == 0) boost_ready = true;
+if (_boost_key && tongue_t == 0 && boost_t == 0 && boost_cd == 0 && boost_ready && (skin.boost != "up" || on_ground || water_at(x, y)))
 {
     boost_ready = false;
     if (skin.boost == "up")
@@ -84,17 +87,20 @@ if (ball) ball_angle -= vx * 4;
 // ---------- Water: swimming at the surface ----------
 // In water the snake is held up (it floats with its head out), swims a little slower and
 // can jump out from the surface as if from the ground.
+// In a deep-water level (lvl.swim "free") it swims anywhere instead: Jump (or Up) swims up,
+// Down dives, and with neither it sinks slowly.
 var _swim = water_at(x, y);
 var _surface = _swim && !water_at(x, y - 14);
+var _free = _swim && _g.lvl.swim == "free";
 if (_swim)
 {
-    if (!_dashing)
+    if (!_dashing && !ball)
     {
         vx = clamp(vx, -2.6, 2.6);
         if (_dir == 0) vx = approach(vx, 0, 0.12);
     }
     if (_surface) coyote = 6;
-    air_jump_ready = true;
+    air_jump_ready = !_free;
     copter_arm = false;
     if (!was_swim && vy > 2)
     {
@@ -149,7 +155,15 @@ if (!_jump_held && vy < -3 && !sprung && !(boost_t > 0 && skin.boost == "up")) v
 vy = min(vy + gravity_pull, fall_max);
 // The red dash flies straight ahead, holding its height.
 if (_dashing) vy = 0;
-if (_swim && !_jumped)
+if (_free && boost_t == 0)
+{
+    // Deep water: no gravity, the snake swims where it's steered.
+    vy -= gravity_pull;
+    if (_jumped) vy = -4;                                // pushing off the sea floor
+    else vy = approach(vy, _jump_held ? -2.8 : (_down ? 2.8 : 0.35), 0.22);
+}
+else if (_free) { vy -= gravity_pull; vy = approach(vy, 0, 0.25); }   // a boost, slowed by the water
+else if (_swim && !_jumped)
 {
     vy -= gravity_pull;                                  // the water holds the snake up...
     if (!_surface) { if (vy > -3) vy = max(vy - 0.4, -3); }  // ...under: it floats up

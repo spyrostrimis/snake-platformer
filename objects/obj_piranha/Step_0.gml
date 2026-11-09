@@ -7,6 +7,48 @@ if (_g.state != "play") { image_index = 2; exit; }
 
 switch (state)
 {
+    case "swim":
+        // Deep water: cruises about its home; chases a snake nearby; lunges when close.
+        t += 0.03;
+        if (rest > 0) rest--;
+        var _p = instance_nearest(x, y, obj_player);
+        var _tx = home_x + sin(t) * 60;
+        var _ty = home_y + sin(t * 1.7) * 20;
+        var _sp = 1.1;
+        if (_p != noone && !_p.hidden && point_distance(x, y, _p.x, _p.y) < 230 && point_distance(home_x, home_y, _p.x, _p.y) < 320)
+        {
+            _tx = _p.x;
+            _ty = _p.y;
+            _sp = 1.7;
+            if (rest == 0 && point_distance(x, y, _p.x, _p.y) < 100)
+            {
+                state = "lunge";
+                lunge_t = 20;
+                var _dir = point_direction(x, y, _p.x, _p.y);
+                vx = lengthdir_x(5, _dir);
+                vy = lengthdir_y(5, _dir);
+                _g.play_sfx(_g.sfx.snip);
+                break;
+            }
+        }
+        var _d = point_direction(x, y, _tx, _ty);
+        var _nx = x + lengthdir_x(_sp, _d);
+        var _ny = y + lengthdir_y(_sp, _d);
+        if (water_at(_nx, _ny) && !is_blocking(tile_at(_nx, _ny))) { x = _nx; y = _ny; }
+        if (abs(_tx - x) > 2) facing = (_tx > x) ? 1 : -1;
+        image_index = 0;
+        break;
+
+    case "lunge":
+        image_index = 1;
+        lunge_t--;
+        var _lx = x + vx;
+        var _ly = y + vy;
+        if (water_at(_lx, _ly) && !is_blocking(tile_at(_lx, _ly))) { x = _lx; y = _ly; } else lunge_t = 0;
+        if (vx != 0) facing = sign(vx);
+        if (lunge_t <= 0) { state = "swim"; rest = 70; }
+        break;
+
     case "under":
         image_index = 2;
         y = home_y + 6;

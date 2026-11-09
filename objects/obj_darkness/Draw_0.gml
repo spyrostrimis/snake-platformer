@@ -29,6 +29,9 @@ for (var _i = 0; _i < array_length(_g.lights); _i++)
 with (obj_player) if (!hidden) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy, 1.9, 1.9, 0, c_white, 1);
 with (obj_pickup) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy, 0.6, 0.6, 0, c_white, 0.8);
 with (obj_boss) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy - 20, 2.6, 2.6, 0, c_white, 0.9);
+// Creatures that glow (jellyfish, octopuses) light up a little patch round them.
+with (obj_enemy) if (variable_instance_exists(id, "glow") && glow > 0) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy, glow * (floor(image_index) == 2 ? 1.5 : 1), glow * (floor(image_index) == 2 ? 1.5 : 1), 0, c_white, 1);
+with (obj_hazard) if (sprite_index == spr_spark) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy, 0.5, 0.5, 0, c_white, 0.9);
 with (obj_hazard) if (sprite_index == spr_venom || sprite_index == spr_puddle) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy, 0.45, 0.45, 0, c_white, 0.8);
 gpu_set_blendmode(bm_normal);
 surface_reset_target();

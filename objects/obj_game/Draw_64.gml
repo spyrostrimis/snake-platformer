@@ -174,6 +174,24 @@ switch (state)
             var _p = pl[_k];
             var _oy = (net_mode != "") ? 0 : _k * _vh;
 
+            // Octopus ink on this snake's screen: dark blots that fade away.
+            if (instance_exists(_p.inst) && _p.inst.inked > 0)
+            {
+                draw_set_alpha(min(1, _p.inst.inked / 60) * 0.9);
+                draw_set_colour(make_colour_rgb(22, 10, 34));
+                for (var _b = 0; _b < 7; _b++)
+                {
+                    var _bx = 70 + ((_b * 173) mod 500);
+                    var _bly = _oy + 50 + ((_b * 97) mod max(40, _vh - 100));
+                    var _br = (45 + ((_b * 37) mod 45)) * ((_vh < 300) ? 0.6 : 1);
+                    draw_circle(_bx, _bly, _br, false);
+                    draw_circle(_bx + _br * 0.7, _bly + _br * 0.4, _br * 0.55, false);
+                    draw_circle(_bx - _br * 0.6, _bly + _br * 0.5, _br * 0.4, false);
+                }
+                draw_set_alpha(1);
+                draw_set_colour(c_white);
+            }
+
             // Score, top left, seven digits like the old games.
             var _sc = string(_p.score_now);
             while (string_length(_sc) < 7) _sc = "0" + _sc;

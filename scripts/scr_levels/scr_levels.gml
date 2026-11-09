@@ -9,11 +9,12 @@ function lvl_create(_name, _w, _h, _music, _sky_top, _sky_bottom)
     // tileset, bg (far / top / near parallax pictures), cloud_drift and deco ("jungle" or "cave")
     // let a level look completely different, like the cavern. mushrooms: false leaves them out;
     // dark (0 to 1) lays a shadow of colour dark_col over the view, lit by torches, crystals
-    // and the snakes.
+    // and the snakes. swim: "surface" (snakes float at the top of water) or "free" (deep water:
+    // they swim anywhere).
     return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0],
              bg_tint: c_white, vine_odds: 3, tileset: ts_jungle, bg: [spr_bg_mountains, spr_bg_clouds, spr_bg_hills],
              cloud_drift: 1, deco: "jungle", mushrooms: true, dark: 0, dark_col: make_colour_rgb(10, 4, 16),
-             water: [], currents: [] };
+             water: [], currents: [], swim: "surface" };
 }
 
 /// Water in tiles _x1.._x2, rows _y1.._y2 (the top row is the surface). Snakes float and swim
@@ -707,7 +708,129 @@ function level_grotto()
     return L;
 }
 
+/// Level 8: the deep. Completely under water: the snakes swim anywhere (Jump/Up swims up,
+/// Down dives). Reefs, a channel with a current against you, a vent that lifts you to a high
+/// shelf, a down-current over a bed of sea urchins, a jellyfish forest with a fast lane
+/// along the top, a reef maze, and at the end Queen Voltella guarding a huge sunken ship
+/// (only its bow shows here; level 9 is inside it). The way in is the hole in its hull.
+/// Reach: everything is open water, so every place can be swum to; passages are 3+ tiles
+/// tall and no letter sits in one, or in the queen's arena.
+function level_deep()
+{
+    var L = lvl_create("THE DEEP", 200, 20, "music_05.ogg", make_colour_rgb(2, 10, 30), make_colour_rgb(10, 50, 90));
+    L.tileset = ts_sand;
+    L.bg = [spr_bg_cave_far, spr_bg_cave_top, spr_bg_cave_near];
+    L.bg_tint = make_colour_rgb(70, 120, 170);
+    L.cloud_drift = 0;
+    L.deco = "sea";
+    L.vine_odds = 2;
+    L.mushrooms = false;
+    L.dark = 0.45;
+    L.dark_col = make_colour_rgb(0, 8, 26);
+    L.swim = "free";
+
+    // Rock above, water everywhere below it.
+    lvl_rect(L, 0, 0, 199, 1, T_SOLID);
+    lvl_water(L, 0, 2, 199, 19);
+
+    // ---- The sea floor where you start ----
+    lvl_ground(L, 0, 24, 16);
+    lvl_put(L, "start", 3, 15);
+    lvl_put(L, "anemone", 2, 15);
+    lvl_gems(L, 6, 10, 12);
+    lvl_put(L, "letter", 12, 10);
+    lvl_put(L, "anemone", 14, 15);
+    lvl_put(L, "piranha", 19, 9);
+    lvl_rect(L, 21, 11, 22, 15, T_SOLID);
+
+    // ---- Under the reef: a channel with a current pushing against you ----
+    lvl_ground(L, 25, 50, 17);
+    lvl_rect(L, 30, 2, 44, 8, T_SOLID);
+    lvl_current(L, 28, 9, 46, 16, -1.3, 0);
+    lvl_put(L, "anemone", 27, 16);
+    lvl_gems(L, 31, 33, 14);
+    lvl_put(L, "octopus", 34, 14);
+    lvl_put(L, "letter", 37, 12);
+    lvl_put(L, "jelly", 40, 11);
+    lvl_put(L, "anemone", 47, 16);
+
+    // ---- A vent lifts you to a high shelf; beyond it, a down-current over sea urchins ----
+    lvl_ground(L, 51, 75, 18);
+    lvl_put(L, "anemone", 52, 17);
+    lvl_current(L, 54, 4, 55, 17, 0, -3.5);
+    lvl_rect(L, 58, 5, 67, 6, T_SOLID);
+    lvl_put(L, "letter", 62, 4);
+    lvl_put(L, "octopus", 66, 3);
+    lvl_rect(L, 60, 17, 66, 17, T_SPIKES);
+    lvl_current(L, 60, 8, 66, 16, 0, 2.2);
+    lvl_put(L, "jelly", 63, 11);
+    lvl_put(L, "piranha", 70, 8);
+    lvl_put(L, "letter", 72, 10);
+    lvl_put(L, "jelly", 70, 14);
+    lvl_put(L, "anemone", 73, 17);
+
+    // ---- The jellyfish forest, with a fast lane along the top ----
+    lvl_ground(L, 76, 100, 17);
+    lvl_put(L, "flag", 77, 16);
+    lvl_put(L, "super_egg", 78, 16);    // two players only
+    lvl_current(L, 78, 3, 99, 6, 1.8, 0);
+    lvl_gems(L, 85, 95, 4);
+    lvl_put(L, "jelly", 80, 8);
+    lvl_put(L, "anemone", 82, 16);
+    lvl_put(L, "jelly", 84, 13);
+    lvl_put(L, "jelly", 88, 9);
+    lvl_put(L, "letter", 90, 15);
+    lvl_put(L, "jelly", 92, 12);
+    lvl_put(L, "anemone", 94, 16);
+    lvl_put(L, "jelly", 96, 8);
+
+    // ---- The reef maze: through a gap low, over a wall, under a wall ----
+    lvl_ground(L, 101, 125, 18);
+    lvl_rect(L, 104, 2, 107, 9, T_SOLID);
+    lvl_rect(L, 104, 13, 107, 17, T_SOLID);
+    lvl_put(L, "anemone", 109, 17);
+    lvl_put(L, "letter", 110, 6);
+    lvl_put(L, "piranha", 110, 12);
+    lvl_rect(L, 113, 6, 116, 17, T_SOLID);
+    lvl_put(L, "piranha", 118, 9);
+    lvl_put(L, "letter", 118, 14);
+    lvl_put(L, "anemone", 118, 17);
+    lvl_rect(L, 120, 2, 123, 11, T_SOLID);
+    lvl_put(L, "anemone", 124, 17);
+
+    // ---- Open water before the wreck: a current helps you along the bottom ----
+    lvl_ground(L, 126, 149, 16);
+    lvl_current(L, 126, 11, 148, 15, 1.4, 0);
+    lvl_put(L, "letter", 128, 9);
+    lvl_put(L, "anemone", 129, 15);
+    lvl_put(L, "piranha", 131, 6);
+    lvl_put(L, "octopus", 133, 13);
+    lvl_put(L, "jelly", 136, 8);
+    lvl_put(L, "letter", 138, 5);
+    lvl_put(L, "octopus", 141, 12);
+    lvl_put(L, "anemone", 143, 15);
+    lvl_put(L, "jelly", 145, 6);
+    lvl_put(L, "letter", 146, 10);
+    lvl_put(L, "flag", 147, 15);
+    lvl_put(L, "egg", 148, 15);
+
+    // ---- Queen Voltella's water, in front of the sunken ship ----
+    lvl_ground(L, 150, 199, 17);
+    L.arena = [151, 180];
+    lvl_put(L, "anemone", 153, 16);
+    lvl_rect(L, 156, 15, 157, 16, T_SOLID);
+    lvl_put(L, "anemone", 163, 16);
+    lvl_put(L, "boss_jelly", 168, 9);
+    lvl_put(L, "anemone", 171, 16);
+    lvl_rect(L, 174, 15, 175, 16, T_SOLID);
+    lvl_put(L, "anemone", 179, 16);
+    // The bow of the huge wreck; its hull runs on past the end of the level.
+    lvl_put(L, "wreck", 181, 16);
+    lvl_put(L, "door", 190, 16);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep];
 }

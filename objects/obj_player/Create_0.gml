@@ -37,6 +37,7 @@ tongue_len = 0;
 blink = 0;
 gulp_t = 0;             // counts down while a swallowed egg travels down the body
 was_swim = false;       // in water last step (for the splash)
+inked = 0;              // hit by an octopus's ink: its screen is blotted for a while
 image_speed = 0;
 
 // ---------- The Slingshot (two players): Peto is the bow, Sockee the arrow ----------
