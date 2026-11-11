@@ -114,7 +114,7 @@ switch (state)
             // The landing: the cave shakes, shockwaves both ways, rocks off the roof.
             vx = 0;
             state = "land";
-            timer = _angry ? 30 : 42;
+            timer = _angry ? 46 : 64;           // a long pause after landing: boost him now
             _g.play_sfx(_g.sfx.smash);
             _g.shake(22);
             part_particles_create(_g.ps, x, y + hh, _g.pt_rock, 14);
@@ -143,7 +143,7 @@ switch (state)
     case "roar":
         vx = 0;
         image_index = 5;
-        if (timer <= 0) { face_player(); state = "crouch"; timer = 14; }
+        if (timer <= 0) { face_player(); state = "crouch"; timer = 34; }
         break;
 }
 

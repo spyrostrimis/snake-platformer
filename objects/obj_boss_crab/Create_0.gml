@@ -48,10 +48,12 @@ claw_check = function()
 };
 
 /// Flings a banknote boomerang the way he faces: mostly low (jump it), sometimes high (stay
-/// down and let it fly over).
+/// down and let it fly over). A snake up on a plank gets one thrown at its own height.
 throw_note = function()
 {
     var _ny = y + hh - ((irandom(2) == 0) ? 66 : 22);
+    var _p = instance_nearest(x, y, obj_player);
+    if (_p != noone && !_p.hidden && _p.y < y + hh - 70) _ny = clamp(_p.y + irandom_range(-6, 6), y - 160, y + hh - 22);
     var _h = shoot(spr_banknote, x + facing * 80, _ny, facing * 8.5, 0, 0);
     _h.boomer = facing;
     _h.home_x = x + facing * 60;

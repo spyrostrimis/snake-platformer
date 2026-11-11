@@ -2,7 +2,8 @@
 /// Roll: tucks into a ball and bowls across the cave, bouncing off the walls, then is dizzy.
 /// Earthquake: squats, leaps and slams down; the cave shakes, two shockwaves run along the
 /// floor (jump over them) and rocks fall from the roof.
-/// Curled up he can't be stomped, and every hit makes him curl straight away.
+/// Curled up he can't be stomped, and every hit makes him curl straight away. He mostly
+/// stamps out earthquakes; a roll comes now and then.
 event_inherited();
 boss_name = "BIG DIGGS";
 hw = 28;
@@ -16,6 +17,7 @@ timer = 80;
 bounces = 0;
 was_airborne = false;
 last_hp = hp;
+after_curl = "roll";    // what he does once curled up: "roll" at you, or uncurl and "quake"
 
 // Frame 2 is the ball (curling and rolling): a spinning ball can't be landed on.
 // Both only use what online play shares (image_index, x), so the two PCs agree.

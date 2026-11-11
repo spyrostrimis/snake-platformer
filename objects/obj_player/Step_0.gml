@@ -88,7 +88,8 @@ if (ball) ball_angle -= vx * 4;
 // In water the snake is held up (it floats with its head out), swims a little slower and
 // can jump out from the surface as if from the ground.
 // In a deep-water level (lvl.swim "free") it swims anywhere instead: Jump (or Up) swims up,
-// Down dives, and with neither it sinks slowly.
+// Down dives, and with neither it sinks slowly. Where that water has a surface (the flooded
+// rooms of the shipwreck), pressing Jump at the surface still jumps out.
 var _swim = water_at(x, y);
 var _surface = _swim && !water_at(x, y - 14);
 var _free = _swim && _g.lvl.swim == "free";
@@ -159,7 +160,8 @@ if (_free && boost_t == 0)
 {
     // Deep water: no gravity, the snake swims where it's steered.
     vy -= gravity_pull;
-    if (_jumped) vy = -4;                                // pushing off the sea floor
+    if (_jumped && !_surface) vy = -4;                   // pushing off the sea floor
+    else if (_jumped) {}                                 // at the surface: a full jump out of the water
     else vy = approach(vy, _jump_held ? -2.8 : (_down ? 2.8 : 0.35), 0.22);
 }
 else if (_free) { vy -= gravity_pull; vy = approach(vy, 0, 0.25); }   // a boost, slowed by the water

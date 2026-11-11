@@ -1124,4 +1124,159 @@ function wreck() {
 }
 save("spr_wreck", 980, 600, wreck());
 
+// =====================================================================================
+// ---------- Level 9, inside the shipwreck: wood, lanterns, pirates ----------
+// =====================================================================================
+const W = { plank: "#7a5030", light: "#a8743e", dark: "#4a2c16", line: "#24140a", deck: "#c08a4a", deckL: "#e0aa66", iron: "#5a5a64" };
+const woodWall = (seed) => {
+  let s = `<rect width="32" height="32" fill="${W.plank}"/>`;
+  for (let x = 0; x < 32; x += 8) s += `<rect x="${x}" y="0" width="8" height="32" fill="${(x / 8 + seed) % 2 ? W.plank : "#6e4628"}"/><path d="M${x} 0 V32" stroke="${W.line}" stroke-width="1.2"/>`;
+  s += `<path d="M${2 + seed * 8} ${10 + seed * 6} q2 -3 4 0 q-2 3 -4 0" fill="${W.dark}"/>`;
+  if (seed) s += `<circle cx="4" cy="4" r="1.2" fill="${W.iron}"/><circle cx="20" cy="28" r="1.2" fill="${W.iron}"/>`;
+  return s;
+};
+const deckTop = (left, right) => `<rect x="0" y="0" width="32" height="9" fill="${W.deck}"/><path d="M0 9 H32" stroke="${W.line}" stroke-width="2"/>
+  <path d="M0 1 H32" stroke="${W.deckL}" stroke-width="2"/><path d="M11 0 V9 M27 0 V9" stroke="${W.line}" stroke-width="1"/>
+  <circle cx="5" cy="5" r="1" fill="${W.iron}"/><circle cx="21" cy="5" r="1" fill="${W.iron}"/>
+  ${left ? `<rect x="0" y="0" width="4" height="32" fill="${W.dark}"/>` : ""}${right ? `<rect x="28" y="0" width="4" height="32" fill="${W.dark}"/>` : ""}`;
+const shipTiles = [
+  "",
+  woodWall(0) + deckTop(false, false),
+  woodWall(0),
+  woodWall(1),
+  woodWall(1) + deckTop(true, false),
+  woodWall(0) + deckTop(false, true),
+  woodWall(1) + `<rect x="0" y="20" width="32" height="12" fill="${W.dark}"/><path d="M0 20 H32" stroke="${W.line}" stroke-width="2"/><rect x="0" y="30" width="32" height="2" fill="#000" opacity="0.4"/>`,
+  `<rect x="0" y="3" width="32" height="9" rx="2" fill="${W.light}" stroke="${W.line}" stroke-width="1.5"/><path d="M2 7.5 H30" stroke="${W.dark}" stroke-width="1"/>
+   <path d="M6 12 q2 6 0 12 M26 12 q-2 6 0 12" stroke="#c8b080" stroke-width="2" fill="none"/>`,
+  `<rect x="1" y="1" width="30" height="30" rx="2" fill="#9a6a38" stroke="${W.line}" stroke-width="2"/><path d="M3 3 L29 29 M29 3 L3 29" stroke="${W.dark}" stroke-width="3"/>
+   <rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="${W.dark}" stroke-width="3"/><path d="M12 2 L16 10 L13 16 L18 24" stroke="${W.line}" stroke-width="1.6" fill="none"/>`,
+  `<rect x="0" y="26" width="32" height="6" fill="${W.dark}"/>${[4, 12, 20, 28].map((x) => `<path d="M${x - 3} 27 L${x} 12 L${x + 3} 27 Z" fill="#9aa0aa" stroke="#2a2a30" stroke-width="1.2"/>`).join("")}`,
+  woodWall(0) + deckTop(true, true),
+];
+save("spr_tiles_ship", 32 * shipTiles.length, 32,
+  shipTiles.map((t, i) => `<g transform="translate(${i * 32},0)" clip-path="url(#cell)">${t}</g>`).join(""),
+  `<clipPath id="cell"><rect x="0" y="0" width="32" height="32"/></clipPath>`);
+
+// Inside the hull: ribs and dim portholes far back, beams and ropes above, cargo in front.
+let sfar = `<rect width="1024" height="260" fill="#3a2414"/>`;
+for (let x = 0; x < 1024; x += 16) sfar += `<path d="M${x} 0 V260" stroke="#2a180c" stroke-width="2"/>`;
+for (let x = 64; x < 1024; x += 128) sfar += `<path d="M${x - 20} 260 Q${x - 26} 120 ${x} 30 Q${x + 26} 120 ${x + 20} 260 Z" fill="#4a2e18" stroke="#1e1006" stroke-width="3"/>
+  <circle cx="${x + 64}" cy="110" r="16" fill="#2e5a4a" stroke="#6a4a2a" stroke-width="5"/><circle cx="${x + 60}" cy="105" r="5" fill="#7ac0a0" opacity="0.6"/>`;
+save("spr_bg_ship_far", 1024, 260, sfar);
+let stop = `<rect width="1024" height="26" fill="#2a180c"/>`;
+for (let x = 0; x < 1024; x += 256) stop += `<rect x="${x}" y="20" width="256" height="20" fill="#4a2e18" stroke="#1e1006" stroke-width="3"/>`;
+for (let i = 0; i < 12; i++) {
+  const x = 40 + i * 86;
+  stop += `<path d="M${x} 40 Q${x + 18} ${70 + (i % 3) * 20} ${x + 40} 40" stroke="#8a7a5a" stroke-width="3" fill="none"/>`;
+  if (i % 3 === 0) stop += `<path d="M${x + 60} 40 V${90 + (i % 2) * 20}" stroke="#8a7a5a" stroke-width="3"/><circle cx="${x + 60}" cy="${92 + (i % 2) * 20}" r="5" fill="none" stroke="#8a7a5a" stroke-width="3"/>`;
+}
+save("spr_bg_ship_top", 1024, 130, stop);
+let snear = "";
+for (let i = 0; i < 10; i++) {
+  const x = 30 + i * 104;
+  if (i % 3 === 0) snear += `<rect x="${x}" y="130" width="64" height="70" fill="#2e1c0e"/><path d="M${x} 130 L${x + 64} 200 M${x + 64} 130 L${x} 200" stroke="#1e1006" stroke-width="5"/>`;
+  else if (i % 3 === 1) snear += `<ellipse cx="${x + 26}" cy="160" rx="26" ry="40" fill="#34200f"/><path d="M${x} 140 H${x + 52} M${x} 180 H${x + 52}" stroke="#1e1006" stroke-width="5"/>`;
+  else snear += `<rect x="${x}" y="164" width="70" height="36" rx="10" fill="#2a1a0c"/><rect x="${x + 50}" y="150" width="56" height="16" rx="6" fill="#222226" transform="rotate(-10 ${x + 60} 158)"/>`;
+}
+save("spr_bg_ship_near", 1024, 200, snear);
+
+// Cargo and decorations: barrels, piles of gold, hanging ropes, lanterns (they light the dark).
+save("spr_barrel", 28, 32,
+  `<path d="M4 2 Q1 16 4 30 L24 30 Q27 16 24 2 Z" fill="#8a5a2c" stroke="${W.line}" stroke-width="1.8"/>
+   <path d="M3 8 H25 M3 24 H25" stroke="${W.iron}" stroke-width="3"/><path d="M10 3 V29 M18 3 V29" stroke="${W.dark}" stroke-width="1"/>`);
+save("spr_coins", 30, 16,
+  `<path d="M2 15 Q6 4 15 3 Q24 4 28 15 Z" fill="#e8b828" stroke="#6a4a06" stroke-width="1.4"/>
+   ${[[8, 11], [14, 8], [20, 11], [12, 13], [18, 5]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="3.4" ry="2" fill="#ffe27a" stroke="#8a6206" stroke-width="0.8"/>`).join("")}
+   <path d="M22 4 l2 -3 l1 3" stroke="#fff6c0" stroke-width="1.2" fill="none"/>`);
+save("spr_rope", 12, 46,
+  `<path d="M6 0 Q9 12 6 24 Q3 34 6 42" stroke="#8a7a5a" stroke-width="3.4" fill="none"/><circle cx="6" cy="42" r="3" fill="#8a7a5a"/>
+   <path d="M4 8 l4 2 M4 18 l4 2 M3 28 l4 2" stroke="#5a4a32" stroke-width="1"/>`);
+save("spr_lantern", 24, 40,
+  `<path d="M12 0 V8" stroke="${W.iron}" stroke-width="2"/><path d="M6 8 H18 L16 12 H8 Z" fill="${W.iron}" stroke="#222" stroke-width="1"/>
+   <rect x="6" y="12" width="12" height="18" rx="2" fill="#ffd27a" stroke="#3a2a10" stroke-width="1.6" opacity="0.95"/>
+   <path d="M12 26 Q8 21 12 16 Q16 21 12 26 Z" fill="#ff8a1a"/><path d="M9 12 V30 M15 12 V30" stroke="#3a2a10" stroke-width="1"/>
+   <path d="M5 30 H19 L17 34 H7 Z" fill="${W.iron}" stroke="#222" stroke-width="1"/>`);
+
+// ---------- Pirate skeletons: a red bandana, an eye patch, a cutlass ----------
+function pskel(f) {
+  let s = skel(f);
+  // The helmet becomes a red bandana with a knot; the right eye gets a patch.
+  s = s.replace(`<path d="M17 9 Q27 0 37 9 L38 11 L16 11 Z" fill="#7a6a78" stroke="${B.line}" stroke-width="1.6"/>`,
+    `<path d="M16 11 Q16 1 27 1 Q38 1 38 11 Z" fill="#c8303a" stroke="${B.line}" stroke-width="1.6"/>
+     <circle cx="21" cy="5" r="1.2" fill="#fff"/><circle cx="31" cy="4" r="1.2" fill="#fff"/><circle cx="26" cy="8" r="1.2" fill="#fff"/>
+     <path d="M16 9 L9 6 L11 12 Z" fill="#c8303a" stroke="${B.line}" stroke-width="1.2"/>`);
+  s += `<ellipse cx="33" cy="14" rx="3.8" ry="3.4" fill="#111"/><path d="M17 11 L37 15" stroke="#111" stroke-width="1.2"/>`;
+  return s.split("#d6dbe6").join("#e8ecf4").split("#8a5a2a").join("#e0b030");
+}
+for (let f = 0; f < 4; f++) save("pskel_" + f, 76, 52, pskel(f));
+
+// ---------- Captain Octavius, the octopus pirate: eight arms, eight swords ----------
+// Frames: idle A, idle B, wind-up (swords drawn back), stab (three swords thrust far ahead),
+// low sweep (swords along the floor both sides), high slash (swords at head height both
+// sides), hurt. 560 x 340, origin (280, 210); floor at the bottom (y 330).
+function octopirate(f) {
+  const P = { body: "#b84a6a", light: "#e07a96", dark: "#5a1a30", line: "#2a0814" };
+  const cx = 280, hy = 150;
+  // Each arm: base on the body -> hand, then a sword pointing on along the arm.
+  const arm = (bx, by, hx, hy2, sx, sy, sway = 0) => {
+    const mx = (bx + hx) / 2 + sway, my = (by + hy2) / 2 + 26;
+    const d = `M${bx} ${by} Q${mx} ${my} ${hx} ${hy2}`;
+    const len = Math.hypot(sx - hx, sy - hy2) || 1;
+    const ux = (sx - hx) / len, uy = (sy - hy2) / len;
+    return `<path d="${d}" stroke="${P.line}" stroke-width="15" fill="none" stroke-linecap="round"/>
+      <path d="${d}" stroke="${P.body}" stroke-width="10.5" fill="none" stroke-linecap="round"/>
+      <path d="M${hx - uy * 7} ${hy2 + ux * 7} L${hx + uy * 7} ${hy2 - ux * 7}" stroke="#e0b030" stroke-width="5" stroke-linecap="round"/>
+      <path d="M${hx} ${hy2} L${sx} ${sy}" stroke="#2a2a30" stroke-width="7" stroke-linecap="round"/>
+      <path d="M${hx} ${hy2} L${sx} ${sy}" stroke="#e8ecf4" stroke-width="4" stroke-linecap="round"/>
+      <path d="M${hx + ux * 6 - uy * 2} ${hy2 + uy * 6 + ux * 2} L${sx - ux * 4 - uy * 2} ${sy - uy * 4 + ux * 2}" stroke="#ffffff" stroke-width="1.4" opacity="0.8"/>`;
+  };
+  // Bases round the lower body, left to right.
+  const bases = [[220, 200], [236, 214], [254, 222], [272, 226], [288, 226], [306, 222], [324, 214], [340, 200]];
+  let pose;
+  const sw = f === 1 ? 6 : -6;
+  if (f === 3) {
+    // Stab: the three right arms thrust their swords far ahead; the rest hold back.
+    pose = [[160, 150, 110, 120], [170, 230, 120, 250], [200, 300, 160, 325], [240, 310, 210, 330],
+            [330, 160, 548, 130], [340, 220, 552, 205], [350, 280, 550, 285], [370, 300, 420, 326]];
+  } else if (f === 4) {
+    // Low sweep: swords flat along the floor on both sides.
+    pose = [[120, 300, 24, 318], [170, 315, 70, 326], [210, 318, 130, 328], [250, 320, 200, 330],
+            [310, 320, 360, 330], [350, 318, 430, 328], [390, 315, 490, 326], [440, 300, 536, 318]];
+  } else if (f === 5) {
+    // High slash: swords out at head height on both sides.
+    pose = [[140, 120, 30, 90], [150, 160, 34, 150], [170, 200, 60, 205], [240, 300, 210, 330],
+            [320, 300, 350, 330], [390, 200, 500, 205], [410, 160, 526, 150], [420, 120, 530, 90]];
+  } else if (f === 2) {
+    // Wind-up: swords drawn back and up.
+    pose = [[180, 140, 150, 80], [190, 190, 140, 160], [210, 250, 160, 240], [240, 300, 210, 326],
+            [320, 300, 350, 326], [350, 250, 400, 240], [370, 190, 420, 160], [380, 140, 410, 80]];
+  } else {
+    // Idle (and hurt): swords held out loosely all round.
+    pose = [[170, 160, 110, 110], [170, 220, 100, 220], [200, 280, 150, 300], [240, 310, 210, 330],
+            [320, 310, 350, 330], [360, 280, 410, 300], [390, 220, 460, 220], [390, 160, 450, 110]];
+  }
+  let arms = "";
+  pose.forEach(([hx, hy2, sx, sy], i) => { arms += arm(bases[i][0], bases[i][1], hx, hy2, sx, sy, (i % 2 ? sw : -sw)); });
+  const hurt = f === 6;
+  const head = `<path d="M${cx - 80} 210 Q${cx - 92} ${hy - 80} ${cx} ${hy - 86} Q${cx + 92} ${hy - 80} ${cx + 80} 210 Q${cx} 236 ${cx - 80} 210 Z" fill="${P.body}" stroke="${P.line}" stroke-width="4"/>
+    <ellipse cx="${cx - 40}" cy="${hy - 40}" rx="22" ry="14" fill="${P.light}" opacity="0.7"/>
+    ${[[cx - 52, hy + 10], [cx + 56, hy - 6], [cx - 30, hy + 48], [cx + 40, hy + 44]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="${P.light}" opacity="0.8"/>`).join("")}`;
+  const eye = hurt
+    ? `<path d="M${cx + 10} ${hy + 4} l16 16 M${cx + 26} ${hy + 4} l-16 16" stroke="${P.line}" stroke-width="5" stroke-linecap="round"/>`
+    : `<ellipse cx="${cx + 20}" cy="${hy + 12}" rx="15" ry="17" fill="#fff8e8" stroke="${P.line}" stroke-width="3"/><circle cx="${cx + 24}" cy="${hy + 14}" r="7" fill="#140408"/><circle cx="${cx + 26}" cy="${hy + 11}" r="2.4" fill="#fff"/>
+       <path d="M${cx + 2} ${hy - 8} L${cx + 38} ${hy - 2}" stroke="${P.line}" stroke-width="5" stroke-linecap="round"/>`;
+  const patch = `<path d="M${cx - 76} ${hy - 20} L${cx + 70} ${hy + 4}" stroke="#111" stroke-width="3.4"/>
+    <ellipse cx="${cx - 24}" cy="${hy + 10}" rx="16" ry="15" fill="#151515" stroke="#000" stroke-width="2"/>`;
+  const mouth = `<path d="M${cx - 30} ${hy + 50} Q${cx} ${hy + 64} ${cx + 30} ${hy + 50}" stroke="${P.line}" stroke-width="4" fill="${P.dark}"/>
+    <path d="M${cx - 34} ${hy + 46} Q${cx - 52} ${hy + 40} ${cx - 56} ${hy + 52} M${cx + 34} ${hy + 46} Q${cx + 52} ${hy + 40} ${cx + 56} ${hy + 52}" stroke="${P.line}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  const hat = `<path d="M${cx - 110} ${hy - 62} Q${cx - 60} ${hy - 82} ${cx} ${hy - 78} Q${cx + 60} ${hy - 82} ${cx + 110} ${hy - 62} Q${cx + 70} ${hy - 150} ${cx} ${hy - 140} Q${cx - 70} ${hy - 150} ${cx - 110} ${hy - 62} Z" fill="#1e1a20" stroke="#000" stroke-width="3"/>
+    <path d="M${cx - 100} ${hy - 66} Q${cx} ${hy - 90} ${cx + 100} ${hy - 66}" stroke="#e0b030" stroke-width="4" fill="none"/>
+    <circle cx="${cx}" cy="${hy - 112}" r="12" fill="#f0eadc" stroke="#000" stroke-width="2"/><circle cx="${cx - 4}" cy="${hy - 114}" r="2.6" fill="#000"/><circle cx="${cx + 4}" cy="${hy - 114}" r="2.6" fill="#000"/>
+    <path d="M${cx - 16} ${hy - 96} L${cx + 16} ${hy - 86} M${cx + 16} ${hy - 96} L${cx - 16} ${hy - 86}" stroke="#f0eadc" stroke-width="4" stroke-linecap="round"/>
+    ${hurt ? `<path d="M${cx - 60} ${hy - 170} l2 6 6 1 -5 4 1 6 -4 -3 -5 3 1 -6 -5 -4 6 -1 Z M${cx + 60} ${hy - 176} l2 6 6 1 -5 4 1 6 -4 -3 -5 3 1 -6 -5 -4 6 -1 Z" fill="#ffe04a" stroke="#000" stroke-width="1"/>` : ""}`;
+  return arms + head + patch + eye + mouth + hat;
+}
+for (let f = 0; f < 7; f++) save("octopirate_" + f, 560, 340, octopirate(f));
+
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

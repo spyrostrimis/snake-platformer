@@ -7,7 +7,8 @@ var _g = obj_game;
 var _angry = hp <= hp_max / 2;   // faster, more rocks and an extra bounce in the second half
 timer--;
 
-// Every hit: he curls up at once (and stays safe a moment), then rolls at you.
+// Every hit: he curls up at once (and stays safe a moment), then either rolls at you or
+// uncurls and stamps out an earthquake.
 if (hp < last_hp)
 {
     last_hp = hp;
@@ -15,6 +16,7 @@ if (hp < last_hp)
     state = "curl";
     timer = 14;
     vx = 0;
+    after_curl = (irandom(1) == 0) ? "roll" : "quake";
 }
 
 switch (state)
@@ -26,7 +28,8 @@ switch (state)
         if (timer <= 0)
         {
             vx = 0;
-            if (irandom(9) < 5) { state = "curl"; timer = _angry ? 20 : 30; }
+            // Mostly the standing jump and earthquake; a roll now and then.
+            if (irandom(9) < 3) { state = "curl"; timer = _angry ? 20 : 30; after_curl = "roll"; }
             else { state = "crouch"; timer = _angry ? 18 : 26; }
         }
         break;
@@ -37,7 +40,8 @@ switch (state)
         face_player();
         image_index = 2;
         x += irandom_range(-1, 1);
-        if (timer <= 0)
+        if (timer <= 0 && after_curl == "quake") { state = "crouch"; timer = _angry ? 14 : 20; }
+        else if (timer <= 0)
         {
             state = "roll";
             bounces = _angry ? 3 : 2;
@@ -99,7 +103,7 @@ switch (state)
                 _w.image_angle = 0;
                 _w.life = 160;
             }
-            var _n = _angry ? 6 : 4;
+            var _n = _angry ? 7 : 5;
             for (var _k = 0; _k < _n; _k++)
             {
                 var _rx = random_range(arena_x1, arena_x2);

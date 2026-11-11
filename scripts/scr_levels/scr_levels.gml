@@ -830,7 +830,133 @@ function level_deep()
     return L;
 }
 
+/// Level 9: inside the sunken ship. Dry decks lit by lanterns, with pirate skeletons that
+/// leap at you (only a boost breaks them), and flooded holds full of piranhas, jellyfish and
+/// octopuses: swim freely under water, jump out at the surface. A hold to cross on planks (or
+/// by swimming), a flooded corridor with no air, a bulkhead to dive under, and at the end
+/// Captain Octavius the octopus pirate in his cabin.
+/// Reach: deck steps are 2 tiles, plank gaps at most 3, every pool's surface is level with its
+/// banks so you can jump out; no letter in the captain's cabin.
+function level_wreck()
+{
+    var L = lvl_create("THE SUNKEN GALLEON", 190, 22, "music_07.ogg", make_colour_rgb(20, 10, 4), make_colour_rgb(70, 40, 20));
+    L.tileset = ts_ship;
+    L.bg = [spr_bg_ship_far, spr_bg_ship_top, spr_bg_ship_near];
+    L.bg_tint = make_colour_rgb(170, 130, 100);
+    L.cloud_drift = 0;
+    L.deco = "ship";
+    L.vine_odds = 2;
+    L.mushrooms = false;
+    L.dark = 0.5;
+    L.dark_col = make_colour_rgb(14, 6, 2);
+    L.swim = "free";
+
+    // The deck above (rows 0-1).
+    lvl_rect(L, 0, 0, 189, 1, T_SOLID);
+
+    // ---- The way in: a dry hold ----
+    lvl_ground(L, 0, 20, 14);
+    lvl_put(L, "start", 3, 13);
+    lvl_put(L, "lantern", 2, 2);
+    lvl_gems(L, 5, 8, 11);
+    lvl_rect(L, 9, 12, 10, 13, T_SOLID);
+    lvl_put(L, "letter", 11, 9);
+    lvl_put(L, "lantern", 12, 2);
+    lvl_put(L, "pirate", 16, 13);
+
+    // ---- Flooded hold 1: hop across on the planks, or swim (piranhas, a jellyfish) ----
+    lvl_ground(L, 21, 42, 21);
+    lvl_water(L, 21, 14, 42, 20);
+    lvl_rect(L, 23, 12, 25, 12, T_ONEWAY);
+    lvl_rect(L, 29, 11, 31, 11, T_ONEWAY);
+    lvl_rect(L, 35, 12, 37, 12, T_ONEWAY);
+    lvl_rect(L, 40, 13, 41, 13, T_ONEWAY);
+    lvl_put(L, "lantern", 27, 2);
+    lvl_put(L, "lantern", 38, 2);
+    lvl_gems(L, 24, 27, 18);
+    lvl_put(L, "piranha", 26, 17);
+    lvl_put(L, "jelly", 31, 16);
+    lvl_put(L, "letter", 31, 19);
+    lvl_put(L, "letter", 36, 10);
+    lvl_put(L, "piranha", 37, 19);
+    lvl_put(L, "octopus", 40, 18);
+
+    // ---- A dry deck with cargo and pirates ----
+    lvl_ground(L, 43, 64, 14);
+    lvl_put(L, "lantern", 46, 2);
+    lvl_rect(L, 48, 12, 49, 13, T_SOLID);
+    lvl_rect(L, 50, 10, 51, 13, T_SOLID);
+    lvl_put(L, "letter", 51, 7);
+    lvl_put(L, "pirate", 54, 13);
+    lvl_put(L, "lantern", 57, 2);
+    lvl_put(L, "letter", 58, 10);
+    lvl_put(L, "pirate", 60, 13);
+    lvl_put(L, "flag", 62, 13);
+    lvl_put(L, "super_egg", 63, 13);    // two players only
+
+    // ---- A flooded corridor: water right up to the beams, a current helps you through ----
+    lvl_rect(L, 65, 2, 90, 10, T_SOLID);
+    lvl_ground(L, 65, 90, 21);
+    lvl_water(L, 65, 11, 90, 20);
+    lvl_current(L, 67, 11, 88, 20, 1.3, 0);
+    lvl_gems(L, 68, 72, 12);
+    lvl_put(L, "jelly", 70, 14);
+    lvl_put(L, "piranha", 75, 12);
+    lvl_put(L, "letter", 77, 16);
+    lvl_put(L, "jelly", 79, 18);
+    lvl_put(L, "octopus", 84, 13);
+    lvl_put(L, "piranha", 86, 19);
+
+    // ---- Decks up and down, pirates on the upper deck ----
+    lvl_ground(L, 91, 96, 14);
+    lvl_put(L, "letter", 95, 10);
+    lvl_ground(L, 97, 102, 12);
+    lvl_put(L, "lantern", 99, 2);
+    lvl_put(L, "pirate", 100, 11);
+    lvl_ground(L, 103, 108, 10);
+    lvl_put(L, "letter", 105, 7);
+    lvl_put(L, "pirate", 106, 9);
+    lvl_ground(L, 109, 110, 12);
+    lvl_ground(L, 111, 115, 14);
+    lvl_put(L, "lantern", 112, 2);
+
+    // ---- Flooded hold 2: a bulkhead to dive under ----
+    lvl_ground(L, 116, 138, 21);
+    lvl_water(L, 116, 14, 138, 20);
+    lvl_rect(L, 126, 2, 127, 16, T_SOLID);
+    lvl_put(L, "lantern", 120, 2);
+    lvl_gems(L, 118, 120, 18);
+    lvl_put(L, "piranha", 121, 17);
+    lvl_put(L, "jelly", 130, 18);
+    lvl_put(L, "letter", 131, 15);
+    lvl_put(L, "piranha", 133, 16);
+    lvl_put(L, "octopus", 136, 18);
+    lvl_put(L, "lantern", 133, 2);
+
+    // ---- The last dry deck before the captain's cabin ----
+    lvl_ground(L, 139, 152, 14);
+    lvl_put(L, "lantern", 142, 2);
+    lvl_put(L, "pirate", 144, 13);
+    lvl_put(L, "letter", 147, 10);
+    lvl_put(L, "lantern", 149, 2);
+    lvl_put(L, "flag", 150, 13);
+    lvl_put(L, "egg", 151, 13);
+
+    // ---- Captain Octavius' cabin: two planks to get above his low sweep ----
+    lvl_ground(L, 153, 189, 14);
+    L.arena = [154, 180];
+    lvl_put(L, "lantern", 157, 2);
+    lvl_rect(L, 159, 11, 162, 11, T_ONEWAY);
+    lvl_put(L, "lantern", 166, 2);
+    lvl_rect(L, 172, 11, 175, 11, T_ONEWAY);
+    lvl_put(L, "boss_octo", 170, 13);
+    lvl_put(L, "lantern", 177, 2);
+    lvl_put(L, "door", 185, 13);
+    lvl_put(L, "lantern", 186, 2);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep, level_wreck];
 }

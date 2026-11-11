@@ -351,8 +351,10 @@ load_level = function(_i, _with_player)
     // (The dark hollow has no mushrooms; its crystals give off a little light.)
     // The bone pit ("bone"): violet crystals and piles of bones, purple-tinted stalactites.
     // The sunken grotto ("sea"): sea-blue crystals, shells and seaweed, blue-grey stalactites.
+    // Inside the shipwreck ("ship"): barrels and piles of gold on the decks, ropes hanging down.
     var _bonez = lvl.deco == "bone";
     var _sea = lvl.deco == "sea";
+    var _ship = lvl.deco == "ship";
     var _cave = lvl.deco == "cave" || _bonez || _sea;
     var _deco = layer_create(95, "Deco");
     array_push(layers_made, _deco);
@@ -362,7 +364,17 @@ load_level = function(_i, _with_player)
         for (var _y = 1; _y < lvl_h; _y++)
         {
             var _here = grid[_x][_y];
-            if (_here == T_SOLID && grid[_x][_y - 1] == T_EMPTY)
+            if (_here == T_SOLID && grid[_x][_y - 1] == T_EMPTY && _ship)
+            {
+                // (Not under water: nothing floats about on the flooded floors.)
+                var _sr = irandom(9);
+                if (!water[_x][_y - 1])
+                {
+                    if (_sr == 0) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 2, spr_barrel);
+                    else if (_sr == 1) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 2, spr_coins);
+                }
+            }
+            else if (_here == T_SOLID && grid[_x][_y - 1] == T_EMPTY)
             {
                 var _roll = irandom(9);
                 if (_roll == 0)
@@ -380,7 +392,7 @@ load_level = function(_i, _with_player)
             }
             if (_here == T_SOLID && _y < lvl_h - 1 && grid[_x][_y + 1] == T_EMPTY && irandom(lvl.vine_odds) == 0)
             {
-                var _hang = layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, _cave ? spr_stalactite : spr_vine);
+                var _hang = layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, _ship ? spr_rope : (_cave ? spr_stalactite : spr_vine));
                 if (_bonez) layer_sprite_blend(_hang, make_colour_rgb(190, 140, 200));
                 if (_sea) layer_sprite_blend(_hang, make_colour_rgb(140, 190, 210));
             }
@@ -419,6 +431,7 @@ load_level = function(_i, _with_player)
             case "boss_dino":
             case "boss_crab":
             case "boss_jelly":
+            case "boss_octo":
                 var _boss_obj = obj_boss_mouse;
                 if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
                 else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
@@ -427,6 +440,7 @@ load_level = function(_i, _with_player)
                 else if (_s.kind == "boss_dino") _boss_obj = obj_boss_dino;
                 else if (_s.kind == "boss_crab") _boss_obj = obj_boss_crab;
                 else if (_s.kind == "boss_jelly") _boss_obj = obj_boss_jelly;
+                else if (_s.kind == "boss_octo") _boss_obj = obj_boss_octo;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.y = _s.ty * TILE + 32 - boss.hh;     // standing on the floor, whatever its size
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
@@ -451,6 +465,12 @@ load_level = function(_i, _with_player)
             // sea floor; the sunken ship lies behind the tiles, half buried in the sand.
             case "octopus":  _inst = instance_create_layer(_px, _py, "Instances", obj_octopus); break;
             case "jelly":    _inst = instance_create_layer(_px, _py, "Instances", obj_jelly); break;
+            // The shipwreck: pirate skeletons (they leap at you), lanterns hanging from the beams.
+            case "pirate":   _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 16, "Instances", obj_skel, { pirate: true }); break;
+            case "lantern":
+                layer_sprite_create(_deco, _px, _s.ty * TILE, spr_lantern);
+                array_push(lights, { x: _px, y: _s.ty * TILE + 22, r: 2.2, torch: true });
+                break;
             case "anemone":
                 layer_sprite_create(_deco, _px, _s.ty * TILE + 32 + 2, spr_anemone);
                 array_push(lights, { x: _px, y: _s.ty * TILE + 16, r: 1.6, torch: false });
@@ -571,8 +591,11 @@ start_level = function()
     say("FIND THE LETTERS. OPEN THE DOOR.", 180);
 };
 
-/// The hangman rule: a right letter opens part of the word for both snakes; a wrong one
-/// is a miss for the snake _by (an obj_player) that picked it up.
+/// The hangman rule: a right letter opens part of the word for both snakes; a wrong one is a
+/// miss for both (the snakes share one miss bar). When the bar is full, the snake _by (an
+/// obj_player) that picked up the wrong letter loses a life. The bar doesn't empty when a
+/// snake loses a life (only at the start of a level), so once it's full, every wrong letter
+/// costs the snake that took it a life.
 on_letter = function(_ch, _x, _y, _by)
 {
     var _p = stats_of(_by);
@@ -593,16 +616,21 @@ on_letter = function(_ch, _x, _y, _by)
     }
     else
     {
-        _p.misses++;
-        _p.miss_letters += _ch;
+        // One shared miss bar: the miss counts for every snake.
+        var _was_full = _p.misses >= MAX_MISSES;
+        for (var _k = 0; _k < array_length(pl); _k++)
+        {
+            pl[_k].misses = min(MAX_MISSES, pl[_k].misses + 1);
+            if (string_length(pl[_k].miss_letters) < MAX_MISSES) pl[_k].miss_letters += _ch;
+        }
         burst(_x, _y, make_colour_rgb(255, 60, 90), 18);
         play_sfx(sfx.wrong);
         if (_p.misses >= MAX_MISSES)
         {
-            say("SIX MISSES! THE WORD GOT AWAY", 160, _p);
+            say(_was_full ? ("NO " + _ch + "! " + _p.skin.name + " LOSES A LIFE") : ("SIX MISSES! " + _p.skin.name + " LOSES A LIFE"), 160);
             player_died(_by);
         }
-        else say("NO " + _ch + " IN THIS WORD", 100, _p);
+        else say("NO " + _ch + " IN THIS WORD", 100);
     }
 };
 
@@ -638,8 +666,7 @@ player_died = function(_inst)
     var _p = _inst.stats;
     play_sfx(sfx.die);
     _p.lives_left--;
-    _p.misses = 0;
-    _p.miss_letters = "";
+    // (The shared miss bar stays as it is: it only empties at the start of a level.)
     if (_p.lives_left <= 0)
     {
         _p.out = true;

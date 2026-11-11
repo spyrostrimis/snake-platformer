@@ -5,13 +5,15 @@
 /// belly as he flies over you.)
 /// Tail whip: he turns his back and lashes his long tail low along the floor (jump it).
 /// Angry (half health), he whips it twice, one side then the other.
-/// Every hit: he roars, then leaps again at once (right over you if you're close).
+/// Every hit: he roars, crouches, then leaps again (right over you if you're close).
+/// After each landing he stays crouched a while: the best moment for a boost (Sockee's dash
+/// into his legs counts too).
 event_inherited();
 drop_through = true;    // too heavy for the planks: he lands on the floor
 boss_name = "REX BONEJAW";
-hw = 46;
+hw = 60;               // wide enough that a dash into his legs or hips counts
 hh = 48;
-hp_max = 9;
+hp_max = 7;
 hp = hp_max;
 points = 20000;
 music = "music_09.ogg";
