@@ -1214,7 +1214,7 @@ for (let f = 0; f < 4; f++) save("pskel_" + f, 76, 52, pskel(f));
 // ---------- Captain Octavius, the octopus pirate: eight arms, eight swords ----------
 // Frames: idle A, idle B, wind-up (swords drawn back), stab (three swords thrust far ahead),
 // low sweep (swords along the floor both sides), high slash (swords at head height both
-// sides), hurt. 560 x 340, origin (280, 210); floor at the bottom (y 330).
+// sides), hurt. 860 x 340, origin (430, 210); floor at the bottom (y 330).
 function octopirate(f) {
   const P = { body: "#b84a6a", light: "#e07a96", dark: "#5a1a30", line: "#2a0814" };
   const cx = 280, hy = 150;
@@ -1256,6 +1256,8 @@ function octopirate(f) {
     pose = [[170, 160, 110, 110], [170, 220, 100, 220], [200, 280, 150, 300], [240, 310, 210, 330],
             [320, 310, 350, 330], [360, 280, 410, 300], [390, 220, 460, 220], [390, 160, 450, 110]];
   }
+  // The striking frames stretch the arms half as far again: a very long reach.
+  if (f >= 3 && f <= 5) pose = pose.map(([hx, hy2, sx, sy]) => [280 + (hx - 280) * 1.5, hy2, 280 + (sx - 280) * 1.5, sy]);
   let arms = "";
   pose.forEach(([hx, hy2, sx, sy], i) => { arms += arm(bases[i][0], bases[i][1], hx, hy2, sx, sy, (i % 2 ? sw : -sw)); });
   const hurt = f === 6;
@@ -1275,8 +1277,263 @@ function octopirate(f) {
     <circle cx="${cx}" cy="${hy - 112}" r="12" fill="#f0eadc" stroke="#000" stroke-width="2"/><circle cx="${cx - 4}" cy="${hy - 114}" r="2.6" fill="#000"/><circle cx="${cx + 4}" cy="${hy - 114}" r="2.6" fill="#000"/>
     <path d="M${cx - 16} ${hy - 96} L${cx + 16} ${hy - 86} M${cx + 16} ${hy - 96} L${cx - 16} ${hy - 86}" stroke="#f0eadc" stroke-width="4" stroke-linecap="round"/>
     ${hurt ? `<path d="M${cx - 60} ${hy - 170} l2 6 6 1 -5 4 1 6 -4 -3 -5 3 1 -6 -5 -4 6 -1 Z M${cx + 60} ${hy - 176} l2 6 6 1 -5 4 1 6 -4 -3 -5 3 1 -6 -5 -4 6 -1 Z" fill="#ffe04a" stroke="#000" stroke-width="1"/>` : ""}`;
-  return arms + head + patch + eye + mouth + hat;
+  return `<g transform="translate(150,0)">${arms + head + patch + eye + mouth + hat}</g>`;
 }
-for (let f = 0; f < 7; f++) save("octopirate_" + f, 560, 340, octopirate(f));
+for (let f = 0; f < 7; f++) save("octopirate_" + f, 860, 340, octopirate(f));
+
+// ======================= Level 10: the Caribbean beach =======================
+// ---------- Tiles: golden sand on top, packed wet sand and coral stones below ----------
+const KB = {
+  [C.grass]: "#f4d27a", [C.grassLight]: "#fff0b8", [C.grassDark]: "#d8a850", [C.grassLine]: "#8a5e22",
+  [C.dirt]: "#c48a48", [C.stone]: "#e8c690", [C.stoneLight]: "#fff0d0", [C.stoneDark]: "#a87840", [C.mortar]: "#7a4e22",
+  "#d6ff9a": "#fffbe6",
+};
+const recolorBeach = (s) => Object.entries(KB).reduce((t, [a, b]) => t.split(a).join(b), s);
+const beachTiles = tiles.map(recolorBeach);
+beachTiles[9] = sandTiles[9];       // sea urchins instead of spikes
+// A tiny starfish on some sand tops.
+beachTiles[1] += `<path d="M22 6 l1.4 2.6 2.8 .2 -2.2 1.8 .8 2.8 -2.8 -1.6 -2.6 1.6 .8 -2.8 -2.2 -1.8 2.8 -.2 Z" fill="#ff8a5a" stroke="#8a3a1a" stroke-width="0.6"/>`;
+save("spr_tiles_beach", 32 * beachTiles.length, 32,
+  beachTiles.map((t, i) => `<g transform="translate(${i * 32},0)" clip-path="url(#cell)">${t}</g>`).join(""),
+  recolorBeach(stoneGrad) + `<clipPath id="cell"><rect x="0" y="0" width="32" height="32"/></clipPath>`);
+
+// ---------- Backgrounds: a turquoise sea with islands far away, palms and dunes in front ----------
+let bfar = `<circle cx="760" cy="70" r="40" fill="#fff6c8" opacity="0.9"/><circle cx="760" cy="70" r="58" fill="#fff6c8" opacity="0.25"/>`;
+const isle = (x, w, h) => `<path d="M${x - w} 180 Q${x - w * 0.4} ${180 - h} ${x} ${180 - h} Q${x + w * 0.5} ${180 - h} ${x + w} 180 Z" fill="#3a9a6a"/>
+  <path d="M${x - w * 0.3} ${181 - h * 0.9} q4 -30 10 -36 m0 0 q-14 -2 -22 6 m22 -6 q12 -6 22 2 m-22 -2 q-4 -10 -14 -12" stroke="#2a7a52" stroke-width="3" fill="none"/>`;
+bfar += isle(150, 90, 34) + isle(520, 60, 22) + isle(900, 120, 40);
+bfar += `<rect x="0" y="178" width="1024" height="82" fill="#1ab8c8"/><rect x="0" y="178" width="1024" height="6" fill="#8ae8ee"/>`;
+for (let i = 0; i < 40; i++) {
+  const x = (i * 97) % 1000, y = 192 + (i * 37) % 60;
+  bfar += `<path d="M${x} ${y} q8 -4 16 0" stroke="#bff6f8" stroke-width="2" fill="none" opacity="0.8"/>`;
+}
+save("spr_bg_beach_far", 1024, 260, bfar);
+// Dunes and palm trees (seamless: the palms sit well inside the picture).
+const palmShape = (x, base, h, lean, s = 1) => {
+  const tx = x + lean, ty = base - h;
+  let p = `<path d="M${x - 7 * s} ${base} Q${x + lean * 0.3} ${base - h * 0.5} ${tx - 4 * s} ${ty} L${tx + 4 * s} ${ty} Q${x + lean * 0.3 + 10 * s} ${base - h * 0.5} ${x + 7 * s} ${base} Z" fill="#8a5a2c" stroke="#3a2008" stroke-width="2"/>`;
+  [[-1, 0.2], [-0.8, -0.5], [0, -1], [0.8, -0.5], [1, 0.2], [0.5, 0.6], [-0.5, 0.6]].forEach(([dx, dy]) => {
+    const ex = tx + dx * 62 * s, ey = ty + dy * 30 * s + 18 * s;
+    const d = `M${tx} ${ty} Q${(tx + ex) / 2} ${ty + dy * 20 * s - 22 * s} ${ex} ${ey}`;
+    p += `<path d="${d}" stroke="#1e6a2a" stroke-width="${11 * s}" fill="none" stroke-linecap="round"/>
+      <path d="${d}" stroke="#3aa83a" stroke-width="${6 * s}" fill="none" stroke-linecap="round"/>`;
+  });
+  p += `<circle cx="${tx - 5 * s}" cy="${ty + 6 * s}" r="${6 * s}" fill="#6a4a1a" stroke="#2a1806" stroke-width="1.5"/><circle cx="${tx + 6 * s}" cy="${ty + 7 * s}" r="${6 * s}" fill="#6a4a1a" stroke="#2a1806" stroke-width="1.5"/>`;
+  return p;
+};
+let bnear = `<path d="M0 200 L0 150 Q120 120 260 146 Q400 170 520 140 Q660 112 800 144 Q920 168 1024 150 L1024 200 Z" fill="#e8c27a"/>`;
+bnear += `<path d="M0 150 Q120 120 260 146 Q400 170 520 140 Q660 112 800 144 Q920 168 1024 150" stroke="#c89a50" stroke-width="3" fill="none"/>`;
+bnear += palmShape(140, 150, 120, 26, 0.9) + palmShape(430, 160, 100, -22, 0.8) + palmShape(690, 146, 112, 30, 1) + palmShape(900, 162, 96, -18, 0.75);
+save("spr_bg_beach_near", 1024, 200, bnear);
+
+// ---------- Beach decorations ----------
+save("spr_palm", 150, 150, palmShape(75, 150, 112, 18, 0.8));
+save("spr_starfish", 20, 14,
+  `<path d="M10 1 l2 4.5 5 .4 -3.8 3.2 1.4 4.8 -4.6 -2.6 -4.6 2.6 1.4 -4.8 -3.8 -3.2 5 -.4 Z" fill="#ff7a4a" stroke="#7a2a10" stroke-width="1.1"/>
+   <circle cx="10" cy="7.6" r="1" fill="#ffd0a0"/>`);
+save("spr_sandcastle", 40, 34,
+  `<path d="M2 33 L4 16 L12 16 L12 10 L16 10 L16 16 L24 16 L24 10 L28 10 L28 16 L36 16 L38 33 Z" fill="#f0c878" stroke="#8a5e22" stroke-width="1.5"/>
+   <rect x="16" y="22" width="8" height="11" rx="4" fill="#a87840"/><path d="M14 10 V2 L20 4 L14 6" stroke="#5a3a14" stroke-width="1.2" fill="#ff4a4a"/>`);
+// The big leaning palm whose frond holds the wasp hive. 560 x 424, origin at the foot of the
+// trunk (400, 420); the crown (where the hive's vine is tied) is at (190, 60).
+let bigPalm = "";
+{
+  const x = 400, base = 420, h = 360, lean = -210;
+  const tx = x + lean, ty = base - h;
+  bigPalm += `<path d="M${x - 16} ${base} Q${x - 30} ${base - h * 0.6} ${tx - 6} ${ty} L${tx + 8} ${ty + 8} Q${x + 0} ${base - h * 0.55} ${x + 16} ${base} Z" fill="#8a5a2c" stroke="#3a2008" stroke-width="3"/>`;
+  [[-1, 0.4], [-0.85, -0.4], [-0.1, -1], [0.7, -0.6], [1, 0.3], [0.45, 0.85], [-0.55, 0.9]].forEach(([dx, dy]) => {
+    const ex = tx + dx * 120, ey = ty + dy * 46 + 34;
+    const d = `M${tx} ${ty} Q${(tx + ex) / 2} ${ty + dy * 30 - 40} ${ex} ${ey}`;
+    bigPalm += `<path d="${d}" stroke="#1e6a2a" stroke-width="20" fill="none" stroke-linecap="round"/><path d="${d}" stroke="#3aa83a" stroke-width="12" fill="none" stroke-linecap="round"/>
+      <path d="${d}" stroke="#7ad85a" stroke-width="2" fill="none"/>`;
+  });
+  bigPalm += `<circle cx="${tx - 10}" cy="${ty + 10}" r="11" fill="#6a4a1a" stroke="#2a1806" stroke-width="2"/><circle cx="${tx + 10}" cy="${ty + 12}" r="11" fill="#6a4a1a" stroke="#2a1806" stroke-width="2"/>
+    <circle cx="${tx}" cy="${ty + 22}" r="11" fill="#6a4a1a" stroke="#2a1806" stroke-width="2"/>`;
+}
+save("spr_palm_big", 560, 424, bigPalm);
+
+// ---------- Giant oysters: snap shut, open to show a pearl and spit it ----------
+// Frames: shut, peeking, open with the pearl, open (pearl spat), snapping. 60 x 46, origin (30, 44).
+function oyster(f) {
+  const sh = { top: "#8a8a9a", topL: "#c8c8d8", line: "#2a2a36", in: "#f4d0dc", lip: "#e890a8" };
+  const bottom = `<path d="M4 34 Q6 44 30 44 Q54 44 56 34 Q50 28 30 28 Q10 28 4 34 Z" fill="${sh.top}" stroke="${sh.line}" stroke-width="2"/>
+    <path d="M10 38 q4 3 8 0 M24 40 q4 3 8 0 M38 38 q4 3 8 0" stroke="${sh.line}" stroke-width="1.2" fill="none"/>`;
+  const ang = [0, -14, -38, -38, 0][f];
+  const lid = `<g transform="rotate(${ang} 6 33)"><path d="M4 33 Q4 12 30 10 Q56 12 56 33 Q30 38 4 33 Z" fill="url(#oy)" stroke="${sh.line}" stroke-width="2"/>
+    <path d="M30 12 L30 32 M18 15 L14 32 M42 15 L46 32 M10 22 L8 32 M50 22 L52 32" stroke="${sh.line}" stroke-width="1.3" opacity="0.7"/>
+    <ellipse cx="22" cy="18" rx="8" ry="3.5" fill="${sh.topL}" opacity="0.8"/>
+    ${f === 0 ? `<path d="M14 26 q4 -3 8 0 M38 26 q4 -3 8 0" stroke="${sh.line}" stroke-width="2.2" fill="none" stroke-linecap="round"/>` : ""}
+    ${f === 4 ? `<path d="M16 22 l6 4 M44 22 l-6 4" stroke="${sh.line}" stroke-width="2.6" stroke-linecap="round"/>` : ""}</g>`;
+  let inside = "";
+  if (f >= 1 && f <= 3) {
+    inside = `<path d="M6 33 Q30 ${f === 1 ? 26 : 16} 54 33 Q30 36 6 33 Z" fill="${sh.in}" stroke="${sh.lip}" stroke-width="1.5"/>`;
+    if (f >= 2) inside += `<circle cx="22" cy="24" r="4" fill="#fff" stroke="${sh.line}" stroke-width="1.4"/><circle cx="23" cy="24.5" r="2" fill="#111"/>
+      <circle cx="38" cy="24" r="4" fill="#fff" stroke="${sh.line}" stroke-width="1.4"/><circle cx="39" cy="24.5" r="2" fill="#111"/>
+      <path d="M18 18 l7 3 M42 18 l-7 3" stroke="${sh.line}" stroke-width="1.8" stroke-linecap="round"/>`;
+    if (f === 2) inside += `<circle cx="30" cy="30" r="5.5" fill="url(#pearl)" stroke="#8a8aa8" stroke-width="1"/>`;
+    if (f === 3) inside += `<ellipse cx="30" cy="31" rx="5" ry="3" fill="#a02040"/>`;
+  }
+  const teeth = f === 4 ? `<path d="M10 33 l3 4 3 -4 3 4 3 -4 3 4 3 -4 3 4 3 -4 3 4 3 -4 3 4 3 -4" stroke="#fff" stroke-width="1.6" fill="none"/>` : "";
+  return bottom + inside + lid + teeth;
+}
+const oysterDefs = `<linearGradient id="oy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8b8c8"/><stop offset="1" stop-color="#6a6a7a"/></linearGradient>
+  <radialGradient id="pearl" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#ffffff"/><stop offset="0.6" stop-color="#f0e8ff"/><stop offset="1" stop-color="#b8a8d8"/></radialGradient>`;
+for (let f = 0; f < 5; f++) save("oyster_" + f, 60, 46, oyster(f), oysterDefs);
+save("spr_pearl", 14, 14, `<circle cx="7" cy="7" r="6" fill="url(#pearl)" stroke="#6a5a8a" stroke-width="1.2"/><circle cx="5" cy="5" r="1.6" fill="#fff"/>`, oysterDefs);
+
+// ---------- Giant mosquitoes: wings A, wings B, aiming the needle (to dive) ----------
+// 64 x 50, origin (32, 25), facing right.
+function mosquito(f) {
+  const w = f === 1
+    ? `<ellipse cx="24" cy="20" rx="16" ry="5" fill="#d8f0ff" opacity="0.7" stroke="#6a8aa8" transform="rotate(10 24 20)"/><ellipse cx="30" cy="19" rx="14" ry="4" fill="#d8f0ff" opacity="0.6" stroke="#6a8aa8"/>`
+    : `<ellipse cx="22" cy="9" rx="14" ry="6" fill="#d8f0ff" opacity="0.7" stroke="#6a8aa8" transform="rotate(-30 22 9)"/><ellipse cx="30" cy="8" rx="12" ry="5" fill="#d8f0ff" opacity="0.6" stroke="#6a8aa8" transform="rotate(-15 30 8)"/>`;
+  const legs = f === 2 ? "M26 28 L14 40 L10 48 M30 29 L26 44 L24 50 M34 28 L40 42 L46 48" : "M26 28 L18 38 L18 48 M30 29 L30 42 L28 50 M34 28 L40 38 L44 46";
+  const needle = f === 2 ? `<path d="M50 22 L64 22" stroke="#2a1a1a" stroke-width="2.2" stroke-linecap="round"/>` : `<path d="M50 24 L61 31" stroke="#2a1a1a" stroke-width="2.2" stroke-linecap="round"/>`;
+  return `<path d="${legs}" stroke="#2a1a1a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M24 26 Q8 30 2 24 Q8 20 24 22 Z" fill="#7a5a3a" stroke="#2a1a1a" stroke-width="1.6"/>
+    <path d="M8 23 V27 M13 22 V28 M18 22 V28" stroke="#c8a070" stroke-width="1.6"/>
+    ${w}
+    <ellipse cx="30" cy="24" rx="9" ry="7" fill="#5a4030" stroke="#2a1a1a" stroke-width="1.8"/>
+    <circle cx="44" cy="22" r="7" fill="#5a4030" stroke="#2a1a1a" stroke-width="1.8"/>
+    <circle cx="46" cy="20" r="3.6" fill="#ff3a3a" stroke="#2a1a1a" stroke-width="1"/><circle cx="47" cy="19" r="1.2" fill="#fff"/>
+    <path d="M42 15 L48 17" stroke="#2a1a1a" stroke-width="2"/>${needle}
+    <path d="M42 16 Q40 8 46 4 M45 16 Q46 9 52 7" stroke="#2a1a1a" stroke-width="1.2" fill="none"/>`;
+}
+for (let f = 0; f < 3; f++) save("mosquito_" + f, 64, 50, mosquito(f));
+
+// ---------- Beach-goers under umbrellas (bounce on the umbrella to reach high places) ----------
+// Each variant: open, folded onto the head ("ouch!"), folded and dizzy, open again with a bump.
+// 112 x 108, origin (56, 108); the top of the open umbrella is 96 above the origin.
+const people = [
+  { skin: "#f0c8a0", hair: "#5a3a1a", top: "#ff5a3a", leg: "#3a6ad8", u1: "#ff3a3a", u2: "#ffffff", hat: "glasses" },
+  { skin: "#a86a40", hair: "#1a0e06", top: "#ffd23a", leg: "#2a9a6a", u1: "#2a8ae8", u2: "#ffffff", hat: "sunhat" },
+  { skin: "#e8b088", hair: "#d8d8d8", top: "#ffffff", leg: "#c84a8a", u1: "#ffc81a", u2: "#2aa84a", hat: "straw" },
+];
+function beachgoer(v, f) {
+  const P = people[v];
+  const open = f === 0 || f === 3;
+  const line = "#2a1a10";
+  const pole = `<path d="M56 106 L56 14" stroke="#e8e8e8" stroke-width="3.4"/><path d="M56 106 L56 14" stroke="#8a8a8a" stroke-width="1.2"/>`;
+  // The deck chair and the person sitting in it, facing the viewer.
+  let s = pole + `<path d="M30 106 L40 78 M82 106 L72 78 M34 104 L78 104" stroke="#8a5a2c" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M34 80 L78 80 L74 100 L38 100 Z" fill="#f4f0e0" stroke="${line}" stroke-width="1.6"/><path d="M38 86 H74 M38 93 H74" stroke="#e05a5a" stroke-width="3"/>`;
+  s += `<path d="M46 94 L44 106 M66 94 L68 106" stroke="${P.skin}" stroke-width="7" stroke-linecap="round"/>
+    <path d="M44 106 h-5 M68 106 h5" stroke="${line}" stroke-width="3" stroke-linecap="round"/>
+    <path d="M42 84 Q56 80 70 84 L68 96 L44 96 Z" fill="${P.leg}" stroke="${line}" stroke-width="1.5"/>
+    <path d="M44 62 Q56 56 68 62 L70 86 L42 86 Z" fill="${P.top}" stroke="${line}" stroke-width="1.6"/>`;
+  // Arms: relaxing (paper / drink), flailing up when hit, holding the head when dizzy.
+  if (f === 1) s += `<path d="M44 66 L32 50 M68 66 L80 50" stroke="${P.skin}" stroke-width="6" stroke-linecap="round"/>`;
+  else if (f === 2) s += `<path d="M44 66 Q36 58 44 46 M68 66 Q76 58 68 46" stroke="${P.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+  else s += `<path d="M44 66 L40 78 L52 76 M68 66 L72 78 L62 76" stroke="${P.skin}" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    ${v === 0 ? `<rect x="48" y="68" width="16" height="11" fill="#fff" stroke="${line}" stroke-width="1.2"/><path d="M56 68 V79 M50 71 h4 M58 71 h4 M50 74 h4 M58 74 h4" stroke="#555" stroke-width="0.8"/>` : ""}
+    ${v === 1 ? `<path d="M50 70 L62 70 L60 80 L52 80 Z" fill="#e8a040" stroke="${line}" stroke-width="1.2"/><path d="M60 70 L64 62" stroke="#ff4a8a" stroke-width="1.6"/>` : ""}
+    ${v === 2 ? `<circle cx="56" cy="74" r="7" fill="#7a4a1a" stroke="${line}" stroke-width="1.2"/><path d="M58 68 L62 60" stroke="#ff4a8a" stroke-width="1.6"/>` : ""}`;
+  // The head.
+  const hy = 50;
+  s += `<circle cx="56" cy="${hy}" r="12" fill="${P.skin}" stroke="${line}" stroke-width="1.8"/>`;
+  if (open) {
+    s += `<path d="M44 ${hy - 4} Q46 ${hy - 16} 56 ${hy - 14} Q66 ${hy - 16} 68 ${hy - 4} Q62 ${hy - 10} 56 ${hy - 9} Q50 ${hy - 10} 44 ${hy - 4} Z" fill="${P.hair}"/>`;
+    if (f === 0) {
+      if (P.hat === "glasses") s += `<rect x="47" y="${hy - 3}" width="8" height="5" rx="2" fill="#111"/><rect x="57" y="${hy - 3}" width="8" height="5" rx="2" fill="#111"/><path d="M55 ${hy - 1} h2" stroke="#111" stroke-width="1.4"/>`;
+      else s += `<path d="M49 ${hy - 1} q2 -2 4 0 M59 ${hy - 1} q2 -2 4 0" stroke="${line}" stroke-width="1.6" fill="none"/>`;
+      s += `<path d="M51 ${hy + 5} q5 4 10 0" stroke="${line}" stroke-width="1.6" fill="none"/>`;
+      if (P.hat === "sunhat") s += `<ellipse cx="56" cy="${hy - 9}" rx="20" ry="4" fill="#f4e0a0" stroke="${line}" stroke-width="1.3"/><path d="M46 ${hy - 10} Q56 ${hy - 26} 66 ${hy - 10} Z" fill="#f4e0a0" stroke="${line}" stroke-width="1.3"/><path d="M47 ${hy - 12} H65" stroke="#ff4a8a" stroke-width="2.4"/>`;
+      if (P.hat === "straw") s += `<ellipse cx="56" cy="${hy - 9}" rx="17" ry="3.6" fill="#e8c860" stroke="${line}" stroke-width="1.3"/><rect x="48" y="${hy - 20}" width="16" height="11" rx="3" fill="#e8c860" stroke="${line}" stroke-width="1.3"/><path d="M48 ${hy - 12} H64" stroke="#3a6ad8" stroke-width="2.4"/>`;
+    } else {
+      // Back up again, with a bump and a plaster on the head, and a grumpy face.
+      s += `<path d="M49 ${hy - 1} l4 1.5 M63 ${hy - 1} l-4 1.5" stroke="${line}" stroke-width="1.8"/><circle cx="51" cy="${hy + 1.5}" r="1.4" fill="${line}"/><circle cx="61" cy="${hy + 1.5}" r="1.4" fill="${line}"/>
+        <path d="M51 ${hy + 7} q5 -3 10 0" stroke="${line}" stroke-width="1.6" fill="none"/>
+        <ellipse cx="60" cy="${hy - 14}" rx="7" ry="5.5" fill="#ff9a9a" stroke="${line}" stroke-width="1.4"/>
+        <g transform="rotate(-20 60 ${hy - 15})"><rect x="53" y="${hy - 17}" width="14" height="5" rx="2" fill="#f4dcb0" stroke="${line}" stroke-width="1"/></g>
+        <g transform="rotate(40 60 ${hy - 15})"><rect x="53" y="${hy - 17}" width="14" height="5" rx="2" fill="#f4dcb0" stroke="${line}" stroke-width="1"/></g>`;
+    }
+    // The open canopy, in stripes.
+    let c = `<path d="M4 40 Q10 14 56 12 Q102 14 108 40 Z" fill="${P.u1}" stroke="${line}" stroke-width="2"/>`;
+    for (let k = 0; k < 4; k++) {
+      const x1 = 4 + k * 26, x2 = x1 + 13;
+      c += `<path d="M${x1 + 0.5} 40 Q${(x1 + 56) / 2} 20 56 12.5 Q${(x2 + 56) / 2} 20 ${x2} 40 Q${(x1 + x2) / 2} 44 ${x1 + 0.5} 40 Z" fill="${P.u2}"/>`;
+    }
+    c += `<path d="M4 40 Q10 14 56 12 Q102 14 108 40" stroke="${line}" stroke-width="2" fill="none"/>`;
+    for (let i = 0; i < 8; i++) { const x = 4 + i * 13; c += `<path d="M${x} 40 Q${x + 6.5} 45 ${x + 13} 40" stroke="${line}" stroke-width="1.6" fill="${i % 2 ? P.u2 : P.u1}"/>`; }
+    c += `<circle cx="56" cy="10" r="3.5" fill="#8a8a8a" stroke="${line}" stroke-width="1.2"/>`;
+    s += c;
+  } else {
+    // Folded down over the poor person's head.
+    s += `<path d="M56 18 Q66 30 70 66 Q56 72 42 66 Q46 30 56 18 Z" fill="${P.u1}" stroke="${line}" stroke-width="2"/>
+      <path d="M56 19 Q60 40 60 69 M56 19 Q50 40 51 69" stroke="${P.u2}" stroke-width="4" fill="none"/>
+      <path d="M56 18 Q66 30 70 66 Q56 72 42 66 Q46 30 56 18 Z" fill="none" stroke="${line}" stroke-width="2"/>
+      <circle cx="56" cy="12" r="3.5" fill="#8a8a8a" stroke="${line}" stroke-width="1.2"/>`;
+    if (f === 1) s += `<path d="M84 22 L88 40 M88 47 L88 49" stroke="#ff2a2a" stroke-width="4" stroke-linecap="round"/><path d="M22 30 l6 4 M20 40 l7 0 M24 50 l5 -3" stroke="${line}" stroke-width="2" stroke-linecap="round"/>`;
+    else s += [[36, 20], [56, 6], [76, 20]].map(([x, y]) => `<path d="M${x} ${y - 6} l1.8 4 4.2 .4 -3.2 2.8 1 4.2 -3.8 -2.2 -3.8 2.2 1 -4.2 -3.2 -2.8 4.2 -.4 Z" fill="#ffe04a" stroke="${line}" stroke-width="1"/>`).join("");
+  }
+  return s;
+}
+for (let v = 0; v < 3; v++) for (let f = 0; f < 4; f++) save(`umbrella_${v * 4 + f}`, 112, 108, beachgoer(v, f));
+
+// ---------- The wasp hive boss and its wasps ----------
+// Hive frames: idle A, idle B, wind-up (red eyes, wasps pouring out), hurt.
+// 150 x 160, origin (75, 82); hangs from the top (y 0) by a vine.
+function hive(f) {
+  const line = "#3a2a10";
+  let s = `<path d="M75 2 Q120 10 132 58 Q142 110 110 146 Q75 162 40 146 Q8 110 18 58 Q30 10 75 2 Z" fill="url(#hv)" stroke="${line}" stroke-width="3"/>`;
+  for (let k = 0; k < 7; k++) {
+    const y = 20 + k * 18, w = 50 + Math.sin(((k + 1) / 8) * Math.PI) * 14;
+    s += `<path d="M${75 - w} ${y + 8} Q75 ${y + 20} ${75 + w} ${y + 8}" stroke="#a88a4a" stroke-width="3" fill="none" opacity="0.8"/>`;
+  }
+  // The entrance at the bottom: a honeycomb round a hole.
+  s += `<ellipse cx="75" cy="140" rx="22" ry="12" fill="#2a1a08" stroke="${line}" stroke-width="2"/>`;
+  [[62, 136], [75, 132], [88, 136], [68, 144], [82, 144]].forEach(([x, y]) => { s += `<path d="M${x - 5} ${y} l2.5 -4.3 h5 l2.5 4.3 -2.5 4.3 h-5 Z" fill="#e8b830" stroke="${line}" stroke-width="1"/>`; });
+  // The face: eye holes and a buzzing mouth.
+  const red = f === 2;
+  if (f === 3) s += `<path d="M42 62 l18 14 M60 62 l-18 14 M90 62 l18 14 M108 62 l-18 14" stroke="${line}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M56 106 Q75 94 94 106" stroke="${line}" stroke-width="5" fill="none"/><path d="M40 30 L52 44 L46 52 L58 60" stroke="${line}" stroke-width="2.5" fill="none"/>`;
+  else s += `<ellipse cx="52" cy="70" rx="13" ry="11" fill="#1a0e04"/><ellipse cx="98" cy="70" rx="13" ry="11" fill="#1a0e04"/>
+    <circle cx="${f === 1 ? 54 : 52}" cy="71" r="${red ? 6 : 4.5}" fill="${red ? "#ff3a1a" : "#ffd23a"}"/><circle cx="${f === 1 ? 100 : 98}" cy="71" r="${red ? 6 : 4.5}" fill="${red ? "#ff3a1a" : "#ffd23a"}"/>
+    <path d="M36 52 L64 62 M114 52 L86 62" stroke="${line}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M52 100 Q75 ${red ? 122 : 112} 98 100 Q75 108 52 100 Z" fill="#1a0e04" stroke="${line}" stroke-width="2"/>`;
+  // Little wasps crawling about on it (more pour out on the wind-up).
+  const wsp = (x, y, r) => `<g transform="rotate(${r} ${x} ${y})"><ellipse cx="${x - 3}" cy="${y - 3}" rx="4" ry="2.4" fill="#e8f4ff" opacity="0.9"/><ellipse cx="${x}" cy="${y}" rx="6" ry="3.2" fill="#ffd21c" stroke="#1a1000" stroke-width="1"/><path d="M${x - 2} ${y - 3} V${y + 3} M${x + 2} ${y - 3} V${y + 3}" stroke="#1a1000" stroke-width="1.4"/></g>`;
+  const spots = f === 2 ? [[30, 30, 20], [120, 40, -30], [20, 100, 60], [130, 110, -60], [60, 150, 90], [92, 154, 80], [75, 156, 95], [110, 140, 40], [40, 140, 130]]
+    : (f === 1 ? [[40, 36, 30], [112, 90, -70], [70, 24, 10]] : [[36, 40, 40], [114, 84, -60], [84, 26, -10]]);
+  spots.forEach(([x, y, r]) => { s += wsp(x, y, r); });
+  return s;
+}
+const hiveDefs = `<radialGradient id="hv" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#e8d098"/><stop offset="0.6" stop-color="#c8a868"/><stop offset="1" stop-color="#8a6a32"/></radialGradient>`;
+for (let f = 0; f < 4; f++) save("hive_" + f, 150, 160, hive(f), hiveDefs);
+// A wasp soldier (wings A, wings B), 40 x 34, origin (20, 17), facing right.
+function wasp(f) {
+  const w = f === 0 ? `<ellipse cx="16" cy="6" rx="9" ry="5" fill="#e8f4ff" opacity="0.85" stroke="#7a9ab8" transform="rotate(-20 16 6)"/>`
+    : `<ellipse cx="15" cy="12" rx="10" ry="3.4" fill="#e8f4ff" opacity="0.85" stroke="#7a9ab8"/>`;
+  return `<path d="M14 22 L10 30 M20 23 L20 31 M25 22 L29 29" stroke="#1a1000" stroke-width="1.5"/>
+    <path d="M2 18 Q2 12 12 13 L16 22 Q6 26 2 18 Z" fill="#ffd21c" stroke="#1a1000" stroke-width="1.6"/><path d="M2 18 L-1 19" stroke="#1a1000" stroke-width="2"/>
+    <path d="M6 13 L6 23 M10 13 L10 24" stroke="#1a1000" stroke-width="2"/>
+    ${w}<ellipse cx="20" cy="18" rx="6" ry="5" fill="#2a2000" stroke="#1a1000" stroke-width="1.4"/>
+    <circle cx="30" cy="16" r="6" fill="#ffd21c" stroke="#1a1000" stroke-width="1.6"/><circle cx="32" cy="14.6" r="2.4" fill="#d01a1a"/>
+    <path d="M28 9 L33 11" stroke="#1a1000" stroke-width="1.8"/><path d="M33 10 Q36 4 40 4" stroke="#1a1000" stroke-width="1.2" fill="none"/>`;
+}
+save("wasp_0", 40, 34, wasp(0));
+save("wasp_1", 40, 34, wasp(1));
+// A wasp arrow: a wasp shooting along with a speed streak (it points along +x). 50 x 20, origin (30, 10).
+save("spr_wasp_arrow", 50, 20,
+  `<path d="M0 10 L26 7 L26 13 Z" fill="#ffe680" opacity="0.6"/><path d="M4 10 H24" stroke="#fff" stroke-width="1.4" opacity="0.8"/>
+   <ellipse cx="28" cy="6" rx="7" ry="3" fill="#e8f4ff" opacity="0.9" stroke="#7a9ab8"/>
+   <ellipse cx="32" cy="10" rx="9" ry="4.6" fill="#ffd21c" stroke="#1a1000" stroke-width="1.4"/><path d="M29 6 V14 M33 5.6 V14.4" stroke="#1a1000" stroke-width="1.8"/>
+   <circle cx="42" cy="10" r="4.4" fill="#ffd21c" stroke="#1a1000" stroke-width="1.4"/><circle cx="43.5" cy="9" r="1.6" fill="#d01a1a"/><path d="M46 10 L50 10" stroke="#1a1000" stroke-width="1.6"/>`);
+// A whirlwind of wasps spinning along the sand (3 frames). 70 x 100, origin (35, 50).
+function whirl(f) {
+  let s = "";
+  for (let k = 0; k < 6; k++) {
+    const y = 92 - k * 16, w = 10 + k * 5.5;
+    s += `<ellipse cx="${35 + Math.sin(k * 1.3 + f * 2.1) * 4}" cy="${y}" rx="${w}" ry="${4 + k * 0.6}" fill="none" stroke="#f4e6b0" stroke-width="3" opacity="0.75"/>`;
+  }
+  for (let k = 0; k < 10; k++) {
+    const a = k * 2.4 + f * 2.1, y = 90 - k * 8.5, w = 10 + (90 - y) * 0.32;
+    const x = 35 + Math.cos(a) * w, front = Math.sin(a) > 0;
+    s += `<g opacity="${front ? 1 : 0.55}"><ellipse cx="${x}" cy="${y}" rx="4.6" ry="2.6" fill="#ffd21c" stroke="#1a1000" stroke-width="1"/><path d="M${x - 1.5} ${y - 2.5} V${y + 2.5}" stroke="#1a1000" stroke-width="1.4"/><ellipse cx="${x - 2}" cy="${y - 3.4}" rx="3" ry="1.6" fill="#fff" opacity="0.8"/></g>`;
+  }
+  s += `<ellipse cx="35" cy="96" rx="20" ry="4" fill="#c8a060" opacity="0.6"/>`;
+  return s;
+}
+for (let f = 0; f < 3; f++) save("whirl_" + f, 70, 100, whirl(f));
 
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

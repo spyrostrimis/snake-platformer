@@ -80,7 +80,10 @@ function sfx_init()
         clank:   sfx_notes([1900, 1400], "square", 0.08, 0.1),
         rattle:  sfx_sweep(0, 0, "noise", 0.2, 0.1),
         splash:  sfx_sweep(0, 0, "noise", 0.35, 0.16),
-        snip:    sfx_notes([1400, 900, 1400], "square", 0.12, 0.1)
+        snip:    sfx_notes([1400, 900, 1400], "square", 0.12, 0.1),
+        buzz:    sfx_sweep(170, 230, "saw", 0.3, 0.09),
+        bonk:    sfx_notes([392, 196], "triangle", 0.22, 0.35),
+        snap:    sfx_sweep(1500, 250, "square", 0.09, 0.14)
     };
 }
 

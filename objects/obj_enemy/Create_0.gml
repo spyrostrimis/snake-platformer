@@ -10,6 +10,7 @@ hit_wall = 0;
 hit_ceiling = false;
 drop_through = false;
 points = 200;
+no_gem = false;         // true: leaves no gem behind (the wasp hive's endless wasps)
 image_speed = 0.15;
 net_id = -1;            // online: the same number on both PCs (its index in the level plan)
 net_seen = 0;           // joiner: the last world update that had it
@@ -59,7 +60,7 @@ kill = function(_dmg = 1, _by = noone)
         return;
     }
     _g.add_score(points, x, y - 20, stats_of(_by));
-    if (irandom(1) == 0) _g.net_spawned(instance_create_layer(x, y, "Instances", obj_gem), "gem");
+    if (!no_gem && irandom(1) == 0) _g.net_spawned(instance_create_layer(x, y, "Instances", obj_gem), "gem");
     if (_g.net_mode == "host") _g.net_event({ t: "kill", i: net_id });
     instance_destroy();
 };

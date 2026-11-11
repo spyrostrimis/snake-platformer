@@ -25,6 +25,23 @@ if (net_mirror())
     exit;
 }
 
+// ---------- A whirlwind of wasps: spins along the sand, back and forth ----------
+if (whirl)
+{
+    x += vx;
+    life--;
+    if (is_blocking(tile_at(x + sign(vx) * 24, y)) || (vx < 0 && x < wx1) || (vx > 0 && x > wx2)) vx = -vx;
+    if (_g.frame mod 5 == 0) part_particles_create(_g.ps, x + random_range(-16, 16), y + 46, _g.pt_dust, 1);
+    if (life <= 0)
+    {
+        _g.burst(x, y + 20, make_colour_rgb(255, 220, 60), 8);
+        instance_destroy();
+        exit;
+    }
+    with (obj_player) if (!remote && !hidden && other.touches(id)) other.lasting_hit(id);
+    exit;
+}
+
 // ---------- A boulder: rolls left along the floor until it drops off a cliff ----------
 if (roll)
 {

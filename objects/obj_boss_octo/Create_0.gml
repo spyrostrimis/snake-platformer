@@ -1,5 +1,5 @@
 /// Captain Octavius, the octopus pirate who rules the sunken ship. Eight arms, a cutlass in
-/// each, and he can stretch them out a long way. After drawing his swords back (the warning):
+/// each, and he can stretch them out a very long way (12 tiles). After drawing his swords back (the warning):
 /// Thrust: three swords shoot out far ahead of him at every height (get behind him, or out of
 /// reach).
 /// Low sweep: swords swept along the floor on both sides (jump, or stand on a plank).
@@ -41,15 +41,15 @@ blade_zone = function(_x1, _x2, _y1, _y2, _dir)
 blade_check = function()
 {
     var _f = floor(image_index);
-    if (_f == 3) blade_zone(x + facing * 70, x + facing * 275, y - 95, y + 90, facing);
+    if (_f == 3) blade_zone(x + facing * 70, x + facing * 400, y - 95, y + 90, facing);
     else if (_f == 4)
     {
-        blade_zone(x + 60, x + 262, y + 80, y + hh, 1);
-        blade_zone(x - 262, x - 60, y + 80, y + hh, -1);
+        blade_zone(x + 60, x + 385, y + 80, y + hh, 1);
+        blade_zone(x - 385, x - 60, y + 80, y + hh, -1);
     }
     else if (_f == 5)
     {
-        blade_zone(x + 70, x + 255, y - 130, y + 5, 1);
-        blade_zone(x - 255, x - 70, y - 130, y + 5, -1);
+        blade_zone(x + 70, x + 370, y - 130, y + 5, 1);
+        blade_zone(x - 370, x - 70, y - 130, y + 5, -1);
     }
 };

@@ -81,6 +81,7 @@ state      = "title";   // title | credits | online | play | paused | clear | ga
 levels     = level_list();
 egg_next   = 0;         // the face the next egg gets (see obj_egg); load_level sets it
 level_index = 0;
+max_misses = MAX_MISSES;  // wrong guesses allowed this level (fewer from level 10 on)
 words      = game_word_list();
 last_word  = "";
 popups     = [];        // world-space floating scores { x, y, text, life }
@@ -241,6 +242,7 @@ clear_level = function()
     with (obj_pickup) instance_destroy();
     boss = noone;
     with (obj_spring) instance_destroy();
+    with (obj_umbrella) instance_destroy();
     with (obj_door) instance_destroy();
     with (obj_flag) instance_destroy();
     with (obj_sky) instance_destroy();
@@ -291,6 +293,8 @@ load_level = function(_i, _with_player)
 {
     clear_level();
     egg_next = _i;          // eggs take the three faces in turn, from a different one each level
+    // From level 10 on the snakes get only 5 wrong guesses instead of 6.
+    max_misses = (_i >= 9) ? MAX_MISSES - 1 : MAX_MISSES;
     lvl = levels[_i]();
     grid = lvl.grid;
     lvl_w = lvl.w;
@@ -352,9 +356,11 @@ load_level = function(_i, _with_player)
     // The bone pit ("bone"): violet crystals and piles of bones, purple-tinted stalactites.
     // The sunken grotto ("sea"): sea-blue crystals, shells and seaweed, blue-grey stalactites.
     // Inside the shipwreck ("ship"): barrels and piles of gold on the decks, ropes hanging down.
+    // The beach ("beach"): starfish, shells and sandcastles.
     var _bonez = lvl.deco == "bone";
     var _sea = lvl.deco == "sea";
     var _ship = lvl.deco == "ship";
+    var _beach = lvl.deco == "beach";
     var _cave = lvl.deco == "cave" || _bonez || _sea;
     var _deco = layer_create(95, "Deco");
     array_push(layers_made, _deco);
@@ -373,6 +379,14 @@ load_level = function(_i, _with_player)
                     if (_sr == 0) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 2, spr_barrel);
                     else if (_sr == 1) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 2, spr_coins);
                 }
+            }
+            else if (_here == T_SOLID && grid[_x][_y - 1] == T_EMPTY && _beach)
+            {
+                // The beach: starfish, shells and the odd sandcastle on the sand.
+                var _br = irandom(11);
+                if (_br == 0) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 3, spr_starfish);
+                else if (_br == 1) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_shell);
+                else if (_br == 2 && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 3, spr_sandcastle);
             }
             else if (_here == T_SOLID && grid[_x][_y - 1] == T_EMPTY)
             {
@@ -432,6 +446,7 @@ load_level = function(_i, _with_player)
             case "boss_crab":
             case "boss_jelly":
             case "boss_octo":
+            case "boss_hive":
                 var _boss_obj = obj_boss_mouse;
                 if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
                 else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
@@ -441,10 +456,13 @@ load_level = function(_i, _with_player)
                 else if (_s.kind == "boss_crab") _boss_obj = obj_boss_crab;
                 else if (_s.kind == "boss_jelly") _boss_obj = obj_boss_jelly;
                 else if (_s.kind == "boss_octo") _boss_obj = obj_boss_octo;
+                else if (_s.kind == "boss_hive") _boss_obj = obj_boss_hive;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.y = _s.ty * TILE + 32 - boss.hh;     // standing on the floor, whatever its size
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
                 boss.arena_x2 = lvl.arena[1] * TILE;
+                // The hive hangs from a leaning palm: the crown is right above where it's placed.
+                if (_s.kind == "boss_hive") layer_sprite_create(_deco, _px + 210, _s.ty * TILE + 32, spr_palm_big);
                 _inst = boss;
                 break;
             case "bug":    _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 12, "Instances", obj_bug); break;
@@ -486,6 +504,12 @@ load_level = function(_i, _with_player)
                 layer_sprite_index(_ts, irandom(2));
                 array_push(lights, { x: _px, y: _py - 12, r: 2.3, torch: true });
                 break;
+            // The beach: giant oysters on the sand, giant mosquitoes, people under umbrellas
+            // (bounce on them) and palm trees.
+            case "oyster":   _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 16, "Instances", obj_oyster); break;
+            case "mosquito": _inst = instance_create_layer(_px, _py, "Instances", obj_mosquito); break;
+            case "umbrella": _inst = instance_create_layer(_px, _s.ty * TILE + 32, _deco, obj_umbrella); break;
+            case "palm":     layer_sprite_create(_deco, _px, _s.ty * TILE + 34, spr_palm); break;
             case "spring": instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_spring); break;
             case "flag":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_flag); break;
             case "door":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_door); break;
@@ -588,6 +612,7 @@ start_level = function()
         net_sent_state = "play";
     }
     say(lvl.name, 180);
+    if (level_index == 9) say("FROM NOW ON: ONLY " + string(max_misses) + " WRONG GUESSES!", 200);
     say("FIND THE LETTERS. OPEN THE DOOR.", 180);
 };
 
@@ -617,17 +642,17 @@ on_letter = function(_ch, _x, _y, _by)
     else
     {
         // One shared miss bar: the miss counts for every snake.
-        var _was_full = _p.misses >= MAX_MISSES;
+        var _was_full = _p.misses >= max_misses;
         for (var _k = 0; _k < array_length(pl); _k++)
         {
-            pl[_k].misses = min(MAX_MISSES, pl[_k].misses + 1);
-            if (string_length(pl[_k].miss_letters) < MAX_MISSES) pl[_k].miss_letters += _ch;
+            pl[_k].misses = min(max_misses, pl[_k].misses + 1);
+            if (string_length(pl[_k].miss_letters) < max_misses) pl[_k].miss_letters += _ch;
         }
         burst(_x, _y, make_colour_rgb(255, 60, 90), 18);
         play_sfx(sfx.wrong);
-        if (_p.misses >= MAX_MISSES)
+        if (_p.misses >= max_misses)
         {
-            say(_was_full ? ("NO " + _ch + "! " + _p.skin.name + " LOSES A LIFE") : ("SIX MISSES! " + _p.skin.name + " LOSES A LIFE"), 160);
+            say(_was_full ? ("NO " + _ch + "! " + _p.skin.name + " LOSES A LIFE") : ((max_misses == 6 ? "SIX" : "FIVE") + " MISSES! " + _p.skin.name + " LOSES A LIFE"), 160);
             player_died(_by);
         }
         else say("NO " + _ch + " IN THIS WORD", 100);
@@ -795,7 +820,7 @@ level_complete = function()
     for (var _k = 0; _k < array_length(pl); _k++)
     {
         var _p = pl[_k];
-        _p.bonus = _p.out ? 0 : _base + (MAX_MISSES - _p.misses) * 500;
+        _p.bonus = _p.out ? 0 : _base + (max_misses - _p.misses) * 500;
         _p.shown = 0;
     }
     play_music("music_05.ogg");
@@ -1039,6 +1064,12 @@ net_apply_event = function(_e)
         case "hazard":
             var _h = net_find(obj_hazard, _e.i);
             if (_h != noone) instance_destroy(_h);
+            break;
+
+        case "umb":
+            // A snake on the other PC bounced on an umbrella.
+            var _um = net_find(obj_umbrella, _e.i);
+            if (_um != noone) with (_um) fold();
             break;
 
         case "flag":

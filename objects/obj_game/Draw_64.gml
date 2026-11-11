@@ -240,7 +240,7 @@ switch (state)
 
             // Misses, bottom right: this snake's wrong letters with a red cross.
             hud_text(452, _by - 30, "MISSES", 0.34, fa_left, make_colour_rgb(255, 170, 170));
-            for (var _i = 0; _i < MAX_MISSES; _i++)
+            for (var _i = 0; _i < max_misses; _i++)
             {
                 var _mx = 520 + _i * 19;
                 draw_set_colour(make_colour_rgb(20, 24, 60));

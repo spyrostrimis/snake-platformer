@@ -321,6 +321,21 @@ with (obj_spring)
         _g.play_sfx(_g.sfx.spring);
     }
 }
+// A beach umbrella throws the snake up nearly as high as a spring (from its top, 3 tiles up),
+// then folds shut onto its owner's head for a while.
+with (obj_umbrella)
+{
+    var _feet = other.y + other.hh;
+    var _top = y - 96;
+    if (fold_t == 0 && other.vy >= 0 && abs(x - other.x) < 48 + other.hw - 4 && _feet >= _top - 4 && _feet <= _top + 16)
+    {
+        other.vy = -14;     // rises ~210 px above the umbrella
+        other.sprung = true;
+        fold();
+        _g.play_sfx(_g.sfx.spring);
+        _g.net_event({ t: "umb", i: net_id });
+    }
+}
 with (obj_flag)
 {
     // Each snake has its own checkpoint: the last flag it touched.

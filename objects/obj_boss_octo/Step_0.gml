@@ -35,9 +35,9 @@ switch (state)
         // Shuffles on his arms to keep a sword's length from the nearest snake.
         var _d = face_player();
         image_index = (_g.frame div 14) mod 2;
-        var _sp = _angry ? 1.4 : 1;
-        if (_d > 240) vx = facing * _sp;
-        else if (_d < 150) vx = -facing * _sp;
+        var _sp = _angry ? 1.6 : 1.2;
+        if (_d > 300) vx = facing * _sp;
+        else if (_d < 170) vx = -facing * _sp;
         else vx = 0;
         if (timer <= 0)
         {
@@ -46,12 +46,12 @@ switch (state)
             // sweep or a thrust; one far off a thrust.
             var _up = _p != noone && _p.y < y + hh - 60;
             var _r = irandom(99);
-            if (_d > 280) attack = "thrust";
+            if (_d > 340) attack = "thrust";
             else if (_up) attack = (_r < 55) ? "slash" : "thrust";
             else attack = (_r < 50) ? "sweep" : ((_r < 80) ? "thrust" : "slash");
             combo = _angry && attack == "sweep";
             state = "windup";
-            timer = _angry ? 22 : 32;
+            timer = _angry ? 20 : 28;
             _g.play_sfx(_g.sfx.charge);
         }
         break;
@@ -78,7 +78,7 @@ switch (state)
         if (timer <= 0)
         {
             if (combo) { combo = false; attack = "slash"; state = "windup"; timer = 12; }
-            else { state = "walk"; timer = _angry ? 55 : 80; }
+            else { state = "walk"; timer = _angry ? 45 : 65; }
         }
         break;
 

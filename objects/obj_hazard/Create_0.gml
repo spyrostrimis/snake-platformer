@@ -19,6 +19,12 @@ net_ty = y;
 boomer = 0;
 home_x = x;
 
+// The wasp hive's whirlwind spins along the sand (vx), turning back at walls and at the edges
+// of the hive's beach (wx1..wx2), and stays after touching a snake.
+whirl = false;
+wx1 = -100000;
+wx2 = 100000;
+
 // A boulder rolls along the floor like a creature (entity_move needs these).
 roll = false;
 hw = 16;
@@ -28,9 +34,9 @@ hit_wall = 0;
 hit_ceiling = false;
 drop_through = false;
 
-/// Boulders and poison puddles hurt a snake but stay (or keep rolling) afterwards, and the
+/// Boulders, poison puddles and whirlwinds hurt a snake but stay (or keep rolling) afterwards, and the
 /// tongue can't swat them away. Only looks at the sprite, so it works the same on both PCs.
-lasts = function() { return sprite_index == spr_boulder || sprite_index == spr_puddle; };
+lasts = function() { return sprite_index == spr_boulder || sprite_index == spr_puddle || sprite_index == spr_whirl; };
 
 /// True if snake _p overlaps this.
 touches = function(_p)
@@ -40,6 +46,8 @@ touches = function(_p)
     if (sprite_index == spr_boulder) { _sw = 16; _sh = 16; }
     else if (sprite_index == spr_puddle) { _sw = 22; _sh = 6; }
     else if (sprite_index == spr_banknote) { _sw = 13; _sh = 9; }
+    else if (sprite_index == spr_wasp_arrow) { _sw = 12; _sh = 7; }
+    else if (sprite_index == spr_whirl) { _sw = 18; _sh = 40; }
     return abs(_p.x - x) < _p.hw + _sw && abs(_p.y - y) < _p.hh + _sh;
 };
 

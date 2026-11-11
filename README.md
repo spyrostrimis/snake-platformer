@@ -31,6 +31,8 @@ On the title screen: Up / Down picks one or two players, Left / Right the snake,
 
 Every 10 gems a snake collects give it an **extra life**.
 
+The two snakes share one bar of misses: 6 wrong letters per level, and only **5 from level 10 on**.
+
 ### The Slingshot (two players)
 
 A super move for when you play together, split screen or online: **Peto** is the bow, **Sockee** the arrow.

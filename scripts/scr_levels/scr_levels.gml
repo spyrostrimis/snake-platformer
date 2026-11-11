@@ -956,7 +956,115 @@ function level_wreck()
     return L;
 }
 
+/// Level 10: up from the wreck and out onto a sunny Caribbean beach. Giant oysters on the sand
+/// (shut, only a boost breaks them; open, any attack does), giant mosquitoes that dive at you,
+/// two lagoons to swim, and people relaxing under umbrellas: bounce on an umbrella to reach the
+/// high boardwalks (it folds onto its owner's head, and opens again a while later). At the end
+/// the Stinging Hive hangs from a leaning palm. From this level on there are only 5 wrong
+/// guesses instead of 6.
+/// Reach: the high boardwalks (8 tiles up) are right above an umbrella, which throws a snake
+/// about 9.5 tiles up; every step is 2 tiles; each lagoon's surface is level with a bank; letters
+/// are at most 3 above a floor or the water; none in the hive's arena.
+function level_beach()
+{
+    var L = lvl_create("CORAL COVE", 192, 16, "music_01.ogg", make_colour_rgb(30, 110, 220), make_colour_rgb(160, 220, 250));
+    L.tileset = ts_beach;
+    L.bg = [spr_bg_beach_far, spr_bg_clouds, spr_bg_beach_near];
+    L.deco = "beach";
+    L.vine_odds = 100000;
+    L.mushrooms = false;
+
+    // ---- The beach: an oyster, a sunbather and the first boardwalk ----
+    lvl_ground(L, 0, 30, 13);
+    lvl_put(L, "start", 3, 12);
+    lvl_put(L, "palm", 1, 12);
+    lvl_gems(L, 6, 9, 11);
+    lvl_put(L, "letter", 10, 10);
+    lvl_put(L, "oyster", 14, 12);
+    lvl_put(L, "umbrella", 20, 12);
+    lvl_rect(L, 18, 5, 25, 5, T_ONEWAY);
+    lvl_gems(L, 19, 21, 4);
+    lvl_put(L, "letter", 23, 4);
+    lvl_put(L, "palm", 26, 12);
+    lvl_put(L, "mosquito", 28, 8);
+
+    // ---- Lagoon 1: swim across (its surface is level with both banks) ----
+    lvl_ground(L, 31, 42, 15);
+    lvl_water(L, 31, 13, 42, 14);
+    lvl_put(L, "letter", 36, 10);
+    lvl_put(L, "mosquito", 39, 8);
+
+    // ---- More beach: oysters, a sunbather, a long boardwalk up high ----
+    lvl_ground(L, 43, 70, 13);
+    lvl_put(L, "oyster", 47, 12);
+    lvl_put(L, "umbrella", 52, 12);
+    lvl_rect(L, 49, 5, 56, 5, T_ONEWAY);
+    lvl_put(L, "letter", 54, 4);
+    lvl_rect(L, 59, 6, 63, 6, T_ONEWAY);
+    lvl_gems(L, 60, 62, 5);
+    lvl_rect(L, 66, 5, 70, 5, T_ONEWAY);
+    lvl_put(L, "letter", 60, 10);
+    lvl_put(L, "palm", 57, 12);
+    lvl_put(L, "mosquito", 64, 9);
+    lvl_put(L, "oyster", 67, 12);
+
+    // ---- The dunes: two steps up and down again ----
+    lvl_ground(L, 71, 76, 11);
+    lvl_ground(L, 77, 82, 9);
+    lvl_put(L, "letter", 79, 6);
+    lvl_put(L, "mosquito", 80, 4);
+    lvl_ground(L, 83, 88, 11);
+    lvl_put(L, "oyster", 85, 10);
+    lvl_put(L, "flag", 87, 10);
+    lvl_put(L, "super_egg", 88, 10);    // two players only
+    lvl_ground(L, 89, 90, 13);
+
+    // ---- Lagoon 2: wide, with floating logs; mosquitoes over the water ----
+    lvl_ground(L, 91, 108, 15);
+    lvl_water(L, 91, 13, 108, 14);
+    lvl_rect(L, 94, 10, 95, 10, T_ONEWAY);
+    lvl_rect(L, 99, 10, 100, 10, T_ONEWAY);
+    lvl_rect(L, 104, 10, 105, 10, T_ONEWAY);
+    lvl_put(L, "letter", 99, 9);
+    lvl_gems(L, 103, 106, 12);
+    lvl_put(L, "mosquito", 97, 6);
+    lvl_put(L, "mosquito", 103, 6);
+
+    // ---- A busy stretch of beach: two sunbathers and high boardwalks above them ----
+    lvl_ground(L, 109, 150, 13);
+    lvl_put(L, "palm", 110, 12);
+    lvl_put(L, "umbrella", 113, 12);
+    lvl_rect(L, 111, 5, 119, 5, T_ONEWAY);
+    lvl_put(L, "letter", 117, 4);
+    lvl_put(L, "oyster", 118, 12);
+    lvl_put(L, "letter", 121, 10);
+    lvl_put(L, "umbrella", 125, 12);
+    lvl_rect(L, 123, 5, 131, 5, T_ONEWAY);
+    lvl_gems(L, 124, 127, 4);
+    lvl_put(L, "letter", 129, 4);
+    lvl_put(L, "oyster", 128, 12);
+    lvl_put(L, "mosquito", 134, 9);
+    lvl_put(L, "palm", 137, 12);
+    lvl_put(L, "flag", 140, 12);
+    lvl_put(L, "egg", 141, 12);
+    lvl_put(L, "letter", 145, 10);
+    lvl_put(L, "mosquito", 147, 8);
+
+    // ---- The Stinging Hive's beach: it swings from a leaning palm. Two umbrellas under its
+    // swing throw you up above it; a plank at each side to lash it from. ----
+    lvl_ground(L, 151, 191, 13);
+    L.arena = [152, 178];
+    lvl_rect(L, 155, 10, 157, 10, T_ONEWAY);
+    lvl_rect(L, 173, 10, 175, 10, T_ONEWAY);
+    lvl_put(L, "umbrella", 161, 12);
+    lvl_put(L, "umbrella", 169, 12);
+    lvl_put(L, "boss_hive", 165, 12);
+    lvl_put(L, "door", 186, 12);
+    lvl_put(L, "palm", 189, 12);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep, level_wreck];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep, level_wreck, level_beach];
 }
