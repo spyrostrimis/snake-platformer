@@ -1,6 +1,6 @@
 /// Little skeleton with a sword: marches along its floor and turns at walls and edges. When a
 /// snake comes close in front of it, it raises its sword and slashes. Only a boost (or the
-/// Slingshot) breaks it; the tongue and stomps just clank off its bones.
+/// SNUG-ATTACK) breaks it; the tongue and stomps just clank off its bones.
 /// A pirate skeleton (pirate = true, set by the level; bandana, eye patch, cutlass) also leaps
 /// at a snake a little way off and lands on it, slashing.
 /// Frames: walk A, walk B, sword raised, slash.

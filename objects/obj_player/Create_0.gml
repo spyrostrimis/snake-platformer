@@ -40,14 +40,14 @@ was_swim = false;       // in water last step (for the splash)
 inked = 0;              // hit by an octopus's ink: its screen is blotted for a while
 image_speed = 0;
 
-// ---------- The Slingshot (two players): Peto is the bow, Sockee the arrow ----------
-// See scr_slingshot.
-sling = "";             // "" | heli | bent | throw (Peto) | leap | caught | flying (Sockee)
-sling_t = 0;            // frames in the current slingshot state
-sling_push = 1;         // the way Sockee's ball was going when it hit Peto (-1 or 1)
-sling_dir = 0;          // Sockee as an arrow: the way it points, degrees
-sling_cd = 0;           // a short wait after the slingshot before the next one
-vjump = false;          // this jump went straight up (no Left / Right): Peto can be the bow
+// ---------- SNUG-ATTACK (two players): Sockee catches, Peto is the ball ----------
+// See scr_snug.
+snug = "";              // "" | call | snug | hold | fling (Sockee) | caught | fired (Peto)
+snug_t = 0;             // frames in the current state
+snug_push = 1;          // the way Peto's ball was rolling when Sockee caught it (-1 or 1)
+snug_hold = -1;         // Sockee: frames Roll + Tongue have been held (-1: not counting)
+snug_call = 0;          // Sockee: frames the "SNUG!" call still shows
+snug_cd = 0;            // a short wait after the move before the next one
 
 // Movement tuning (pixels per frame at 60 frames a second).
 run_accel = 0.35;
@@ -105,8 +105,8 @@ mouth_y = function() { return y + 6; };
 /// Hurt by a creature or spikes: knocked back, blinking and safe for a moment.
 take_hit = function(_dir = -facing)
 {
-    if (invuln > 0 || sling == "flying") return;    // a flying arrow can't be hurt
-    if (sling != "") sling_end();                   // a hit breaks the slingshot
+    if (invuln > 0 || snug == "fired") return;      // the flung ball can't be hurt
+    if (snug != "" && snug != "call") snug_end();   // a hit breaks SNUG-ATTACK
     invuln = 110;
     vx = _dir * 3.5;
     vy = -5;
@@ -130,12 +130,12 @@ smash = function(_tx, _ty)
 /// Online: the other PC's snake glides to where that PC last said it was.
 mirror_step = function()
 {
-    // The Slingshot: a caught ball sits in this PC's own Peto's bend, not where the other PC
-    // last saw it (that would trail behind as they fall).
-    if (sling == "caught")
+    // SNUG-ATTACK: a caught ball sits in this PC's own Sockee's C, not where the other PC
+    // last saw it (that would trail behind).
+    if (snug == "caught")
     {
-        var _mate = sling_partner();
-        if (instance_exists(_mate)) { sling_hold(_mate); return; }
+        var _mate = snug_partner();
+        if (instance_exists(_mate)) { snug_hold_ball(_mate); return; }
     }
     if (point_distance(x, y, net_tx, net_ty) > 160) { x = net_tx; y = net_ty; reset_body(); }
     else { x = lerp(x, net_tx, 0.45); y = lerp(y, net_ty, 0.45); }

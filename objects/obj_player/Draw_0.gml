@@ -5,12 +5,10 @@ if (hidden) exit;
 if (invuln > 0 && (invuln div 4) mod 2 == 0) exit;
 var _g = obj_game;
 
-// The Slingshot: Peto bent round the ball or throwing; Sockee as an arrow. (Peto gliding
-// and Sockee leaping or caught look as they always do.)
-// (Sockee leaping or caught is drawn as its ball, below.)
-if (sling == "bent") { sling_draw_bent(); exit; }
-if (sling == "throw") { sling_draw_throw(); exit; }
-if (sling == "flying") { sling_draw_arrow(); exit; }
+// SNUG-ATTACK: Sockee's call, his C and the fling. (Peto caught or flung is his ball.)
+if (snug == "call") snug_draw_call();
+if (snug == "snug" || snug == "hold") { snug_draw_c(); snug_draw_call(); exit; }
+if (snug == "fling") { snug_draw_fling(); exit; }
 
 if (ball)
 {
@@ -56,7 +54,7 @@ for (var _k = _n; _k >= 1; _k--)
 var _bob = (on_ground && abs(vx) > 0.5) ? sin(_g.frame * 0.4) : 0;
 draw_sprite_ext(skin.head, image_index, x, y - 3 + _bob, facing, 1, 0, c_white, 1);
 // With two players, a small P1 / P2 tag above the head.
-if (_g.players_n == 2) hud_text(x, y - 40, "P" + string(pid + 1), 0.3, fa_center, skin.colour);
+if (_g.players_n == 2 && snug != "call") hud_text(x, y - 40, "P" + string(pid + 1), 0.3, fa_center, skin.colour);   // (the SNUG! call shows there instead)
 
 // Tongue: a long pink ribbon with a forked tip.
 if (tongue_len > 0)

@@ -1,5 +1,5 @@
 /// Rex Bonejaw, the dinosaur skeleton at the bottom of the caverns. Only a boost (or the
-/// Slingshot) cracks his bones: the tongue and stomps just clank off.
+/// SNUG-ATTACK) cracks his bones: the tongue and stomps just clank off.
 /// Long jump: he crouches, then leaps right across the cave at you; the landing shakes the
 /// cave, sends a shockwave both ways and knocks rocks off the roof. (Peto: rocket up into his
 /// belly as he flies over you.)

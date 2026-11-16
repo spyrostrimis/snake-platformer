@@ -25,7 +25,7 @@ mirror_step = function()
     y = lerp(y, net_ty, 0.4);
 };
 
-/// Skeletons: only a boost (or the Slingshot) breaks them. The tongue and stomps just clank
+/// Skeletons: only a boost (or the SNUG-ATTACK) breaks them. The tongue and stomps just clank
 /// off their bones (a stomp bounces the snake off without hurting it).
 boost_only = false;
 clank_t = -100;

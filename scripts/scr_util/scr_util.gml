@@ -253,7 +253,7 @@ function player_pad(_pid, _players)
 ///   gamepad    : stick / D-pad, A jump, X tongue, RB / LB / Y roll (hold), B boost
 function read_controls(_pid, _players)
 {
-    var _c = { left: false, right: false, down: false, jump_pressed: false, jump_held: false, tongue: false, roll_held: false, boost: false };
+    var _c = { left: false, right: false, down: false, jump_pressed: false, jump_held: false, tongue: false, tongue_held: false, roll_held: false, boost: false };
     if (_players == 1)
     {
         _c.left  = keyboard_check(vk_left)  || keyboard_check(ord("A"));
@@ -262,6 +262,7 @@ function read_controls(_pid, _players)
         _c.jump_pressed = keyboard_check_pressed(ord("Z")) || keyboard_check_pressed(vk_space) || keyboard_check_pressed(vk_up) || keyboard_check_pressed(ord("W"));
         _c.jump_held    = keyboard_check(ord("Z")) || keyboard_check(vk_space) || keyboard_check(vk_up) || keyboard_check(ord("W"));
         _c.tongue    = keyboard_check_pressed(ord("X")) || keyboard_check_pressed(ord("J"));
+        _c.tongue_held = keyboard_check(ord("X")) || keyboard_check(ord("J"));
         _c.roll_held = keyboard_check(vk_shift);
         _c.boost     = keyboard_check_pressed(ord("C"));
     }
@@ -273,6 +274,7 @@ function read_controls(_pid, _players)
         _c.jump_pressed = keyboard_check_pressed(ord("W"));
         _c.jump_held    = keyboard_check(ord("W"));
         _c.tongue    = keyboard_check_pressed(ord("F"));
+        _c.tongue_held = keyboard_check(ord("F"));
         _c.roll_held = keyboard_check(ord("G"));
         _c.boost     = keyboard_check_pressed(ord("H"));
     }
@@ -284,6 +286,7 @@ function read_controls(_pid, _players)
         _c.jump_pressed = keyboard_check_pressed(vk_up);
         _c.jump_held    = keyboard_check(vk_up);
         _c.tongue    = keyboard_check_pressed(ord("J"));
+        _c.tongue_held = keyboard_check(ord("J"));
         _c.roll_held = keyboard_check(ord("K"));
         _c.boost     = keyboard_check_pressed(ord("L"));
     }
@@ -299,6 +302,7 @@ function read_controls(_pid, _players)
         _c.jump_pressed |= gamepad_button_check_pressed(_pad, gp_face1);
         _c.jump_held    |= gamepad_button_check(_pad, gp_face1);
         _c.tongue    |= gamepad_button_check_pressed(_pad, gp_face3);
+        _c.tongue_held |= gamepad_button_check(_pad, gp_face3);
         _c.roll_held |= gamepad_button_check(_pad, gp_shoulderr) || gamepad_button_check(_pad, gp_shoulderl) || gamepad_button_check(_pad, gp_face4);
         _c.boost     |= gamepad_button_check_pressed(_pad, gp_face2);
     }

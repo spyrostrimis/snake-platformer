@@ -1,6 +1,6 @@
 /// Skeleton bird: flaps back and forth around its home in the air. When a snake passes
 /// below, it dives at the spot where the snake was, then flies back up. Only a boost (or the
-/// Slingshot) breaks it; the tongue and stomps just clank off its bones.
+/// SNUG-ATTACK) breaks it; the tongue and stomps just clank off its bones.
 /// Frames: wings up, wings down, diving.
 event_inherited();
 hw = 13;

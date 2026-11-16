@@ -33,16 +33,15 @@ Every 10 gems a snake collects give it an **extra life**.
 
 The two snakes share one bar of misses: 6 wrong letters per level, and only **5 from level 10 on**.
 
-### The Slingshot (two players)
+### SNUG-ATTACK (two players)
 
-A super move for when you play together, split screen or online: **Peto** is the bow, **Sockee** the arrow.
+A super move for when you play together, split screen or online: **Sockee** catches, **Peto** is the ball.
 
-1. **Peto** jumps straight up (no Left / Right) and presses **Jump again** in the air: his helicopter, gliding slowly down with his tail spinning.
-2. **Sockee** rolls (hold **Roll**) back towards Peto and, at full rolling speed, presses **Boost**: it leaps as a ball, just high enough to reach the middle of Peto's body.
-3. If the ball hits Peto **in his middle**, he bends into a C around it and they fall together. (Press Boost too early or too late and it flies past.)
-4. When Peto lands he **flings Sockee forward**. Sockee straightens into an arrow and **whatever it hits takes a huge hit**: it knocks out creatures on the way, and a boss loses **a third of its health bar** as the arrow bounces off it.
+1. **Sockee** presses **Roll + Tongue** (Shift + X). A quick tap is a call: a "SNUG!" bubble over his head on both screens, so Peto knows. Held, Sockee curls up into a C on the spot, ready to catch, for up to 5 seconds.
+2. **Peto** rolls (hold **Roll**) towards Sockee. When the ball rolls into the C, Sockee snugs it for a moment and flings it back the way it came.
+3. Peto stays a ball: **whatever it hits is knocked out** (skeletons too) and a **boss takes a huge hit** (a third of its health bar); the ball bounces off it.
 
-The numbers (hover time, leap, throw, damage) are at the top of `scripts/scr_slingshot`.
+The numbers (5 seconds, fling, damage) are at the top of `scripts/scr_snug`.
 
 ### Online
 

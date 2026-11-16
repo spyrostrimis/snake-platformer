@@ -24,8 +24,8 @@ if (inked > 0) inked--;
 if (gulp_t > 0) gulp_t--;
 if (blink > 0) blink--; else if (irandom(180) == 0) blink = 8;
 
-// ---------- The Slingshot (two players): as the bow or the arrow, it runs this step ----------
-if (sling_step(_in))
+// ---------- SNUG-ATTACK (two players): calling, snugging, caught or flung, it runs this step ----------
+if (snug_step(_in))
 {
     image_index = (invuln > 90) ? 3 : ((blink > 0) ? 1 : 0);
     exit;
@@ -69,7 +69,6 @@ var _dashing = boost_t > 0 && skin.boost == "dash";
 
 // ---------- Run ----------
 var _dir = _right - _left;
-if (_dir != 0 && !on_ground) vjump = false;     // steering in the air: not straight up any more
 var _max = _dashing ? boost_speed : (ball ? ball_max : run_max);
 if (_dir != 0)
 {
@@ -126,7 +125,6 @@ if (jump_buffer > 0 && coyote > 0)
     else
     {
         vy = -jump_speed * (ball ? 1.08 : 1);
-        vjump = (_dir == 0 && abs(vx) < 1);     // straight up (for the Slingshot)
         _jumped = true;
         _g.play_sfx(_g.sfx.jump);
         part_particles_create(_g.ps, x, y + hh, _g.pt_dust, 4);
@@ -268,7 +266,7 @@ with (obj_enemy)
         var _is_boss = object_is_ancestor(object_index, obj_boss);
         if (other.boost_t > 0)
         {
-            // Only a boost knocks creatures out. (A boss loses 1 health; the Slingshot takes 2.)
+            // Only a boost knocks creatures out. (A boss loses 1 health; SNUG-ATTACK takes a third of its bar.)
             kill(1, other.id);
             // A boss is too big to boost through: the ball bounces off it and the boost ends.
             if (_is_boss && instance_exists(id))
@@ -296,7 +294,7 @@ with (obj_enemy)
             }
             else
             {
-                kill(1, other.id);      // a stomp: a boss loses 1 health (the Slingshot takes 2)
+                kill(1, other.id);      // a stomp: a boss loses 1 health (SNUG-ATTACK takes a third of its bar)
                 other.vy = _is_boss ? -10 : -7;
             }
         }

@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"scr_slingshot",
+  "%Name":"scr_snug",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"scr_slingshot",
+  "name":"scr_snug",
   "parent":{
     "name":"Scripts",
     "path":"folders/Scripts.yy",
