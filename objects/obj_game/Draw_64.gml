@@ -288,7 +288,7 @@ switch (state)
             draw_rectangle(0, 0, 640, 360, false);
             draw_set_alpha(1);
             hud_text(320, 150, "PAUSED", 0.9, fa_center);
-            body_text(320, 200, "Press P to carry on    N: skip level", c_white, fa_center);
+            body_text(320, 200, "P: carry on    N: skip level    Q: quit to the title screen", c_white, fa_center);
         }
         if (state == "clear")
         {

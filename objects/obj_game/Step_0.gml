@@ -160,7 +160,15 @@ switch (state)
         break;
 
     case "paused":
-        if (_pause || _enter)
+        // The pause menu: P (or Esc / Enter) carries on, N skips the level, Q quits to the title.
+        if (keyboard_check_pressed(ord("Q")))
+        {
+            audio_resume_all();
+            load_level(0, false);
+            state = "title";
+        }
+        else if (keyboard_check_pressed(ord("N"))) skip_level();
+        else if (_pause || _enter)
         {
             state = "play";
             audio_resume_all();
