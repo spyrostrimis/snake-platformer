@@ -604,6 +604,9 @@ start_level = function()
     load_level(level_index, true);
     state = "play";
     clear_messages();
+    if (net_pause_me || net_pause_peer) audio_resume_all();
+    net_pause_me = false;
+    net_pause_peer = false;
     if (net_mode == "host")
     {
         // Tell the joiner first, so the messages below arrive after its level is built.
@@ -854,7 +857,10 @@ net_snap_count = 0;     // joiner: world updates applied
 net_gone = {};          // joiner: projectiles already used up here
 net_lobby_sent = -1;
 net_lobby_c = 0;        // joiner: the host's snake choice
-net_quit_ask = false;
+// Online pause: pausing stops both games. The other player is told who paused, and only
+// the one who paused can carry on (if both paused, play waits for both).
+net_pause_me = false;
+net_pause_peer = false;
 net_door_last = -1000;
 net_buf = buffer_create(2048, buffer_grow, 1);
 
@@ -877,7 +883,27 @@ net_end = function()
     net_mode = "";
     my_pid = 0;
     ev_out = [];
-    net_quit_ask = false;
+    if (net_pause_me || net_pause_peer) audio_resume_all();
+    net_pause_me = false;
+    net_pause_peer = false;
+};
+
+/// Online: this PC pauses (or carries on). Both games stop while either player has paused.
+net_pause = function(_on)
+{
+    if (net_pause_me == _on) return;
+    net_pause_me = _on;
+    net_event({ t: "pause", on: _on });
+};
+
+/// Online: makes the state match the pauses (called every step during a level).
+net_pause_sync = function()
+{
+    if (net_mode == "" || (state != "play" && state != "paused")) return;
+    var _want = (net_pause_me || net_pause_peer) ? "paused" : "play";
+    if (_want == state) return;
+    state = _want;
+    if (_want == "paused") audio_pause_all(); else audio_resume_all();
 };
 
 /// Leaves the online game for the title screen.
@@ -950,8 +976,15 @@ net_apply_event = function(_e)
             }
             with (obj_enemy) net_seen = other.net_snap_count;
             state = "play";
-            net_quit_ask = false;
+            if (net_pause_me || net_pause_peer) audio_resume_all();
+            net_pause_me = false;
+            net_pause_peer = false;
             clear_messages();
+            break;
+
+        case "pause":
+            // The other player paused (or carried on): see net_pause_sync.
+            net_pause_peer = _e.on;
             break;
 
         case "state":
@@ -1325,7 +1358,7 @@ net_update = function()
         buffer_write(_b, buffer_u32, ev_out[_i].s);
         buffer_write(_b, buffer_string, ev_out[_i].j);
     }
-    var _me = (array_length(pl) == 2 && (state == "play" || state == "clear")) ? pl[my_pid].inst : noone;
+    var _me = (array_length(pl) == 2 && (state == "play" || state == "paused" || state == "clear")) ? pl[my_pid].inst : noone;
     net_write_snake(_b, _me);
     if (net_mode == "host") net_write_world(_b);
     net.send_game(_b, 0, buffer_tell(_b));

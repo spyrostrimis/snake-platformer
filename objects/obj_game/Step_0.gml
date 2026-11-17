@@ -145,9 +145,8 @@ switch (state)
         level_time++;
         if (net_mode != "")
         {
-            // Online there is no pause: P / Esc asks whether to leave the game.
-            if (_pause) net_quit_ask = !net_quit_ask;
-            else if (net_quit_ask && keyboard_check_pressed(vk_enter)) net_leave();
+            // Online, P / Esc pauses both games; the other player is told who paused.
+            if (_pause) net_pause(true);
         }
         else if (_pause)
         {
@@ -161,7 +160,14 @@ switch (state)
 
     case "paused":
         // The pause menu: P (or Esc / Enter) carries on, N skips the level, Q quits to the title.
-        if (keyboard_check_pressed(ord("Q")))
+        // Online, only the player who paused can carry on (or the host skip); either can leave.
+        if (net_mode != "")
+        {
+            if (keyboard_check_pressed(ord("Q"))) net_leave();
+            else if (net_pause_me && keyboard_check_pressed(ord("N")) && net_mode == "host") skip_level();
+            else if (net_pause_me && (_pause || _enter)) net_pause(false);
+        }
+        else if (keyboard_check_pressed(ord("Q")))
         {
             audio_resume_all();
             load_level(0, false);
@@ -222,3 +228,6 @@ switch (state)
         if (_enter) net_leave();
         break;
 }
+
+// Online: pause or carry on to match both players' pauses.
+net_pause_sync();

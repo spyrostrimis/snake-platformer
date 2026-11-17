@@ -152,7 +152,7 @@ switch (state)
 
     case "credits":
         hud_text(320, 24, "CREDITS", 0.8, fa_center, make_colour_rgb(255, 200, 80));
-        body_text(320, 68, "Game, art and code: Spyros Trimis and Claude, made with GameMaker", c_white, fa_center);
+        body_text(320, 68, "Game, art and code: Spyros Trimis, Can Dereli and Claude, made with GameMaker", c_white, fa_center);
         body_text(320, 96, "Music: \"Jazz Jackrabbit 2 - 20th Anniversary Tribute Album\" by the JJ20 Team", make_colour_rgb(255, 230, 140), fa_center);
         body_text(320, 114, "jj20.bandcamp.com - licensed CC BY-NC-ND 4.0, used unchanged", make_colour_rgb(255, 230, 140), fa_center);
         body_text(320, 140, "Tubelectric: Megahit    Jazz Jackrabbit 2 Theme: Zyrit    Carrotus: Vincenzo", c_white, fa_center);
@@ -287,8 +287,28 @@ switch (state)
             draw_set_alpha(0.5);
             draw_rectangle(0, 0, 640, 360, false);
             draw_set_alpha(1);
-            hud_text(320, 150, "PAUSED", 0.9, fa_center);
-            body_text(320, 200, "P: carry on    N: skip level    Q: quit to the title screen", c_white, fa_center);
+            if (net_mode == "")
+            {
+                hud_text(320, 150, "PAUSED", 0.9, fa_center);
+                body_text(320, 200, "P: carry on    N: skip level    Q: quit to the title screen", c_white, fa_center);
+            }
+            else
+            {
+                // Online: the one who paused gets the menu; the other is told who to wait for.
+                var _friend = (array_length(pl) == 2) ? pl[1 - my_pid].skin : snakes[0];
+                if (net_pause_me)
+                {
+                    hud_text(320, 140, "PAUSED", 0.9, fa_center);
+                    body_text(320, 190, "P: carry on    " + ((net_mode == "host") ? "N: skip level    " : "") + "Q: leave the online game", c_white, fa_center);
+                    body_text(320, 212, "Your friend's game is paused too.", make_colour_rgb(190, 210, 255), fa_center);
+                    if (net_pause_peer) body_text(320, 234, _friend.nice + " has paused too: play carries on when you both do.", _friend.colour, fa_center);
+                }
+                else
+                {
+                    hud_text(320, 140, "WAIT! " + _friend.name + " HAS PAUSED HIS GAME!", 0.55, fa_center, _friend.colour);
+                    body_text(320, 190, "The game carries on when " + _friend.nice + " comes back.    Q: leave the online game", c_white, fa_center);
+                }
+            }
         }
         if (state == "clear")
         {
@@ -309,16 +329,6 @@ switch (state)
             }
             if (net_mode == "client") body_text(320, 256, "Waiting for your friend to carry on...", c_white, fa_center);
             else if (_done && _blink) hud_text(320, 254, "PRESS ENTER", 0.5, fa_center);
-        }
-        // Online: P / Esc asks before leaving.
-        if (net_quit_ask && state == "play")
-        {
-            draw_set_colour(c_black);
-            draw_set_alpha(0.55);
-            draw_rectangle(0, 120, 640, 230, false);
-            draw_set_alpha(1);
-            hud_text(320, 136, "LEAVE THE ONLINE GAME?", 0.6, fa_center, make_colour_rgb(255, 200, 80));
-            body_text(320, 184, "Enter: leave    P / Esc: keep playing", c_white, fa_center);
         }
         break;
 
