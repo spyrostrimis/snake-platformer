@@ -255,8 +255,57 @@ switch (state)
                 }
             }
 
+            // The friend's Box Snake Egg, when it's off this snake's screen: a small arrow at
+            // the edge, in the friend's colour, points the way.
+            if (!_p.out && instance_exists(obj_box_egg))
+            {
+                var _ecam = view_camera[(net_mode != "") ? 0 : _k];
+                var _ecx = camera_get_view_x(_ecam);
+                var _ecy = camera_get_view_y(_ecam);
+                var _esx = 640 / camera_get_view_width(_ecam);
+                var _esy = _vh / camera_get_view_height(_ecam);
+                with (obj_box_egg)
+                {
+                    if (broken || pid == _p.pid) continue;
+                    var _ex = (x - _ecx) * _esx;
+                    var _ey = _oy + (y - 8 - _ecy) * _esy;
+                    if (_ex >= 0 && _ex <= 640 && _ey >= _oy && _ey <= _oy + _vh) continue;
+                    var _ang = point_direction(320, _oy + _vh / 2, _ex, _ey);
+                    var _ax = clamp(_ex, 20, 620);
+                    var _ay = clamp(_ey, _oy + 20, _oy + _vh - 20);
+                    var _col = skin_of().colour;
+                    var _al = 0.6 + 0.25 * sin(obj_game.frame * 0.12);
+                    draw_set_alpha(_al);
+                    draw_set_colour(make_colour_rgb(16, 26, 64));
+                    draw_triangle(_ax + lengthdir_x(12, _ang), _ay + lengthdir_y(12, _ang), _ax + lengthdir_x(10, _ang + 140), _ay + lengthdir_y(10, _ang + 140), _ax + lengthdir_x(10, _ang - 140), _ay + lengthdir_y(10, _ang - 140), false);
+                    draw_set_colour(_col);
+                    draw_triangle(_ax + lengthdir_x(9, _ang), _ay + lengthdir_y(9, _ang), _ax + lengthdir_x(7, _ang + 140), _ay + lengthdir_y(7, _ang + 140), _ax + lengthdir_x(7, _ang - 140), _ay + lengthdir_y(7, _ang - 140), false);
+                    // A tiny egg behind the arrow, so it's clear what it points at.
+                    var _bx = _ax - lengthdir_x(14, _ang);
+                    var _bym = _ay - lengthdir_y(14, _ang);
+                    draw_set_colour(make_colour_rgb(255, 244, 214));
+                    draw_ellipse(_bx - 4, _bym - 5, _bx + 4, _bym + 5, false);
+                    draw_set_alpha(1);
+                    draw_set_colour(c_white);
+                }
+            }
+
+            // Out of lives, inside a Box Snake Egg: this screen now follows the friend.
+            var _egg_in = false;
+            with (obj_box_egg) if (pid == _p.pid) _egg_in = true;
+            if (_p.out && _egg_in && array_length(pl) == 2)
+            {
+                var _mate = pl[1 - _k];
+                var _ty = _oy + _vh * 0.64;
+                draw_set_colour(c_black);
+                draw_set_alpha(0.15);
+                draw_rectangle(0, _oy, 640, _oy + _vh, false);
+                draw_set_alpha(1);
+                hud_text(320, _ty, _p.skin.name + " IS A BOX SNAKE EGG", (_views == 1) ? 0.5 : 0.4, fa_center, _p.skin.colour);
+                body_text(320, _ty + ((_views == 1) ? 28 : 20), "Watching " + _mate.skin.nice + ". When " + _mate.skin.nice + " breaks your egg, you're back with one life!", c_white, fa_center);
+            }
             // Out of lives: say so over this snake's half, which now follows the other snake.
-            if (_p.out)
+            else if (_p.out)
             {
                 draw_set_colour(c_black);
                 draw_set_alpha(0.35);

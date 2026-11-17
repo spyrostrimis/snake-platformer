@@ -223,6 +223,7 @@ if (touching_spikes() && invuln == 0)
     vy = -7;
     take_hit();
 }
+note_safe_spot();
 
 // ---------- Tongue: lash out, hold, pull back ----------
 if (_tongue && tongue_t == 0 && !ball)

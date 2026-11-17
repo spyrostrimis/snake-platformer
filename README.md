@@ -43,9 +43,15 @@ A super move for when you play together, split screen or online: **Sockee** catc
 
 The numbers (5 seconds, fling, damage) are at the top of `scripts/scr_snug`.
 
+### Box Snake Egg (two players)
+
+When a snake runs out of lives while its friend is still playing, it curls up into a **Box Snake Egg** where it last stood safely, and its screen follows the friend. The friend is told, and a small arrow at the edge of their screen points to the egg. **Three hits** (tongue, stomp, boost or a fast roll) break it, and the snake comes back right there with **one life**. If both snakes are out, it's game over.
+
 ### Online
 
 Press **O**. One player hosts (**H**) and gets a 5-character room code (copied to the clipboard); the other joins (**J**) and types it. The two games find each other through public STUN servers and a few seconds of messages on [ntfy.sh](https://ntfy.sh), then talk directly over UDP: no server to run, no port forwarding. Once connected, the host picks the snakes and presses Enter.
+
+Pausing (P / Esc) online pauses both games: the friend sees who paused ("Wait! Sockee has paused his game!"). Only the one who paused can carry on; Q leaves the online game.
 
 If the code can't connect (both players behind CGNAT), install [Tailscale](https://tailscale.com) on both PCs, and join with **I** (join by IP) using the host's Tailscale address and the room code.
 

@@ -47,6 +47,7 @@
     {"id":{"name":"obj_boss_octo","path":"objects/obj_boss_octo/obj_boss_octo.yy",},},
     {"id":{"name":"obj_boss","path":"objects/obj_boss/obj_boss.yy",},},
     {"id":{"name":"obj_boulder_drop","path":"objects/obj_boulder_drop/obj_boulder_drop.yy",},},
+    {"id":{"name":"obj_box_egg","path":"objects/obj_box_egg/obj_box_egg.yy",},},
     {"id":{"name":"obj_bug","path":"objects/obj_bug/obj_bug.yy",},},
     {"id":{"name":"obj_darkness","path":"objects/obj_darkness/obj_darkness.yy",},},
     {"id":{"name":"obj_door","path":"objects/obj_door/obj_door.yy",},},

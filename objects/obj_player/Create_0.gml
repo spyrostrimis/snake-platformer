@@ -21,6 +21,8 @@ if (!variable_instance_exists(id, "remote")) remote = false;   // online: the ot
 hidden = false;             // online joiner: fell in a pit, waiting for the host's "come back"
 net_tx = x;                 // remote snake: where the other PC last said it was
 net_ty = y;
+safe_x = x;                 // the last safe spot it stood (or swam): out of lives, its
+safe_y = y;                 // Box Snake Egg goes here (see obj_box_egg)
 air_jump_ready = false; // red snake: the second jump is still available in this jump
 boost_t = 0;            // frames left in a boost (C); only a boost hurts creatures
 boost_cd = 0;           // short wait after a boost before the next one
@@ -127,9 +129,20 @@ smash = function(_tx, _ty)
     if (_g.net_mode == "client") _g.net_event({ t: "smash", x: _tx, y: _ty });
 };
 
+/// Remembers where it stands now, if that is a safe spot (on the ground or in water, off spikes).
+note_safe_spot = function()
+{
+    if (!hidden && (on_ground || water_at(x, y)) && !touching_spikes() && y < obj_game.lvl_h * TILE)
+    {
+        safe_x = x;
+        safe_y = y;
+    }
+};
+
 /// Online: the other PC's snake glides to where that PC last said it was.
 mirror_step = function()
 {
+    note_safe_spot();
     // SNUG-ATTACK: a caught ball sits in this PC's own Sockee's C, not where the other PC
     // last saw it (that would trail behind).
     if (snug == "caught")

@@ -251,6 +251,7 @@ clear_level = function()
     with (obj_boulder_drop) instance_destroy();
     with (obj_darkness) instance_destroy();
     with (obj_water) instance_destroy();
+    with (obj_box_egg) instance_destroy();
     lights = [];
     for (var _i = 0; _i < array_length(layers_made); _i++) layer_destroy(layers_made[_i]);
     layers_made = [];
@@ -697,17 +698,25 @@ player_died = function(_inst)
     // (The shared miss bar stays as it is: it only empties at the start of a level.)
     if (_p.lives_left <= 0)
     {
+        var _ex = _inst.safe_x;
+        var _ey = _inst.safe_y;
         _p.out = true;
         _p.inst = noone;
         instance_destroy(_inst);
-        if (net_mode == "host" && _p.pid == 1) net_event({ t: "out" });
-        if (is_undefined(any_player_in()))
+        var _mate = any_player_in();
+        if (is_undefined(_mate))
         {
+            if (net_mode == "host" && _p.pid == 1) net_event({ t: "out" });
             state = "gameover";
             stop_music();
             return;
         }
-        say(_p.skin.name + " IS OUT! BACK NEXT LEVEL", 180);
+        // Two players: the snake curls up into a Box Snake Egg where it last stood safely,
+        // and watches its friend, who can break the egg to bring it back with one life.
+        make_box_egg(_p.pid, _ex, _ey);
+        if (net_mode == "host") net_event({ t: "egg", p: _p.pid, x: _ex, y: _ey });
+        say(_p.skin.name + " IS A BOX SNAKE EGG!", 180, _mate);
+        say("FIND THE EGG AND BREAK IT TO BRING " + _p.skin.name + " BACK!", 200, _mate);
     }
     else
     {
@@ -738,6 +747,46 @@ player_died = function(_inst)
             with (obj_hazard) instance_destroy();
             play_music(lvl.music);
         }
+    }
+};
+
+/// Makes the Box Snake Egg of the snake with pid _pid at (_x, _y) (one per snake).
+make_box_egg = function(_pid, _x, _y)
+{
+    with (obj_box_egg) if (pid == _pid) instance_destroy();
+    instance_create_layer(_x, _y, "Instances", obj_box_egg, { pid: _pid });
+    burst(_x, _y - 8, pl[_pid].skin.colour, 16);
+};
+
+/// The egg of snake _pid was broken at (_x, _y): it comes back there with one life. The
+/// host (or an offline game) decides; online it tells the joiner.
+revive_player = function(_pid, _x, _y)
+{
+    if (_pid < 0 || _pid >= array_length(pl)) return;
+    var _p = pl[_pid];
+    with (obj_box_egg) if (pid == _pid) instance_destroy();
+    if (!_p.out || instance_exists(_p.inst)) return;
+    _p.out = false;
+    if (net_mode != "client")
+    {
+        _p.lives_left = 1;
+        _p.hearts = 5;
+    }
+    _p.inst = instance_create_layer(_x, _y, "Instances", obj_player, { pid: _pid, remote: (net_mode != "" && _pid != my_pid) });
+    with (_p.inst)
+    {
+        invuln = 120;
+        vy = -6;
+        net_tx = x;
+        net_ty = y;
+    }
+    play_sfx(sfx.oneup);
+    burst(_x, _y - 8, _p.skin.colour, 24);
+    if (net_mode == "host") net_event({ t: "revive", p: _pid, x: _x, y: _y });
+    if (net_mode != "client")
+    {
+        say(_p.skin.name + " IS BACK!", 120);
+        say("ONLY ONE LIFE: CAREFUL!", 120, _p);
     }
 };
 
@@ -1025,6 +1074,22 @@ net_apply_event = function(_e)
             }
             break;
 
+        case "egg":
+            // A snake ran out of lives and is a Box Snake Egg (ours: we watch our friend).
+            if (array_length(pl) == 2)
+            {
+                var _ep = pl[_e.p];
+                if (instance_exists(_ep.inst)) instance_destroy(_ep.inst);
+                _ep.inst = noone;
+                _ep.out = true;
+                make_box_egg(_e.p, _e.x, _e.y);
+            }
+            break;
+
+        case "revive":
+            if (array_length(pl) == 2) revive_player(_e.p, _e.x, _e.y);
+            break;
+
         case "took":
             // The host's snake took an item (or the host confirmed ours): show it going.
             var _it = net_find(obj_pickup, _e.i);
@@ -1073,7 +1138,20 @@ net_apply_event = function(_e)
             }
             break;
 
+        case "ehit":
+            // The other PC's snake hit a Box Snake Egg: show the crack here too.
+            with (obj_box_egg) if (pid == _e.p && hits < _e.n) { hits = _e.n; show_hit(); }
+            break;
+
         // ----- from the joiner -----
+        case "ebreak":
+            // The joiner's snake broke the host's snake's egg: bring it back where the egg was.
+            var _eg = noone;
+            with (obj_box_egg) if (pid == _e.p) _eg = id;
+            if (_eg != noone) revive_player(_e.p, _eg.x, _eg.y);
+            else if (_e.p < array_length(pl) && pl[_e.p].out) revive_player(_e.p, pl[_e.p].checkpoint_x, pl[_e.p].checkpoint_y);
+            break;
+
         case "collect":
             var _it = net_find(obj_pickup, _e.i);
             var _by = (array_length(pl) == 2) ? pl[1].inst : noone;
