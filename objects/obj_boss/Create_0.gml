@@ -84,6 +84,14 @@ shoot = function(_spr, _x, _y, _vx, _vy, _grav)
 /// bristling fur). Bosses override it; by default a stomp always counts.
 spiky_back = function() { return false; };
 
+/// How hard a stomp throws the snake off sideways (0: it just bounces straight up). A boss
+/// hanging in the air sets it, so a snake can't keep bouncing on it.
+stomp_throw = 0;
+
+/// True while landing on this boss stings (the snake is thrown off), without making the rest
+/// of it more dangerous to touch. Bosses override it.
+stomp_stings = function() { return false; };
+
 /// The angle to draw the sprite at (the mole spins while it rolls). It may only use what
 /// online play shares (x, y, facing, image_index), so both PCs agree.
 draw_angle = function() { return 0; };

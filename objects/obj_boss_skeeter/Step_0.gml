@@ -47,21 +47,44 @@ switch (state)
         if (_g.frame mod 50 == 0) _g.play_sfx(_g.sfx.buzz);
         if (timer <= 0)
         {
-            if (irandom(99) < 55) { state = "launch"; shots = _angry ? 5 : 3; timer = 10; }
+            if (irandom(99) < 55) { state = "climb"; shots = _angry ? 5 : 3; timer = 0; _g.play_sfx(_g.sfx.buzz); }
             else { state = "aim"; timer = _angry ? 26 : 36; dashes = _angry ? 2 : 1; _g.play_sfx(_g.sfx.buzz); }
         }
         break;
 
-    case "launch":
-        // A missile every 16 steps, each straight up and then straight down on a snake.
-        image_index = (timer mod 16 > 10) ? 2 : _wings;
-        y = approach(y, hover_y, 2);
+    case "climb":
+        // Zooms straight up and off the top of the screen.
+        image_index = _wings;
+        y -= 7;
+        if (y <= high_y) { y = high_y; state = "bomb"; timer = 30; }
+        break;
+
+    case "bomb":
+        // Up out of sight, it flies over the snakes, firing straight down. Each missile is aimed
+        // a little off, so standing still isn't safe and running isn't either.
+        image_index = (timer mod 24 > 16) ? 2 : _wings;
+        if (_p != noone)
+        {
+            var _bx = clamp(_p.x + _p.vx * 30 + sin(t * 5) * 40, arena_x1 - 40, arena_x2 + 40);
+            if (abs(_bx - x) > 8) facing = (_bx >= x) ? 1 : -1;
+            x = approach(x, _bx, _angry ? 6 : 4.5);
+        }
         if (timer <= 0)
         {
-            fire_missile(_p, (shots == (_angry ? 5 : 3)) ? 0 : (_angry ? 140 : 90));
+            fire_missile();
             shots--;
-            timer = 16;
-            if (shots <= 0) { state = "hover"; timer = _angry ? 60 : 90; }
+            timer = _angry ? 20 : 26;
+            if (shots <= 0) { state = "return"; timer = 40; }
+        }
+        break;
+
+    case "return":
+        // Waits for its last missile to land, then dives back down to the fight.
+        image_index = _wings;
+        if (timer <= 0)
+        {
+            y = approach(y, hover_y, 6);
+            if (abs(y - hover_y) < 4) { state = "hover"; timer = _angry ? 50 : 80; _g.play_sfx(_g.sfx.buzz); }
         }
         break;
 

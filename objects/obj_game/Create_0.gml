@@ -743,7 +743,7 @@ on_letter = function(_ch, _x, _y, _by)
         if (_p.misses >= max_misses)
         {
             say(_was_full ? ("NO " + _ch + "! " + _p.skin.name + " LOSES A LIFE") : ((max_misses == 6 ? "SIX" : "FIVE") + " MISSES! " + _p.skin.name + " LOSES A LIFE"), 160);
-            player_died(_by);
+            player_died(_by, false);
         }
         else say("NO " + _ch + " IN THIS WORD", 100);
     }
@@ -762,8 +762,9 @@ hurt_player = function(_inst)
 };
 
 /// Snake _inst loses a life and goes back to its own checkpoint. Out of lives, it is out
-/// until the next level; when no snake is left, the game is over.
-player_died = function(_inst)
+/// until the next level; when no snake is left, the game is over. With two snakes, the other
+/// one is told too (_tell_mate false: everyone was already told).
+player_died = function(_inst, _tell_mate = true)
 {
     if (!instance_exists(_inst)) return;
     if (net_mode == "client")
@@ -782,6 +783,9 @@ player_died = function(_inst)
     var _p = _inst.stats;
     play_sfx(sfx.die);
     _p.lives_left--;
+    // The friend hears it too (online, on the joiner's PC).
+    var _friend = (array_length(pl) == 2) ? pl[1 - _p.pid] : undefined;
+    if (net_mode == "host" && _p.pid == 0) net_event({ t: "dsfx" });
     // (The shared miss bar stays as it is: it only empties at the start of a level.)
     if (_p.lives_left <= 0)
     {
@@ -820,7 +824,9 @@ player_died = function(_inst)
             reset_body();
         }
         if (net_mode == "host" && _p.pid == 1) net_event({ t: "respawn", x: _p.checkpoint_x, y: _p.checkpoint_y });
-        say("OUCH! " + string(_p.lives_left) + " LIVES LEFT", 120, _p);
+        say("OUCH! " + string(_p.lives_left) + ((_p.lives_left == 1) ? " LIFE LEFT" : " LIVES LEFT"), 120, _p);
+        if (_tell_mate && !is_undefined(_friend) && !_friend.out)
+            say(_p.skin.name + " LOST A LIFE! " + string(_p.lives_left) + ((_p.lives_left == 1) ? " LIFE LEFT" : " LIVES LEFT"), 150, _friend);
     }
     // A boss goes back to sleep (keeping its damage) until a snake returns.
     if (instance_exists(boss) && boss.active)
@@ -1264,6 +1270,11 @@ net_apply_event = function(_e)
             var _en = net_find(obj_enemy, _e.i);
             var _by = (array_length(pl) == 2) ? pl[1].inst : noone;
             if (_en != noone && instance_exists(_by)) with (_en) kill(_e.d, _by);
+            break;
+
+        case "dsfx":
+            // A snake lost a life on the host's PC: the joiner hears it too.
+            play_sfx(sfx.die);
             break;
 
         case "hurt":

@@ -295,7 +295,7 @@ with (obj_enemy)
                 clank();
                 other.vy = -8;
             }
-            else if (_is_boss && spiky_back())
+            else if (_is_boss && (spiky_back() || stomp_stings()))
             {
                 // Bristling fur: landing on it hurts, and throws the snake off.
                 other.vy = -8;
@@ -305,6 +305,7 @@ with (obj_enemy)
             {
                 kill(1, other.id);      // a stomp: a boss loses 1 health (SNUG-ATTACK takes a third of its bar)
                 other.vy = _is_boss ? -10 : -7;
+                if (_is_boss && stomp_throw > 0) other.vx = ((other.x >= x) ? 1 : -1) * stomp_throw;
             }
         }
         // Just after a hit a boss can't hurt the snake bouncing off it. The bristling cat stays

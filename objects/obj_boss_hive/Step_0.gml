@@ -36,7 +36,7 @@ if (hp < last_hp)
     last_hp = hp;
     state = "hurt";
     timer = 34;
-    rope_to = 210;
+    rope_to = 160;      // yanked up out of reach for a moment
     _g.play_sfx(_g.sfx.growl);
     if (_angry && instance_number(obj_wasp) < 5)
     {
@@ -135,6 +135,6 @@ switch (state)
 
     case "hurt":
         image_index = 3;
-        if (timer <= 0) { state = "hang"; timer = 30; }
+        if (timer <= 0) { rope_to = 210; state = "hang"; timer = 30; }
         break;
 }

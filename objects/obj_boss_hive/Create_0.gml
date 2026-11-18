@@ -29,6 +29,11 @@ rope = 210;             // the vine's length: 210 hanging, 265 sagging low
 rope_to = 210;
 swing_t = 0;
 
+// No bouncing on it again and again: a stomp throws the snake off to the side, the hive
+// zips up its vine, and while it's still flashing, landing on it stings.
+stomp_throw = 4.5;
+stomp_stings = function() { return hurt_t > 0; };
+
 /// Its last hit drops it onto the sand, so the letter it holds lands where snakes can get it.
 base_kill = kill;
 kill = function(_dmg = 1, _by = noone)

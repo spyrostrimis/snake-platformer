@@ -1,7 +1,8 @@
 /// Count Skeeterfang: a huge, blood-mad mosquito with a missile launcher strapped to its tail.
 /// It flies over the beach and:
-/// Missile salvo: fires missiles straight up from its tail; they come straight down on the
-/// snakes a moment later (a red mark on the sand shows where). 3 at a time, 5 when angry.
+/// Missile run: it zooms straight up and off the top of the screen. Up there, out of reach, it
+/// flies over the snakes, firing missiles straight down from its tail launcher (a red mark on
+/// the sand shows where each will land): 3 of them, 5 when angry. Then it dives back down.
 /// Dash: stops, stares (eyes blazing) and rockets at a snake needle first, crashing down onto
 /// the sand. There it's dazed for a while: stomp it, lash it with the tongue, boost into it.
 /// Up high, bounce off an umbrella to stomp it.
@@ -14,7 +15,7 @@ hp_max = 12;
 hp = hp_max;
 points = 45000;
 facing = -1;
-state = "hover";        // hover | launch | aim | dash | dazed | rise | recoil
+state = "hover";        // hover | climb | bomb | return | aim | dash | dazed | rise | recoil
 timer = 80;
 last_hp = hp;
 shots = 0;
@@ -25,21 +26,22 @@ t = 0;
 ready = false;          // its flying height is worked out on the first step
 ground_y = y + hh;
 hover_y = y - 150;
+high_y = -110;          // up above the top of the level, off the screen, for its missile run
 
-/// Fires one missile up out of the launcher, and drops one straight down at snake _p.
-fire_missile = function(_p, _spread)
+// It counts as being in its arena while it's up off the screen, too.
+snake_in_arena = function(_p)
+{
+    return instance_exists(_p) && !_p.hidden && _p.x > arena_x1 - 16 && _p.x < arena_x2 + 16 && abs(_p.y - hover_y) < 240;
+};
+
+/// Fires one missile straight down out of the launcher on its tail (right under it, as it
+/// curls its tail beneath itself up there).
+fire_missile = function()
 {
     var _g = obj_game;
-    var _tx = x - facing * 80;
-    var _up = shoot(spr_missile, _tx, y - 40, 0, -9, 0);
-    _up.spin = false;
-    _up.image_angle = 90;
-    _up.life = 34;
-    var _aim = (_p != noone) ? _p.x : x;
-    _aim = clamp(_aim + irandom_range(-_spread, _spread), arena_x1 - 64, arena_x2 + 64);
-    var _down = shoot(spr_missile, _aim, 8, 0, 2, 0.22);
-    _down.spin = false;
-    _down.image_angle = 270;
-    _down.life = 400;
+    var _m = shoot(spr_missile, x, y + 30, 0, 2, 0.22);
+    _m.spin = false;
+    _m.image_angle = 270;
+    _m.life = 400;
     _g.play_sfx(_g.sfx.throw_);
 };
