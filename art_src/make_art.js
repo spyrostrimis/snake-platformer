@@ -1215,7 +1215,7 @@ for (let f = 0; f < 4; f++) save("pskel_" + f, 76, 52, pskel(f));
 // Frames: idle A, idle B, wind-up (swords drawn back), stab (three swords thrust far ahead),
 // low sweep (swords along the floor both sides), high slash (swords at head height both
 // sides), hurt. 860 x 340, origin (430, 210); floor at the bottom (y 330).
-function octopirate(f) {
+function octopirate(f, bodyOnly = false) {
   const P = { body: "#b84a6a", light: "#e07a96", dark: "#5a1a30", line: "#2a0814" };
   const cx = 280, hy = 150;
   // Each arm: base on the body -> hand, then a sword pointing on along the arm.
@@ -1277,6 +1277,7 @@ function octopirate(f) {
     <circle cx="${cx}" cy="${hy - 112}" r="12" fill="#f0eadc" stroke="#000" stroke-width="2"/><circle cx="${cx - 4}" cy="${hy - 114}" r="2.6" fill="#000"/><circle cx="${cx + 4}" cy="${hy - 114}" r="2.6" fill="#000"/>
     <path d="M${cx - 16} ${hy - 96} L${cx + 16} ${hy - 86} M${cx + 16} ${hy - 96} L${cx - 16} ${hy - 86}" stroke="#f0eadc" stroke-width="4" stroke-linecap="round"/>
     ${hurt ? `<path d="M${cx - 60} ${hy - 170} l2 6 6 1 -5 4 1 6 -4 -3 -5 3 1 -6 -5 -4 6 -1 Z M${cx + 60} ${hy - 176} l2 6 6 1 -5 4 1 6 -4 -3 -5 3 1 -6 -5 -4 6 -1 Z" fill="#ffe04a" stroke="#000" stroke-width="1"/>` : ""}`;
+  if (bodyOnly) return head + patch + eye + mouth + hat;
   return `<g transform="translate(150,0)">${arms + head + patch + eye + mouth + hat}</g>`;
 }
 for (let f = 0; f < 7; f++) save("octopirate_" + f, 860, 340, octopirate(f));
@@ -1590,5 +1591,170 @@ const emojis = [
                  eLine("M3 18.4 H21 M5 21.2 H19", 1.6, "#e8102a"),
 ];
 emojis.forEach((body, i) => save("emoji_" + i, 24, 24, body, emojiDefs));
+
+// ======================= Captain Octavius, half size: body only (arms are drawn in code) =======================
+// 220 x 160, origin (110, 100) = the middle of his body; his arms grow from his lower edge.
+// Frames: idle, wind-up (eye blazing), hurt.
+function octobody(f) {
+  let s = `<g transform="translate(-30,20) scale(0.5)">${octopirate(f === 2 ? 6 : 0, true)}</g>`;
+  if (f === 1) s += `<circle cx="122" cy="106" r="9" fill="#ff3a1a" opacity="0.55"/><circle cx="122" cy="107" r="4" fill="#ffe0a0"/>`;
+  return s;
+}
+for (let f = 0; f < 3; f++) save("octobody_" + f, 220, 160, octobody(f));
+// A cutlass, hilt at the origin (4, 6), blade pointing right.
+save("spr_cutlass", 46, 12,
+  `<path d="M6 6 L38 4 Q45 5 44 7 L8 9 Z" fill="#e8ecf4" stroke="#2a2a30" stroke-width="1.4"/>
+   <path d="M10 6 L38 5" stroke="#ffffff" stroke-width="1" opacity="0.9"/>
+   <path d="M5 1 Q2 6 5 11" stroke="#e0b030" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+   <rect x="0" y="4.5" width="6" height="3.4" rx="1.2" fill="#6a3a1a" stroke="#2a1406" stroke-width="0.8"/>`);
+
+// ======================= Level 11: Buccaneer Bay =======================
+// ---------- Tiles: the beach tiles, then coastal rock (7 more: top, body A, body B, top-left,
+// top-right, underside, single column) ----------
+const RK = { rock: "#9a948a", light: "#d4cec2", dark: "#5e584e", line: "#3a342c", moss: "#5aa83a" };
+const rockBody = (seed) => {
+  let r = `<rect width="32" height="32" fill="${RK.dark}"/>`;
+  const sets = [[[9, 9, 9, 7], [24, 10, 7, 8], [8, 24, 8, 7], [23, 25, 8, 6]], [[8, 8, 7, 7], [22, 7, 9, 6], [12, 22, 10, 8], [27, 24, 5, 7]]];
+  sets[seed].forEach(([x, y, rx, ry]) => {
+    r += `<path d="M${x - rx} ${y} L${x - rx * 0.4} ${y - ry} L${x + rx * 0.6} ${y - ry * 0.8} L${x + rx} ${y + ry * 0.2} L${x + rx * 0.3} ${y + ry} L${x - rx * 0.7} ${y + ry * 0.8} Z" fill="${RK.rock}" stroke="${RK.line}" stroke-width="1.4"/>
+      <path d="M${x - rx * 0.4} ${y - ry * 0.6} L${x + rx * 0.4} ${y - ry * 0.6}" stroke="${RK.light}" stroke-width="1.6" opacity="0.8"/>`;
+  });
+  return r;
+};
+const rockTop = (left, right) => `<path d="M${left ? 4 : 0} 2 Q16 -1 ${right ? 28 : 32} 2 L${right ? 30 : 32} 8 L${left ? 2 : 0} 8 Z" fill="${RK.light}" stroke="${RK.line}" stroke-width="1.6"/>
+  <path d="M${left ? 4 : 0} 8 H${right ? 28 : 32}" stroke="${RK.line}" stroke-width="1.4"/>
+  <path d="M6 3 q3 -4 6 0 M20 2 q2 -3 5 0" stroke="${RK.moss}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  ${left ? `<rect x="0" y="0" width="3" height="32" fill="${RK.line}" opacity="0.5"/>` : ""}${right ? `<rect x="29" y="0" width="3" height="32" fill="${RK.line}" opacity="0.5"/>` : ""}`;
+const rockTiles = [
+  rockBody(0) + rockTop(false, false),
+  rockBody(0),
+  rockBody(1),
+  rockBody(1) + rockTop(true, false),
+  rockBody(0) + rockTop(false, true),
+  rockBody(1) + `<rect x="0" y="22" width="32" height="10" fill="#2a2620" opacity="0.5"/>`,
+  rockBody(0) + rockTop(true, true),
+];
+const beach2 = beachTiles.concat(rockTiles);
+save("spr_tiles_beach2", 32 * beach2.length, 32,
+  beach2.map((t, i) => `<g transform="translate(${i * 32},0)" clip-path="url(#cell)">${t}</g>`).join(""),
+  recolorBeach(stoneGrad) + `<clipPath id="cell"><rect x="0" y="0" width="32" height="32"/></clipPath>`);
+
+// ---------- A big tropical bush (pirates hide in them). 70 x 44, origin (35, 44). ----------
+save("spr_beachbush", 70, 44,
+  `${[[-24, 8, -40], [-14, 2, -20], [0, 0, 0], [14, 2, 20], [24, 8, 40], [-30, 18, -60], [30, 18, 60]].map(([dx, dy, r]) =>
+    `<g transform="rotate(${r} ${35 + dx * 0.3} 44)"><path d="M${35 + dx * 0.3} 44 Q${35 + dx - 10} ${dy + 14} ${35 + dx} ${dy + 2} Q${35 + dx + 10} ${dy + 14} ${35 + dx * 0.3} 44 Z" fill="#2e8a3a" stroke="#14501e" stroke-width="1.4"/>
+     <path d="M${35 + dx * 0.3} 44 L${35 + dx} ${dy + 4}" stroke="#7ad85a" stroke-width="1"/></g>`).join("")}
+   <ellipse cx="35" cy="34" rx="30" ry="12" fill="#3aa83a" stroke="#14501e" stroke-width="1.6"/>
+   <circle cx="20" cy="30" r="3" fill="#ff5a8a"/><circle cx="50" cy="28" r="3" fill="#ffd23a"/><circle cx="38" cy="36" r="2.6" fill="#ff5a8a"/>`);
+
+// ---------- Pirates (alive this time): walk A, walk B, leaping, slashing, peeking out of a
+// bush, hidden (empty). 60 x 58, origin (28, 34), facing right; feet at y 56. ----------
+function pirate(f) {
+  if (f === 5) return "";
+  const line = "#2a1408";
+  if (f === 4) {
+    // Just the eyes and the top of the bandana, between the leaves of the bush.
+    return `<path d="M14 30 Q14 20 28 20 Q42 20 42 30 Z" fill="#d8303a" stroke="${line}" stroke-width="1.4"/>
+      <ellipse cx="28" cy="34" rx="13" ry="6" fill="#e8b088"/>
+      <circle cx="23" cy="33" r="3" fill="#fff" stroke="${line}" stroke-width="1"/><circle cx="24" cy="33" r="1.5" fill="#111"/>
+      <circle cx="33" cy="33" r="3" fill="#fff" stroke="${line}" stroke-width="1"/><circle cx="34" cy="33" r="1.5" fill="#111"/>
+      <path d="M19 29 l6 2 M37 29 l-6 2" stroke="${line}" stroke-width="1.6"/>
+      ${[[12, 38, -30], [22, 40, -10], [34, 40, 10], [44, 38, 30]].map(([x, y, r]) => `<g transform="rotate(${r} ${x} ${y})"><path d="M${x} ${y + 6} Q${x - 6} ${y} ${x} ${y - 8} Q${x + 6} ${y} ${x} ${y + 6} Z" fill="#2e8a3a" stroke="#14501e" stroke-width="1"/></g>`).join("")}`;
+  }
+  const legs = f === 0 ? "M24 44 L20 55 M32 44 L37 55" : f === 1 ? "M24 44 L27 55 M32 44 L30 55" : f === 2 ? "M24 44 L16 50 M32 44 L40 48" : "M24 44 L17 55 M32 44 L40 55";
+  let s = `<path d="${legs}" stroke="#2a4a9a" stroke-width="7" stroke-linecap="round"/>`;
+  const feet = f === 2 ? [[14, 50], [42, 48]] : (f === 0 ? [[19, 55], [38, 55]] : f === 1 ? [[27, 55], [30, 55]] : [[16, 55], [41, 55]]);
+  feet.forEach(([x, y]) => { s += `<ellipse cx="${x + 2}" cy="${y}" rx="5" ry="3" fill="#1a1010"/>`; });
+  // Striped shirt, belt.
+  s += `<path d="M18 22 Q28 18 38 22 L38 44 L18 44 Z" fill="#fff" stroke="${line}" stroke-width="1.5"/>
+    <path d="M18 27 H38 M18 32 H38 M18 37 H38" stroke="#d8303a" stroke-width="2.4"/>
+    <rect x="17" y="40" width="22" height="4" fill="#1a1010"/><rect x="25" y="39.5" width="5" height="5" fill="#e0b030" stroke="${line}" stroke-width="0.8"/>`;
+  // The arm and cutlass.
+  if (f === 3) s += `<path d="M36 26 L48 28" stroke="#e8b088" stroke-width="5" stroke-linecap="round"/><path d="M48 28 L60 26" stroke="#2a2a30" stroke-width="4.5" stroke-linecap="round"/><path d="M48 28 L60 26" stroke="#e8ecf4" stroke-width="2.6" stroke-linecap="round"/><path d="M47 24 V32" stroke="#e0b030" stroke-width="2.4"/>`;
+  else if (f === 2) s += `<path d="M36 24 L44 12" stroke="#e8b088" stroke-width="5" stroke-linecap="round"/><path d="M44 12 L54 1" stroke="#2a2a30" stroke-width="4.5" stroke-linecap="round"/><path d="M44 12 L54 1" stroke="#e8ecf4" stroke-width="2.6" stroke-linecap="round"/><path d="M41 10 L47 15" stroke="#e0b030" stroke-width="2.4"/>`;
+  else s += `<path d="M36 25 L44 32" stroke="#e8b088" stroke-width="5" stroke-linecap="round"/><path d="M44 32 L52 18" stroke="#2a2a30" stroke-width="4.5" stroke-linecap="round"/><path d="M44 32 L52 18" stroke="#e8ecf4" stroke-width="2.6" stroke-linecap="round"/><path d="M41 31 L47 33" stroke="#e0b030" stroke-width="2.4"/>`;
+  s += `<path d="M20 25 L${f === 2 ? 12 : 14} ${f === 2 ? 14 : 34}" stroke="#e8b088" stroke-width="5" stroke-linecap="round"/>`;
+  // The head: red bandana, black beard, an earring, a scowl.
+  s += `<circle cx="28" cy="13" r="9" fill="#e8b088" stroke="${line}" stroke-width="1.5"/>
+    <path d="M19 12 Q19 3 28 3 Q37 3 37 12 Z" fill="#d8303a" stroke="${line}" stroke-width="1.4"/>
+    <path d="M19 9 L12 6 L14 13 Z" fill="#d8303a" stroke="${line}" stroke-width="1.1"/>
+    <circle cx="23" cy="6" r="1" fill="#fff"/><circle cx="31" cy="5" r="1" fill="#fff"/>
+    <path d="M21 15 Q22 25 28 24 Q34 25 35 15 Q32 19 28 19 Q24 19 21 15 Z" fill="#1a1010"/>
+    <circle cx="31" cy="12" r="2" fill="#fff" stroke="${line}" stroke-width="0.8"/><circle cx="31.6" cy="12.2" r="1" fill="#111"/>
+    <path d="M28 9 L34 11" stroke="${line}" stroke-width="1.6"/><path d="M36 13 q2 1 1 3" stroke="${line}" stroke-width="1.4" fill="#e8b088"/>
+    <circle cx="20" cy="16" r="1.6" fill="none" stroke="#e0b030" stroke-width="1.1"/>`;
+  return s;
+}
+for (let f = 0; f < 6; f++) save("pirate_" + f, 60, 58, pirate(f));
+
+// ---------- The boss: a huge maniac mosquito with a missile launcher strapped to its tail ----------
+// Frames: wings up, wings down, launching, dashing, dazed, aiming. 240 x 170, origin (120, 85),
+// facing right.
+function skeeter(f) {
+  const line = "#1e0e0a";
+  const tilt = f === 3 ? 22 : 0;
+  let s = "";
+  // Wings (behind).
+  const wingsUp = f === 0 || f === 2 || f === 5;
+  if (f === 3) s += `<ellipse cx="90" cy="54" rx="60" ry="14" fill="#e0f2ff" opacity="0.55" stroke="#7a9ab8" stroke-width="2" transform="rotate(-8 90 54)"/>`;
+  else if (wingsUp) s += `<ellipse cx="96" cy="30" rx="56" ry="20" fill="#e0f2ff" opacity="0.6" stroke="#7a9ab8" stroke-width="2" transform="rotate(-28 96 30)"/>
+      <ellipse cx="112" cy="26" rx="46" ry="16" fill="#e0f2ff" opacity="0.5" stroke="#7a9ab8" stroke-width="2" transform="rotate(-12 112 26)"/>`;
+  else s += `<ellipse cx="92" cy="92" rx="56" ry="16" fill="#e0f2ff" opacity="0.6" stroke="#7a9ab8" stroke-width="2" transform="rotate(14 92 92)"/>
+      <ellipse cx="110" cy="86" rx="46" ry="13" fill="#e0f2ff" opacity="0.5" stroke="#7a9ab8" stroke-width="2" transform="rotate(4 110 86)"/>`;
+  if (f === 5) s += `<ellipse cx="96" cy="30" rx="64" ry="26" fill="#ffffff" opacity="0.25" transform="rotate(-28 96 30)"/>`;
+  // Legs, long and striped.
+  const lg = f === 3 ? [[100, 96, 70, 130, 40, 150], [116, 98, 96, 136, 70, 160], [128, 96, 124, 132, 104, 164]] : [[100, 96, 84, 128, 80, 166], [116, 98, 118, 132, 112, 168], [128, 96, 148, 126, 152, 162]];
+  lg.forEach(([x1, y1, x2, y2, x3, y3]) => {
+    s += `<path d="M${x1} ${y1} L${x2} ${y2} L${x3} ${y3}" stroke="${line}" stroke-width="5" fill="none" stroke-linejoin="round"/>
+      <path d="M${x1} ${y1} L${x2} ${y2} L${x3} ${y3}" stroke="#c8a070" stroke-width="2.6" fill="none" stroke-dasharray="5 4" stroke-linejoin="round"/>`;
+  });
+  // The abdomen, swollen with blood, and the launcher strapped to its tail.
+  s += `<path d="M96 80 Q60 104 22 98 Q4 88 14 72 Q40 58 96 70 Z" fill="url(#blood)" stroke="${line}" stroke-width="3"/>
+    <path d="M30 70 Q28 84 32 98 M46 66 Q44 84 48 102 M62 66 Q60 84 64 102 M78 68 Q76 84 80 98" stroke="#5a1a14" stroke-width="2.6" fill="none" opacity="0.8"/>
+    <ellipse cx="44" cy="76" rx="14" ry="5" fill="#ffb0a0" opacity="0.6"/>`;
+  s += `<g transform="rotate(-10 30 60)"><rect x="14" y="34" width="34" height="34" rx="4" fill="#4a6a32" stroke="${line}" stroke-width="2.4"/>
+    ${[18, 28, 38].map((x) => `<rect x="${x}" y="28" width="8" height="10" rx="1" fill="#2e3e20" stroke="${line}" stroke-width="1.4"/>${f !== 2 ? `<path d="M${x + 1} 30 L${x + 4} 22 L${x + 7} 30 Z" fill="#d82a2a" stroke="${line}" stroke-width="1"/>` : ""}`).join("")}
+    <path d="M14 46 H48 M14 56 H48" stroke="#2e3e20" stroke-width="2"/><path d="M20 66 L18 76 M40 66 L44 76" stroke="#8a6a3a" stroke-width="3"/>
+    <circle cx="24" cy="50" r="2.4" fill="#e8d040"/><path d="M30 46 l4 6 l4 -6" stroke="#e8d040" stroke-width="1.6" fill="none"/></g>`;
+  if (f === 2) s += `<g transform="rotate(-10 30 60)"><path d="M14 26 Q31 -6 48 26 Q40 12 31 14 Q22 12 14 26 Z" fill="#ffb02a" stroke="#ff6a1a" stroke-width="2"/><circle cx="20" cy="10" r="7" fill="#c8c0b8" opacity="0.7"/><circle cx="40" cy="6" r="9" fill="#c8c0b8" opacity="0.6"/></g>`;
+  // Thorax and head (tilted down while dashing).
+  let h = `<ellipse cx="118" cy="76" rx="26" ry="20" fill="#6a4a30" stroke="${line}" stroke-width="3"/>
+    <path d="M104 64 Q118 58 132 64" stroke="#a87a50" stroke-width="3" fill="none"/>`;
+  const hx = 160, hy = 70;
+  h += `<circle cx="${hx}" cy="${hy}" r="22" fill="#7a5638" stroke="${line}" stroke-width="3"/>`;
+  // The needle, dripping.
+  if (f === 4) h += `<path d="M${hx + 16} ${hy + 12} Q${hx + 34} ${hy + 36} ${hx + 30} ${hy + 58}" stroke="${line}" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M${hx + 16} ${hy + 12} Q${hx + 34} ${hy + 36} ${hx + 30} ${hy + 58}" stroke="#8a6a50" stroke-width="2" fill="none"/>`;
+  else h += `<path d="M${hx + 18} ${hy + 8} L238 ${hy + (f === 5 ? 4 : 14)}" stroke="${line}" stroke-width="5" stroke-linecap="round"/><path d="M${hx + 18} ${hy + 8} L238 ${hy + (f === 5 ? 4 : 14)}" stroke="#8a6a50" stroke-width="2"/>
+      <path d="M226 ${hy + 16} q2 6 0 9 q-3 -2 0 -9 Z M206 ${hy + 16} q2 7 0 11 q-3 -3 0 -11 Z" fill="#d81a1a"/>`;
+  // Antennae.
+  h += `<path d="M${hx - 4} ${hy - 20} Q${hx - 10} ${hy - 46} ${hx + 6} ${hy - 58} M${hx + 8} ${hy - 20} Q${hx + 14} ${hy - 44} ${hx + 32} ${hy - 50}" stroke="${line}" stroke-width="2.4" fill="none"/>`;
+  // The eyes: huge, bulging and bloodshot, pupils pinned, looking two ways (or spinning).
+  const eyeAt = (x, y, r, px, py) => {
+    let e = `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff8e8" stroke="${line}" stroke-width="2.4"/>`;
+    for (let k = 0; k < 6; k++) { const a = k * 1.05 + 0.3; e += `<path d="M${x + Math.cos(a) * r * 0.95} ${y + Math.sin(a) * r * 0.95} q${-Math.cos(a) * 4} ${-Math.sin(a) * 2} ${-Math.cos(a) * r * 0.45} ${-Math.sin(a) * r * 0.45}" stroke="#e02a2a" stroke-width="1.2" fill="none"/>`; }
+    if (f === 4) e += `<path d="M${x} ${y} m-5 0 a5 5 0 1 1 5 5 a8 8 0 1 1 -8 -8" stroke="${line}" stroke-width="1.8" fill="none"/>`;
+    else e += `<circle cx="${x + px}" cy="${y + py}" r="${f === 5 ? 2.6 : 3.6}" fill="#d81a1a"/><circle cx="${x + px}" cy="${y + py}" r="${f === 5 ? 1.2 : 1.8}" fill="#000"/>`;
+    return e;
+  };
+  h += eyeAt(hx - 2, hy - 8, 14, 5, -3) + eyeAt(hx + 18, hy - 4, 12, -2, 4);
+  // Wild eyebrows and a manic grin of little fangs under the needle.
+  if (f !== 4) h += `<path d="M${hx - 18} ${hy - 26} L${hx + 6} ${hy - 18} M${hx + 30} ${hy - 20} L${hx + 10} ${hy - 14}" stroke="${line}" stroke-width="4" stroke-linecap="round"/>
+      <path d="M${hx - 12} ${hy + 10} Q${hx + 2} ${hy + 22} ${hx + 16} ${hy + 12}" stroke="${line}" stroke-width="2.4" fill="#5a0a0a"/>
+      <path d="M${hx - 8} ${hy + 13} l2 4 l2 -3 l2 4 l2 -3 l2 4 l2 -3 l2 3" stroke="#fff" stroke-width="1.4" fill="none"/>`;
+  else h += `<path d="M${hx - 10} ${hy + 14} q6 -4 12 0 q6 4 12 0" stroke="${line}" stroke-width="2.4" fill="none"/>
+      ${[[hx - 20, hy - 40], [hx + 6, hy - 50], [hx + 30, hy - 40]].map(([x, y]) => `<path d="M${x} ${y - 6} l1.8 4 4.2 .4 -3.2 2.8 1 4.2 -3.8 -2.2 -3.8 2.2 1 -4.2 -3.2 -2.8 4.2 -.4 Z" fill="#ffe04a" stroke="${line}" stroke-width="1"/>`).join("")}`;
+  s += `<g transform="rotate(${tilt} 118 76)">${h}</g>`;
+  if (f === 5) s += `<circle cx="158" cy="62" r="34" fill="#ff2a2a" opacity="0.18"/>`;
+  return s;
+}
+const skeeterDefs = `<radialGradient id="blood" cx="0.45" cy="0.4" r="0.7"><stop offset="0" stop-color="#ff7a6a"/><stop offset="0.6" stop-color="#c8281e"/><stop offset="1" stop-color="#7a0e0a"/></radialGradient>`;
+for (let f = 0; f < 6; f++) save("skeeter_" + f, 240, 170, skeeter(f), skeeterDefs);
+// A missile (nose pointing right), 44 x 18, origin (22, 9).
+save("spr_missile", 44, 18,
+  `<path d="M0 9 L8 4 L8 14 Z" fill="#ffb02a"/><path d="M2 9 L8 6.5 L8 11.5 Z" fill="#fff2a0"/>
+   <path d="M8 5 H32 Q42 6 43 9 Q42 12 32 13 H8 Z" fill="#c8ccd4" stroke="#2a2a30" stroke-width="1.4"/>
+   <path d="M32 5 Q42 6 43 9 Q42 12 32 13 Z" fill="#d82a2a" stroke="#2a2a30" stroke-width="1.2"/>
+   <path d="M8 5 L4 0 L14 5 Z M8 13 L4 18 L14 13 Z" fill="#d82a2a" stroke="#2a2a30" stroke-width="1"/>
+   <path d="M12 7 H30" stroke="#fff" stroke-width="1.2" opacity="0.8"/>`);
 
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

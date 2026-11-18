@@ -10,11 +10,11 @@ function lvl_create(_name, _w, _h, _music, _sky_top, _sky_bottom)
     // let a level look completely different, like the cavern. mushrooms: false leaves them out;
     // dark (0 to 1) lays a shadow of colour dark_col over the view, lit by torches, crystals
     // and the snakes. swim: "surface" (snakes float at the top of water) or "free" (deep water:
-    // they swim anywhere).
+    // they swim anywhere). rocks: areas drawn with the rock tiles (lvl_rock).
     return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0],
              bg_tint: c_white, vine_odds: 3, tileset: ts_jungle, bg: [spr_bg_mountains, spr_bg_clouds, spr_bg_hills],
              cloud_drift: 1, deco: "jungle", mushrooms: true, dark: 0, dark_col: make_colour_rgb(10, 4, 16),
-             water: [], currents: [], swim: "surface" };
+             water: [], currents: [], swim: "surface", rocks: [] };
 }
 
 /// Water in tiles _x1.._x2, rows _y1.._y2 (the top row is the surface). Snakes float and swim
@@ -29,6 +29,14 @@ function lvl_water(_l, _x1, _y1, _x2, _y2)
 function lvl_current(_l, _x1, _y1, _x2, _y2, _vx, _vy)
 {
     array_push(_l.currents, { x1: _x1 * TILE, y1: _y1 * TILE, x2: (_x2 + 1) * TILE, y2: (_y2 + 1) * TILE, vx: _vx, vy: _vy });
+}
+
+/// Solid rock in tiles _x1.._x2, rows _y1.._y2 (the level's tileset needs rock tiles after
+/// its first 11, like ts_beach2): coastal rocks to climb on the beach.
+function lvl_rock(_l, _x1, _y1, _x2, _y2)
+{
+    lvl_rect(_l, _x1, _y1, _x2, _y2, T_SOLID);
+    array_push(_l.rocks, [_x1, _y1, _x2, _y2]);
 }
 
 function lvl_rect(_l, _x1, _y1, _x2, _y2, _t)
@@ -1064,7 +1072,111 @@ function level_beach()
     return L;
 }
 
+/// Level 11: further along the beach, where coastal rocks rise out of the sand: climb up over
+/// them and back down to the sand. Pirates hide in the bushes and leap out at you (living
+/// ones: the tongue, a stomp or a boost beats them), giant mosquitoes buzz about, sunbathers'
+/// umbrellas bounce you up to the boardwalks, and a tide pool lies between the rocks. At the
+/// end Count Skeeterfang, a huge mad mosquito with a missile launcher on its tail.
+/// Reach: rock steps are 2 tiles; boardwalks (8 up) sit right above an umbrella; the tide
+/// pool's surface is level with its rock banks; letters at most 3 above a floor or the water;
+/// none in the boss's arena.
+function level_bay()
+{
+    var L = lvl_create("BUCCANEER BAY", 200, 16, "music_08.ogg", make_colour_rgb(40, 120, 220), make_colour_rgb(170, 225, 250));
+    L.tileset = ts_beach2;
+    L.bg = [spr_bg_beach_far, spr_bg_clouds, spr_bg_beach_near];
+    L.deco = "beach";
+    L.vine_odds = 100000;
+    L.mushrooms = false;
+
+    // ---- The sand, and the first pirate in a bush ----
+    lvl_ground(L, 0, 18, 13);
+    lvl_put(L, "start", 3, 12);
+    lvl_put(L, "palm", 1, 12);
+    lvl_gems(L, 5, 7, 11);
+    lvl_put(L, "letter", 8, 10);
+    lvl_put(L, "bushpirate", 14, 12);
+
+    // ---- Rocks: up two at a time to a flat top, and down again ----
+    lvl_rock(L, 19, 11, 22, 15);
+    lvl_rock(L, 23, 9, 26, 15);
+    lvl_rock(L, 27, 7, 31, 15);
+    lvl_rock(L, 32, 9, 34, 15);
+    lvl_rock(L, 35, 11, 36, 15);
+    lvl_put(L, "letter", 29, 4);
+    lvl_gems(L, 27, 28, 6);
+    lvl_put(L, "mosquito", 25, 4);
+
+    // ---- Sand: a sunbather with a boardwalk above, a pirate further on ----
+    lvl_ground(L, 37, 58, 13);
+    lvl_put(L, "umbrella", 43, 12);
+    lvl_rect(L, 40, 5, 47, 5, T_ONEWAY);
+    lvl_put(L, "letter", 44, 4);
+    lvl_gems(L, 41, 42, 4);
+    lvl_put(L, "bushpirate", 50, 12);
+    lvl_put(L, "letter", 54, 10);
+    lvl_put(L, "mosquito", 56, 8);
+
+    // ---- A tide pool between two rocks ----
+    lvl_rock(L, 57, 11, 58, 15);
+    lvl_rock(L, 59, 10, 61, 15);
+    lvl_ground(L, 62, 68, 14);
+    lvl_water(L, 62, 10, 68, 13);
+    lvl_rock(L, 69, 10, 72, 15);
+    lvl_rock(L, 73, 12, 74, 15);
+    lvl_put(L, "letter", 65, 7);
+    lvl_put(L, "mosquito", 66, 4);
+
+    // ---- Sand: a checkpoint, two pirates, a sunbather and a boardwalk ----
+    lvl_ground(L, 75, 100, 13);
+    lvl_put(L, "flag", 77, 12);
+    lvl_put(L, "super_egg", 78, 12);    // two players only
+    lvl_put(L, "letter", 80, 10);
+    lvl_put(L, "bushpirate", 84, 12);
+    lvl_put(L, "umbrella", 90, 12);
+    lvl_rect(L, 87, 5, 94, 5, T_ONEWAY);
+    lvl_put(L, "letter", 91, 4);
+    lvl_gems(L, 88, 89, 4);
+    lvl_put(L, "bushpirate", 96, 12);
+    lvl_put(L, "palm", 99, 12);
+
+    // ---- A big rock with a pirate hiding up on top ----
+    lvl_rock(L, 101, 11, 103, 15);
+    lvl_rock(L, 104, 9, 106, 15);
+    lvl_rock(L, 107, 7, 114, 15);
+    lvl_rock(L, 115, 9, 117, 15);
+    lvl_rock(L, 118, 11, 119, 15);
+    lvl_put(L, "letter", 109, 4);
+    lvl_put(L, "bushpirate", 112, 6);
+    lvl_put(L, "mosquito", 113, 3);
+
+    // ---- The last stretch of sand ----
+    lvl_ground(L, 120, 150, 13);
+    lvl_put(L, "umbrella", 126, 12);
+    lvl_rect(L, 123, 5, 130, 5, T_ONEWAY);
+    lvl_put(L, "letter", 127, 4);
+    lvl_gems(L, 124, 125, 4);
+    lvl_put(L, "bushpirate", 134, 12);
+    lvl_put(L, "oyster", 139, 12);
+    lvl_put(L, "letter", 138, 9);
+    lvl_put(L, "mosquito", 144, 8);
+    lvl_put(L, "flag", 147, 12);
+    lvl_put(L, "egg", 148, 12);
+
+    // ---- Count Skeeterfang's beach: two umbrellas to bounce up and stomp it, two planks ----
+    lvl_ground(L, 151, 199, 13);
+    L.arena = [152, 180];
+    lvl_put(L, "umbrella", 158, 12);
+    lvl_rect(L, 162, 10, 164, 10, T_ONEWAY);
+    lvl_rect(L, 168, 10, 170, 10, T_ONEWAY);
+    lvl_put(L, "umbrella", 174, 12);
+    lvl_put(L, "boss_skeeter", 166, 12);
+    lvl_put(L, "door", 188, 12);
+    lvl_put(L, "palm", 192, 12);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep, level_wreck, level_beach];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep, level_wreck, level_beach, level_bay];
 }

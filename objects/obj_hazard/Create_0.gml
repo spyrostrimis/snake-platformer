@@ -48,6 +48,7 @@ touches = function(_p)
     else if (sprite_index == spr_banknote) { _sw = 13; _sh = 9; }
     else if (sprite_index == spr_wasp_arrow) { _sw = 12; _sh = 7; }
     else if (sprite_index == spr_whirl) { _sw = 18; _sh = 40; }
+    else if (sprite_index == spr_missile) { _sw = 6; _sh = 16; }
     return abs(_p.x - x) < _p.hw + _sw && abs(_p.y - y) < _p.hh + _sh;
 };
 

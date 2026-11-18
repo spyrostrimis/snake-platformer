@@ -196,6 +196,7 @@ cam_snap = false;       // true: cameras jump straight to their snakes (a new le
 shake_t = 0;            // frames of camera shake left (the mole's earthquake)
 lights = [];            // dark levels: { x, y, r (size), torch } for the torches and crystals
 water = [[false]];      // water[tx][ty]: true where the level has water (load_level fills it)
+rock = [];              // rock[tx][ty]: true where solid ground is drawn as rock (empty: no rock)
 currents = [];          // the level's currents: { x1, y1, x2, y2 (pixels), vx, vy }
 title_pan = 0;
 
@@ -329,6 +330,7 @@ auto_tile = function(_tx, _ty)
         case T_CRACK:  return 8;
         case T_SPIKES: return 9;
         case T_SOLID:
+            var _base = 0;
             // The top row counts as covered, so a cave ceiling has no grass on top of it.
             var _open_above = _ty > 0 && !is_blocking(grid_type(_tx, _ty - 1));
             if (_open_above)
@@ -337,13 +339,16 @@ auto_tile = function(_tx, _ty)
                 var _r = !is_blocking(grid_type(_tx + 1, _ty)) || _tx == lvl_w - 1;
                 if (_tx == 0) _l = false;
                 if (_tx == lvl_w - 1) _r = false;
-                if (_l && _r) return 10;
-                if (_l) return 4;
-                if (_r) return 5;
-                return 1;
+                if (_l && _r) _base = 10;
+                else if (_l) _base = 4;
+                else if (_r) _base = 5;
+                else _base = 1;
             }
-            if (_ty < lvl_h - 1 && !is_blocking(grid_type(_tx, _ty + 1))) return 6;
-            return ((_tx * 7 + _ty * 3) mod 2 == 0) ? 2 : 3;
+            else if (_ty < lvl_h - 1 && !is_blocking(grid_type(_tx, _ty + 1))) _base = 6;
+            else _base = ((_tx * 7 + _ty * 3) mod 2 == 0) ? 2 : 3;
+            // Rock (beach levels): the same shapes from the rock tiles after the first 11.
+            if (array_length(rock) > 0 && rock[_tx][_ty]) return (_base == 10) ? 17 : _base + 10;
+            return _base;
     }
     return 0;
 };
@@ -378,6 +383,20 @@ load_level = function(_i, _with_player)
         layer_background_blend(_bg, lvl.bg_tint);   // darker scenery for the deep jungle
         bg_layers[$ _defs[_k][0]] = _lay;
         array_push(layers_made, _lay);
+    }
+
+    // Rock (a grid of cells drawn with the rock tiles).
+    rock = [];
+    if (array_length(lvl.rocks) > 0)
+    {
+        rock = array_create(lvl_w);
+        for (var _x = 0; _x < lvl_w; _x++) rock[_x] = array_create(lvl_h, false);
+        for (var _k = 0; _k < array_length(lvl.rocks); _k++)
+        {
+            var _rr = lvl.rocks[_k];
+            for (var _x = max(0, _rr[0]); _x <= min(lvl_w - 1, _rr[2]); _x++)
+                for (var _y = max(0, _rr[1]); _y <= min(lvl_h - 1, _rr[3]); _y++) rock[_x][_y] = true;
+        }
     }
 
     // Water (a grid of wet cells) and currents, drawn by obj_water over the creatures.
@@ -447,7 +466,7 @@ load_level = function(_i, _with_player)
                 var _br = irandom(11);
                 if (_br == 0) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 3, spr_starfish);
                 else if (_br == 1) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_shell);
-                else if (_br == 2 && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 3, spr_sandcastle);
+                else if (_br == 2 && !(array_length(rock) > 0 && rock[_x][_y]) && grid[_x + 1][_y] == T_SOLID && grid[_x + 1][_y - 1] == T_EMPTY) layer_sprite_create(_deco, _x * TILE + 32, _y * TILE + 3, spr_sandcastle);
             }
             else if (_here == T_SOLID && grid[_x][_y - 1] == T_EMPTY)
             {
@@ -508,6 +527,7 @@ load_level = function(_i, _with_player)
             case "boss_jelly":
             case "boss_octo":
             case "boss_hive":
+            case "boss_skeeter":
                 var _boss_obj = obj_boss_mouse;
                 if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
                 else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
@@ -518,6 +538,7 @@ load_level = function(_i, _with_player)
                 else if (_s.kind == "boss_jelly") _boss_obj = obj_boss_jelly;
                 else if (_s.kind == "boss_octo") _boss_obj = obj_boss_octo;
                 else if (_s.kind == "boss_hive") _boss_obj = obj_boss_hive;
+                else if (_s.kind == "boss_skeeter") _boss_obj = obj_boss_skeeter;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.y = _s.ty * TILE + 32 - boss.hh;     // standing on the floor, whatever its size
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
@@ -571,6 +592,11 @@ load_level = function(_i, _with_player)
             case "mosquito": _inst = instance_create_layer(_px, _py, "Instances", obj_mosquito); break;
             case "umbrella": _inst = instance_create_layer(_px, _s.ty * TILE + 32, _deco, obj_umbrella); break;
             case "palm":     layer_sprite_create(_deco, _px, _s.ty * TILE + 34, spr_palm); break;
+            // Buccaneer Bay: a pirate hiding in a bush (the bush stays when he jumps out).
+            case "bushpirate":
+                layer_sprite_create(_deco, _px, _s.ty * TILE + 34, spr_beachbush);
+                _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 22, "Instances", obj_pirate);
+                break;
             case "spring": instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_spring); break;
             case "flag":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_flag); break;
             case "door":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_door); break;

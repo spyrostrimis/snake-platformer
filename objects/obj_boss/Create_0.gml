@@ -34,8 +34,14 @@ in_arena_snake = function()
 /// Each hit takes _dmg health; after the last one the boss bursts and drops its letter.
 kill = function(_dmg = 1, _by = noone)
 {
-    if (!active || hurt_t > 0) return;
+    if (hurt_t > 0) return;
     var _g = obj_game;
+    // Asleep, but a snake in its arena is hitting it: it wakes up (it should have already).
+    if (!active)
+    {
+        if (in_arena_snake() == noone) return;
+        if (_g.net_mode != "client") { active = true; _g.boss_start(id); }
+    }
     hurt_t = 50;
     _g.play_sfx(_g.sfx.boss_hit);
     _g.burst(x, y - 10, make_colour_rgb(255, 230, 90), 10);
