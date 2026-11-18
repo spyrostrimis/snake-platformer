@@ -19,6 +19,18 @@ for (var _i = array_length(popups) - 1; _i >= 0; _i--)
     if (_p.life <= 0) array_delete(popups, _i, 1);
 }
 
+// Online chat: T opens the box, which then takes the keyboard (nothing below reads keys,
+// and the snake stands still). See scr_chat.
+chat_tick();
+if (!chat_open && keyboard_check_pressed(ord("T")) && chat_can()) chat_open_box();
+if (chat_open)
+{
+    chat_step();
+    if (state == "play") level_time++;
+    net_pause_sync();
+    exit;
+}
+
 var _enter = menu_confirm();
 var _pause = keyboard_check_pressed(ord("P")) || keyboard_check_pressed(vk_escape) || any_pad_pressed(gp_start);
 var _typing = (state == "online" && (online_mode == "type" || online_mode == "type_ip")) || (state == "title" && keys_wait);

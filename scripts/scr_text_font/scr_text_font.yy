@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_text_font",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_text_font",
+  "parent":{
+    "name":"snake_hangman5",
+    "path":"snake_hangman5.yyp",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

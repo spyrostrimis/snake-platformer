@@ -68,6 +68,8 @@ Press **O**. One player hosts (**H**) and gets a 5-character room code (copied t
 
 Pausing (P / Esc) online pauses both games: the friend sees who paused ("Wait! Sockee has paused his game!"). Only the one who paused can carry on; Q leaves the online game.
 
+**Chat:** press **T** (in the room or during a game) to talk to your friend; Enter sends, Esc closes. While the box is up your snake stands still (the game doesn't pause). Emojis: **Tab** opens a grid of 24, and shortcuts turn into emojis as you type: `:)` `:D` `xD` `;)` `:P` `:O` `:|` `:(` `:'(` `>:(` `<3` `</3` `(y)` `(n)` `(*)`. Emojis from Windows' own panel (Win + .) work too when they match one of ours. English, Turkish and Greek letters all show. Nothing is saved: the last 5 lines fade after 8 seconds and are gone when you disconnect.
+
 If the code can't connect (both players behind CGNAT), install [Tailscale](https://tailscale.com) on both PCs, and join with **I** (join by IP) using the host's Tailscale address and the room code.
 
 How it is built: `scripts/scr_net` and `objects/obj_net` make the connection; the online game itself (the host runs the world, each PC its own snake) is in `objects/obj_game/Create_0.gml` under "Online game".
@@ -85,4 +87,4 @@ How it is built: `scripts/scr_net` and `objects/obj_net` make the connection; th
 
 - Game, art and code: Spyros Trimis, Can Dereli and Claude. All characters, levels and art are original; the art is drawn in code (`art_src/make_art.js`, SVG rendered with sharp).
 - Music: the JJ20 Team (Megahit, Zyrit, BPStudio, Gridscape, Bitrotator, SIDNIFY, Vincenzo and Ziona), CC BY-NC-ND 4.0. The album covers Alexander Brandon's music; *Jazz Jackrabbit 2* belongs to Epic Games. This is an unofficial fan tribute, not endorsed by Epic Games.
-- Text uses Comic Sans MS, already on Windows; no fonts are bundled.
+- Text uses Comic Sans MS, already on Windows; no fonts are bundled. The chat's letters (with Turkish and Greek) are baked from Windows' Arial Bold into `spr_text_font` by `art_src/make_text_font.js`; the chat's emojis are drawn in `art_src/make_art.js`.

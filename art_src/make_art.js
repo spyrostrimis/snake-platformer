@@ -1536,4 +1536,59 @@ function whirl(f) {
 }
 for (let f = 0; f < 3; f++) save("whirl_" + f, 70, 100, whirl(f));
 
+// ---------- Emojis for the online chat (spr_emoji: 24 frames, 24 x 24) ----------
+// The frame order matters: scr_chat's chat_emoji_list() names them in this order.
+const emojiDefs = `<radialGradient id="ef" cx="0.38" cy="0.32" r="0.8"><stop offset="0" stop-color="#fff6a8"/><stop offset="0.55" stop-color="#ffd23a"/><stop offset="1" stop-color="#f09a18"/></radialGradient>
+<radialGradient id="ea" cx="0.38" cy="0.32" r="0.8"><stop offset="0" stop-color="#ffb08a"/><stop offset="0.55" stop-color="#ee4a2a"/><stop offset="1" stop-color="#a81c10"/></radialGradient>
+<linearGradient id="eh" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0" stop-color="#ff6a82"/><stop offset="1" stop-color="#c8102e"/></linearGradient>`;
+const EL = "#3a2000";
+const eFace = (fill = "url(#ef)") => `<circle cx="12" cy="12" r="10.6" fill="${fill}" stroke="#7a4a00" stroke-width="1.2"/>`;
+const eEyes = (ry = 1.9) => `<ellipse cx="8.4" cy="9.6" rx="1.4" ry="${ry}" fill="${EL}"/><ellipse cx="15.6" cy="9.6" rx="1.4" ry="${ry}" fill="${EL}"/>`;
+const eLine = (d, w = 1.5, c = EL) => `<path d="${d}" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+const eGrin = `<path d="M6.5 13 H17.5 Q17 19.5 12 19.5 Q7 19.5 6.5 13 Z" fill="#6a1a10" stroke="${EL}" stroke-width="1"/><path d="M7.1 13.4 H16.9 V14.8 H7.1 Z" fill="#fff"/>`;
+const eTear = (x, y) => `<path d="M${x} ${y} Q${x - 2} ${y + 3} ${x} ${y + 4} Q${x + 2} ${y + 3} ${x} ${y} Z" fill="#5ac8ff" stroke="#1a6aa0" stroke-width="0.6"/>`;
+const eHeart = (cx, cy, s, fill = "url(#eh)") => `<path transform="translate(${cx} ${cy}) scale(${s}) translate(-12 -12)" d="M12 21 C4 15.5 1.5 11 3 7 C4.6 3 9.6 2.8 12 6.6 C14.4 2.8 19.4 3 21 7 C22.5 11 20 15.5 12 21 Z" fill="${fill}" stroke="#6a0010" stroke-width="${1.2 / s}"/>`;
+const eThumb = `<rect x="3" y="11" width="4.2" height="9.4" rx="1" fill="#3a7ad8" stroke="#16306a" stroke-width="1"/>
+  <path d="M7.2 11.4 L9.8 10.8 L10.4 4.8 Q11 2.6 12.8 3.4 Q14 4.2 13.6 6.6 L13 10.6 H18.2 Q20 10.8 19.8 12.6 L18.8 18.8 Q18.4 20.4 16.8 20.4 H7.2 Z" fill="url(#ef)" stroke="#7a4a00" stroke-width="1.1" stroke-linejoin="round"/>
+  ${eLine("M13 13.6 H19.4 M13 16.4 H19 M13 19 H18.4", 0.9, "#7a4a00")}`;
+const eStar = (() => {
+  let p = "";
+  for (let k = 0; k < 10; k++) { const r = k % 2 ? 4.6 : 10.6, a = -Math.PI / 2 + k * Math.PI / 5; p += (k ? "L" : "M") + (12 + r * Math.cos(a)).toFixed(2) + " " + (12.6 + r * Math.sin(a)).toFixed(2) + " "; }
+  return p + "Z";
+})();
+const emojis = [
+  /* 0 smile */  eFace() + eEyes() + eLine("M7 14 Q12 18.5 17 14"),
+  /* 1 grin */   eFace() + eEyes() + eGrin,
+  /* 2 laugh */  eFace() + eLine("M6 10 Q8.4 7.2 10.8 10 M13.2 10 Q15.6 7.2 18 10") + eGrin + eTear(3.4, 10) + eTear(20.6, 10),
+  /* 3 wink */   eFace() + `<ellipse cx="8.4" cy="9.6" rx="1.4" ry="1.9" fill="${EL}"/>` + eLine("M13.4 9.8 Q15.6 11.6 17.8 9.8") + eLine("M7 14 Q12 18.5 17 14"),
+  /* 4 tongue */ eFace() + eEyes() + `<path d="M10 14.8 Q10 20.4 12.6 20.4 Q15.2 20.4 15.2 14.8 Z" fill="#ff5a7a" stroke="#8a1a30" stroke-width="0.9"/>` + eLine("M7.4 14 Q12 16.6 16.6 14"),
+  /* 5 love */   eFace() + eHeart(8.2, 9.6, 0.27) + eHeart(15.8, 9.6, 0.27) + eGrin,
+  /* 6 cool */   eFace() + `<path d="M4.2 7.8 H19.8 V9.4 Q19.4 13.4 15.8 13.2 Q13 13 12.6 10 H11.4 Q11 13 8.2 13.2 Q4.6 13.4 4.2 9.4 Z" fill="#1a1a2a" stroke="#000" stroke-width="0.6"/>` + eLine("M6 9.4 L8 9.4 M14 9.4 L16 9.4", 0.9, "#8aa0ff") + eLine("M8 15.6 Q12.4 18.6 16.6 14.8"),
+  /* 7 wow */    eFace() + eEyes(2.3) + eLine("M6.4 5.6 Q8.4 4.4 10.4 5.6 M13.6 5.6 Q15.6 4.4 17.6 5.6", 1.1) + `<ellipse cx="12" cy="16.2" rx="2.5" ry="3.1" fill="#6a1a10" stroke="${EL}" stroke-width="1"/>`,
+  /* 8 meh */    eFace() + eEyes() + eLine("M8 15.6 H16"),
+  /* 9 sad */    eFace() + eEyes() + eLine("M6.4 7.6 L10 5.8 M17.6 7.6 L14 5.8", 1.1) + eLine("M7.6 17.4 Q12 13.4 16.4 17.4"),
+  /* 10 cry */   eFace() + eLine("M6.4 9.4 Q8.4 11 10.4 9.4 M13.6 9.4 Q15.6 11 17.6 9.4") +
+                 `<path d="M7 10.6 H9.8 V21 H7 Z M14.2 10.6 H17 V21 H14.2 Z" fill="#5ac8ff" opacity="0.9"/>` + `<ellipse cx="12" cy="16.4" rx="2.2" ry="2.6" fill="#6a1a10" stroke="${EL}" stroke-width="0.9"/>`,
+  /* 11 angry */ eFace("url(#ea)") + eLine("M5.4 6.2 L10.4 8.8 M18.6 6.2 L13.6 8.8", 1.7) + `<ellipse cx="8.6" cy="11" rx="1.4" ry="1.6" fill="${EL}"/><ellipse cx="15.4" cy="11" rx="1.4" ry="1.6" fill="${EL}"/>` + eLine("M7.6 18 Q12 14.6 16.4 18", 1.7),
+  /* 12 skull */ `<path d="M12 2 C6.6 2 3.4 5.8 3.4 10.4 C3.4 13.4 4.8 15.4 7 16.4 V20.4 Q7 21.6 8.2 21.6 H15.8 Q17 21.6 17 20.4 V16.4 C19.2 15.4 20.6 13.4 20.6 10.4 C20.6 5.8 17.4 2 12 2 Z" fill="#f2eee2" stroke="#5a5048" stroke-width="1.1"/>
+                 <ellipse cx="8.4" cy="10.8" rx="2.5" ry="2.7" fill="#2a2420"/><ellipse cx="15.6" cy="10.8" rx="2.5" ry="2.7" fill="#2a2420"/><path d="M12 13.2 L10.8 15.6 H13.2 Z" fill="#2a2420"/>` + eLine("M10 17.6 V21.4 M12 17.6 V21.4 M14 17.6 V21.4", 0.9, "#5a5048"),
+  /* 13 heart */ eHeart(12, 12, 1) + `<ellipse cx="7.4" cy="7.6" rx="2" ry="1.3" fill="#fff" opacity="0.6" transform="rotate(-35 7.4 7.6)"/>`,
+  /* 14 broken heart */ eHeart(12, 12, 1) + eLine("M12 6.6 L10.4 10.2 L13.4 13.2 L11 16.6 L12 21", 1.8, "#4a0010"),
+  /* 15 thumbs up */   eThumb,
+  /* 16 thumbs down */ `<g transform="rotate(180 12 12)">${eThumb}</g>`,
+  /* 17 fire */  `<path d="M12 1.6 C14 6 19 8.4 18.6 14.2 C18.2 19.2 15.2 22 12 22 C8.4 22 5.4 19.4 5.4 14.6 C5.4 11 7.6 9.6 8.6 7.4 C9 10 10 11 10.8 11.2 C10.4 7.6 11 4.4 12 1.6 Z" fill="#ff5a1a" stroke="#a02000" stroke-width="1"/>
+                 <path d="M12 10 C13.6 13 16 14.6 15.6 17.6 C15.3 19.9 13.8 21 12 21 C10 21 8.6 19.8 8.6 17.7 C8.6 15.7 10.2 14.8 10.8 13.4 C11.6 14.6 12.4 12.6 12 10 Z" fill="#ffd23a"/>`,
+  /* 18 star */  `<path d="${eStar}" fill="url(#ef)" stroke="#a06a00" stroke-width="1.1" stroke-linejoin="round"/>`,
+  /* 19 party */ `<path d="M3 21.4 L8 8.4 L15.8 16.2 Z" fill="#ffb02a" stroke="#8a4a00" stroke-width="1" stroke-linejoin="round"/>` + eLine("M5 16.2 L10.6 19 M6.6 12 L13 18", 1.4, "#e83a6a") +
+                 eLine("M11 7 Q12.6 3 15 4.6 M15.6 10 Q18 7.6 21 9", 1.2, "#3a8ae8") + `<rect x="17" y="2.4" width="2.4" height="2.4" fill="#5ad83a" transform="rotate(25 18 3.6)"/><circle cx="20.6" cy="13.4" r="1.3" fill="#e83a6a"/><circle cx="9.6" cy="3" r="1.2" fill="#ffd23a"/><rect x="18.4" y="17.4" width="2.2" height="2.2" fill="#3a8ae8" transform="rotate(-20 19.5 18.5)"/>`,
+  /* 20 eyes */  `<ellipse cx="7.6" cy="12" rx="4.4" ry="6.6" fill="#fff" stroke="#3a3a4a" stroke-width="1.1"/><ellipse cx="16.4" cy="12" rx="4.4" ry="6.6" fill="#fff" stroke="#3a3a4a" stroke-width="1.1"/>
+                 <circle cx="9.4" cy="12.8" r="2.4" fill="#1a1a2a"/><circle cx="18.2" cy="12.8" r="2.4" fill="#1a1a2a"/><circle cx="10.2" cy="12" r="0.8" fill="#fff"/><circle cx="19" cy="12" r="0.8" fill="#fff"/>`,
+  /* 21 snake */ eLine("M4 19.4 Q4 15.4 8.4 15.4 H15 Q19.6 15.4 19.6 11.4 Q19.6 7.6 15.4 7.6 H11.6", 5.4, C.snakeDark) + eLine("M4 19.4 Q4 15.4 8.4 15.4 H15 Q19.6 15.4 19.6 11.4 Q19.6 7.6 15.4 7.6 H11.6", 3.6, C.snake) +
+                 `<path d="M7.6 6.6 L4.4 5.8 M4.4 5.8 L3 4.6 M4.4 5.8 L3 7" stroke="#e8102a" stroke-width="0.9" fill="none" stroke-linecap="round"/><ellipse cx="10.2" cy="7.6" rx="3.8" ry="3.2" fill="${C.snake}" stroke="${C.snakeDark}" stroke-width="1"/><circle cx="9.6" cy="6.4" r="1.3" fill="#fff"/><circle cx="9.3" cy="6.4" r="0.7" fill="#000"/>`,
+  /* 22 gem */   `<path d="M6.4 3.6 H17.6 L22 9 L12 21.4 L2 9 Z" fill="#5ae0ff" stroke="#1a6aa0" stroke-width="1.1" stroke-linejoin="round"/>` + eLine("M2 9 H22 M8.4 3.6 L10 9 L12 21.4 M15.6 3.6 L14 9 L12 21.4", 0.8, "#1a6aa0") + `<path d="M7 4.4 L9 8.4 H4.4 Z" fill="#fff" opacity="0.6"/>`,
+  /* 23 100 */   `<g transform="skewX(-10) translate(2 0)">` + eLine("M2.6 6.6 L5 4.6 V15.4", 2.2, "#e8102a") + `<ellipse cx="10.4" cy="10" rx="2.8" ry="5.2" fill="none" stroke="#e8102a" stroke-width="2.2"/><ellipse cx="17.6" cy="10" rx="2.8" ry="5.2" fill="none" stroke="#e8102a" stroke-width="2.2"/></g>` +
+                 eLine("M3 18.4 H21 M5 21.2 H19", 1.6, "#e8102a"),
+];
+emojis.forEach((body, i) => save("emoji_" + i, 24, 24, body, emojiDefs));
+
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

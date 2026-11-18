@@ -14,6 +14,7 @@ if (_room_bg != -1) layer_destroy(_room_bg);
 glyphs   = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!?.:x-/',%()+";
 font_hud = font_add_sprite_ext(spr_font_hud, glyphs, true, 1);
 font_body = font_add("Comic Sans MS", 15, true, false, 32, 128);
+// (Chat and notes draw with spr_text_font instead, which has Turkish and Greek: see scr_chat.)
 
 // ---------- Sound ----------
 sfx = sfx_init();
@@ -971,6 +972,7 @@ net_pause_me = false;
 net_pause_peer = false;
 net_door_last = -1000;
 net_buf = buffer_create(2048, buffer_grow, 1);
+chat_init();            // online chat: see scr_chat
 
 /// The room connected: online play starts with this PC as host or joiner.
 net_begin = function(_role)
@@ -994,6 +996,7 @@ net_end = function()
     if (net_pause_me || net_pause_peer) audio_resume_all();
     net_pause_me = false;
     net_pause_peer = false;
+    chat_reset();
 };
 
 /// Online: this PC pauses (or carries on). Both games stop while either player has paused.
@@ -1089,6 +1092,11 @@ net_apply_event = function(_e)
             net_pause_me = false;
             net_pause_peer = false;
             clear_messages();
+            break;
+
+        // ----- from either side -----
+        case "chat":
+            chat_receive(_e.m);
             break;
 
         case "pause":

@@ -161,7 +161,7 @@ function key_capture()
 /// Keys the game keeps for itself: they can't be given to a snake.
 function key_reserved(_k)
 {
-    return _k == vk_escape || _k == ord("P") || _k == ord("M") || _k == vk_f1 || _k == vk_f2;
+    return _k == vk_escape || _k == ord("P") || _k == ord("M") || _k == ord("T") || _k == vk_f1 || _k == vk_f2;
 }
 
 /// A short name for key code _k.

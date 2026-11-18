@@ -287,7 +287,7 @@ switch (state)
                 }
                 var _me = (_n.pub_ip != "") ? _n.pub_ip + ":" + string(_n.pub_port) : "unknown";
                 body_text(320, 296, "Your internet address: " + _me + "    Local port: " + string(_n.lport), make_colour_rgb(170, 190, 230), fa_center);
-                body_text(320, 318, "Esc: leave the room", _hint_col, fa_center);
+                body_text(320, 318, (net.state == "connected") ? "T: chat with your friend    Esc: leave the room" : "Esc: leave the room", _hint_col, fa_center);
                 break;
         }
         break;
@@ -560,6 +560,9 @@ switch (state)
         if (_blink) hud_text(320, 270, "PRESS ENTER", 0.5, fa_center);
         break;
 }
+
+// Online chat: the latest lines, and the box while typing.
+chat_draw();
 
 // Developer option: frames per second, bottom centre.
 if (settings.show_fps) body_text(320, 344, "FPS " + string(fps) + " (" + string(round(fps_real)) + ")", make_colour_rgb(140, 255, 140), fa_center);
