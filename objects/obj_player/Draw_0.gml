@@ -9,6 +9,10 @@ var _g = obj_game;
 if (snug == "call") snug_draw_call();
 if (snug == "snug" || snug == "hold") { snug_draw_c(); snug_draw_call(); exit; }
 if (snug == "fling") { snug_draw_fling(); exit; }
+// THE SLINGSHOT: Peto's call, Peto as the bow, Sockee as the arrow.
+if (sling == "call") sling_draw_call();
+if (sling == "bow" || sling == "loose") { sling_draw_bow(); if (sling == "bow") sling_draw_call(); exit; }
+if (sling == "nocked" || sling == "flying") { sling_draw_arrow(); exit; }
 
 if (ball)
 {
@@ -54,7 +58,7 @@ for (var _k = _n; _k >= 1; _k--)
 var _bob = (on_ground && abs(vx) > 0.5) ? sin(_g.frame * 0.4) : 0;
 draw_sprite_ext(skin.head, image_index, x, y - 3 + _bob, facing, 1, 0, c_white, 1);
 // With two players, a small P1 / P2 tag above the head.
-if (_g.players_n == 2 && snug != "call") hud_text(x, y - 40, "P" + string(pid + 1), 0.3, fa_center, skin.colour);   // (the SNUG! call shows there instead)
+if (_g.players_n == 2 && snug != "call" && sling != "call") hud_text(x, y - 40, "P" + string(pid + 1), 0.3, fa_center, skin.colour);   // (the SNUG! call shows there instead)
 
 // Tongue: a long pink ribbon with a forked tip.
 if (tongue_len > 0)

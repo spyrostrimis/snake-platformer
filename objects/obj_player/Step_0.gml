@@ -30,6 +30,12 @@ if (snug_step(_in))
     image_index = (invuln > 90) ? 3 : ((blink > 0) ? 1 : 0);
     exit;
 }
+// ---------- THE SLINGSHOT (two players): calling, the bow, or the arrow, it runs this step ----------
+if (sling_step(_in))
+{
+    image_index = (invuln > 90) ? 3 : ((blink > 0) ? 1 : 0);
+    exit;
+}
 
 // ---------- Roll (hold Shift) and boost (press C) ----------
 // A roll is just fast travel: it can't hurt creatures and creatures hurt it.

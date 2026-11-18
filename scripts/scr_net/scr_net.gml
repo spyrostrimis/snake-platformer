@@ -160,6 +160,13 @@ function net_write_snake(_b, _inst)
         buffer_write(_b, buffer_u8, max(0, array_get_index(snug_states(), snug)));
         buffer_write(_b, buffer_s8, snug_push);
         buffer_write(_b, buffer_u16, clamp(snug_t, 0, 65535));
+        // THE SLINGSHOT: the state, the aim and side, how far it's drawn, the level, the arrow's direction.
+        buffer_write(_b, buffer_u8, max(0, array_get_index(sling_states(), sling)));
+        buffer_write(_b, buffer_u8, clamp(round(sling_elev), 0, 90));
+        buffer_write(_b, buffer_s8, sling_side);
+        buffer_write(_b, buffer_u16, clamp(sling_draw, 0, 65535));
+        buffer_write(_b, buffer_u8, clamp(sling_level, 1, 3));
+        buffer_write(_b, buffer_u16, round(sling_dir) mod 360);
     }
 }
 
@@ -184,6 +191,12 @@ function net_read_snake(_b)
     _s.snug = buffer_read(_b, buffer_u8);
     _s.push = buffer_read(_b, buffer_s8);
     _s.snug_t = buffer_read(_b, buffer_u16);
+    _s.sling = buffer_read(_b, buffer_u8);
+    _s.elev = buffer_read(_b, buffer_u8);
+    _s.side = buffer_read(_b, buffer_s8);
+    _s.draw = buffer_read(_b, buffer_u16);
+    _s.level = buffer_read(_b, buffer_u8);
+    _s.sdir = buffer_read(_b, buffer_u16);
     return _s;
 }
 
@@ -212,5 +225,12 @@ function net_apply_snake(_inst, _s)
         snug = (_s.snug < array_length(_states)) ? _states[_s.snug] : "";
         snug_push = (_s.push == 0) ? 1 : _s.push;
         snug_t = _s.snug_t;
+        var _sls = sling_states();
+        sling = (_s.sling < array_length(_sls)) ? _sls[_s.sling] : "";
+        sling_elev = _s.elev;
+        sling_side = (_s.side == 0) ? 1 : _s.side;
+        sling_draw = _s.draw;
+        sling_level = _s.level;
+        sling_dir = _s.sdir;
     }
 }

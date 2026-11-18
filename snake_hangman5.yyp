@@ -80,6 +80,7 @@
     {"id":{"name":"scr_levels","path":"scripts/scr_levels/scr_levels.yy",},},
     {"id":{"name":"scr_net","path":"scripts/scr_net/scr_net.yy",},},
     {"id":{"name":"scr_sfx","path":"scripts/scr_sfx/scr_sfx.yy",},},
+    {"id":{"name":"scr_sling","path":"scripts/scr_sling/scr_sling.yy",},},
     {"id":{"name":"scr_snug","path":"scripts/scr_snug/scr_snug.yy",},},
     {"id":{"name":"scr_util","path":"scripts/scr_util/scr_util.yy",},},
     {"id":{"name":"scr_word_rules","path":"scripts/scr_word_rules/scr_word_rules.yy",},},

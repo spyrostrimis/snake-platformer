@@ -43,6 +43,17 @@ A super move for when you play together, split screen or online: **Sockee** catc
 
 The numbers (5 seconds, fling, damage) are at the top of `scripts/scr_snug`.
 
+### THE SLINGSHOT (two players)
+
+The second super move: **Peto** is the bow, **Sockee** the arrow.
+
+1. **Peto** presses **Roll + Tongue** (Shift + X). A quick tap is a call: a "SLING!" bubble over his head on both screens, so Sockee knows. Held, Peto rears up into a bow on the spot, his tongue as the string, opening towards Sockee, for up to 5 seconds. **Up / Down** (Jump / Down) aim it.
+2. **Sockee** holds **Roll** and presses **Boost** (Shift + C) towards Peto: the dashing ball shoots into the string and sits there as the arrow. (Just rolling in isn't enough.)
+3. The longer Peto keeps holding, the further it's drawn: the **SLINGSHOT** meter at the bottom fills through **three levels**. When Peto lets go, Sockee flies like an arrow: level 1 is one hit, level 2 two hits (as much as SNUG-ATTACK), level 3 three hits.
+4. The arrow knocks out every creature it touches, skeletons too, and bounces off a boss. Unlike SNUG-ATTACK's ball it only hurts creatures: it doesn't break cracked walls or crates.
+
+The numbers (5 seconds, the levels, damage) are at the top of `scripts/scr_sling`.
+
 ### Box Snake Egg (two players)
 
 When a snake runs out of lives while its friend is still playing, it curls up into a **Box Snake Egg** where it last stood safely, and its screen follows the friend. The friend is told, and a small arrow at the edge of their screen points to the egg. **Three hits** (tongue, stomp, boost or a fast roll) break it, and the snake comes back right there with **one life**. If both snakes are out, it's game over.

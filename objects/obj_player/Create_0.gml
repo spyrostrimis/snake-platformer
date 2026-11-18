@@ -51,6 +51,19 @@ snug_hold = -1;         // Sockee: frames Roll + Tongue have been held (-1: not 
 snug_call = 0;          // Sockee: frames the "SNUG!" call still shows
 snug_cd = 0;            // a short wait after the move before the next one
 
+// ---------- THE SLINGSHOT (two players): Peto is the bow, Sockee the arrow ----------
+// See scr_sling.
+sling = "";             // "" | call | bow | loose (Peto) | nocked | flying (Sockee)
+sling_t = 0;            // frames in the current state
+sling_hold = -1;        // Peto: frames Roll + Tongue have been held (-1: not counting)
+sling_call = 0;         // Peto: frames the "SLING!" call still shows
+sling_elev = 30;        // Peto: the aim, degrees above flat
+sling_side = 1;         // Peto: the side the bow shoots to (away from Sockee), -1 or 1
+sling_draw = 0;         // Peto: frames drawn since Sockee sat in the string
+sling_level = 1;        // the strength, 1 to 3 (Peto's when he lets go; Sockee's in flight)
+sling_dir = 0;          // Sockee as the arrow: the way it points, degrees
+sling_cd = 0;           // a short wait after the move before the next one
+
 // Movement tuning (pixels per frame at 60 frames a second).
 run_accel = 0.35;
 run_max = 3.3;
@@ -107,7 +120,8 @@ mouth_y = function() { return y + 6; };
 /// Hurt by a creature or spikes: knocked back, blinking and safe for a moment.
 take_hit = function(_dir = -facing)
 {
-    if (invuln > 0 || snug == "fired") return;      // the flung ball can't be hurt
+    if (invuln > 0 || snug == "fired" || sling == "flying") return;    // the flung ball and the arrow can't be hurt
+    if (sling != "" && sling != "call") sling_end();                    // a hit breaks the bow (or drops the arrow)
     if (snug != "" && snug != "call") snug_end();   // a hit breaks SNUG-ATTACK
     invuln = 110;
     vx = _dir * 3.5;
@@ -149,6 +163,12 @@ mirror_step = function()
     {
         var _mate = snug_partner();
         if (instance_exists(_mate)) { snug_hold_ball(_mate); return; }
+    }
+    // THE SLINGSHOT: likewise, a sitting arrow sits in this PC's own Peto's string.
+    if (sling == "nocked")
+    {
+        var _bow = snug_partner();
+        if (instance_exists(_bow)) { sling_place(_bow); return; }
     }
     if (point_distance(x, y, net_tx, net_ty) > 160) { x = net_tx; y = net_ty; reset_body(); }
     else { x = lerp(x, net_tx, 0.45); y = lerp(y, net_ty, 0.45); }
