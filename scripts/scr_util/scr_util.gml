@@ -253,8 +253,8 @@ function player_pad(_pid, _players)
 function read_controls(_pid, _players)
 {
     var _c = { left: false, right: false, down: false, jump_pressed: false, jump_held: false, tongue: false, tongue_held: false, roll_held: false, boost: false };
-    // While the chat box is up, keys are letters, not moves: the snake stands still.
-    if (obj_game.chat_open) return _c;
+    // While the chat or note box is up, keys are letters, not moves: the snake stands still.
+    if (obj_game.chat_open || obj_game.note_open) return _c;
     var _k = obj_game.settings.keys[$ (_players == 1) ? "solo" : ((_pid == 0) ? "p1" : "p2")];
     _c.left  = keys_held(_k.left);
     _c.right = keys_held(_k.right);

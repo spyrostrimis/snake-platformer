@@ -112,7 +112,7 @@ switch (state)
 
             case "options":
                 hud_text(320, 14, "OPTIONS", 0.7, fa_center, _title_col);
-                menu_panel(128, 44, 512, 296);
+                menu_panel(128, 44, 512, 304);
                 var _rows = options_rows();
                 var _y = 48;
                 for (var _i = 0; _i < array_length(_rows); _i++)
@@ -141,6 +141,7 @@ switch (state)
                         case "dev_lives":  _label = "Lives at the start"; _value = "< " + string(settings.dev_lives) + " >"; break;
                         case "no_damage":  _label = "No damage (pits still count)"; _value = settings.no_damage ? "ON" : "OFF"; break;
                         case "show_fps":   _label = "Show frames per second"; _value = settings.show_fps ? "ON" : "OFF"; break;
+                        case "notes":      _label = "Notes key F3 (Enter: open folder)"; _value = settings.notes_key ? "ON" : "OFF"; break;
                         case "back":       _label = "Back"; break;
                     }
                     body_text(150, _y, _label, _lc, fa_left);
@@ -157,11 +158,13 @@ switch (state)
                         body_text(490, _y, string(_vol * 10) + "%", _lc, fa_right);
                     }
                     else if (_value != "") body_text(490, _y, _value, (_value == "ON") ? make_colour_rgb(140, 255, 140) : _lc, fa_right);
-                    _y += 20;
+                    _y += 19;
                 }
                 var _sel_row = _rows[menu_sel.options].name;
-                if (string_pos("dev_", _sel_row) == 1 || _sel_row == "no_damage" || _sel_row == "show_fps")
-                    body_text(320, 308, "Developer options, for testing: they change games on this PC only, not online.", make_colour_rgb(255, 170, 90), fa_center);
+                if (_sel_row == "notes")
+                    body_text(320, 310, "F3 in any game writes a note (and a screenshot) to notes.txt on this PC.", make_colour_rgb(255, 170, 90), fa_center);
+                else if (string_pos("dev_", _sel_row) == 1 || _sel_row == "no_damage" || _sel_row == "show_fps")
+                    body_text(320, 310, "Developer options, for testing: they change games on this PC only, not online.", make_colour_rgb(255, 170, 90), fa_center);
                 body_text(320, 330, "Up / Down: choose    Left / Right: change    Enter: OK    Esc: back", _hint_col, fa_center);
                 break;
 
@@ -475,7 +478,8 @@ switch (state)
             draw_set_colour(c_white);
         }
 
-        if (state == "paused")
+        // (While a note paused the game, the note box shows instead of the pause menu.)
+        if (state == "paused" && !note_paused)
         {
             draw_set_colour(c_black);
             draw_set_alpha(0.5);
@@ -564,6 +568,12 @@ switch (state)
 // Online chat: the latest lines, and the box while typing.
 chat_draw();
 
+// Developer notes: the note box, "Note saved", and "wait up" while the friend writes one.
+notes_draw();
+
 // Developer option: frames per second, bottom centre.
 if (settings.show_fps) body_text(320, 344, "FPS " + string(fps) + " (" + string(round(fps_real)) + ")", make_colour_rgb(140, 255, 140), fa_center);
 matrix_set(matrix_world, matrix_build_identity());
+
+// Last of all: the screenshot for a note just opened (the game and HUD, without the box).
+notes_shoot();

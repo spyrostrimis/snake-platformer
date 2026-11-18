@@ -74,6 +74,12 @@ If the code can't connect (both players behind CGNAT), install [Tailscale](https
 
 How it is built: `scripts/scr_net` and `objects/obj_net` make the connection; the online game itself (the host runs the world, each PC its own snake) is in `objects/obj_game/Create_0.gml` under "Online game".
 
+### Developer notes (F3)
+
+Spotted a bug or had an idea while playing? Press **F3** anywhere (menus, a game, online), type, and press Enter. Each note becomes one line in `notes.txt` with the time, the level, the mode and where your snake is (in pixels and tiles), plus a screenshot taken the moment you pressed F3 (Tab turns it off; Esc cancels and throws it away). Playing alone or two on one PC, the game pauses while you write. Online it carries on: your friend sees "Wait up! Peto is taking a note", and your snake waits frozen and can't be hurt until you're done.
+
+The notes and screenshots (`notes_shots/`) stay on your own PC, in the game's save folder (`%LOCALAPPDATA%\snake_hangman5`), never in the repository. **Options > Developer > Notes key F3**: Left / Right turns the key off, Enter opens the folder.
+
 ## Working on it together
 
 - `git pull` before you start; commit small steps; `git push` when it works.

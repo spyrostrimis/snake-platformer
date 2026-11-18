@@ -19,13 +19,18 @@ for (var _i = array_length(popups) - 1; _i >= 0; _i--)
     if (_p.life <= 0) array_delete(popups, _i, 1);
 }
 
-// Online chat: T opens the box, which then takes the keyboard (nothing below reads keys,
-// and the snake stands still). See scr_chat.
+// Online chat (T) and developer notes (F3): the open box takes the keyboard (nothing below
+// reads keys, and the snake stands still). See scr_chat and scr_notes.
 chat_tick();
-if (!chat_open && keyboard_check_pressed(ord("T")) && chat_can()) chat_open_box();
-if (chat_open)
+if (note_toast_t > 0) note_toast_t--;
+if (!chat_open && !note_open)
 {
-    chat_step();
+    if (keyboard_check_pressed(ord("T")) && chat_can()) chat_open_box();
+    else if (keyboard_check_pressed(vk_f3) && note_can()) note_open_box();
+}
+if (chat_open || note_open)
+{
+    if (chat_open) chat_step(); else note_step();
     if (state == "play") level_time++;
     net_pause_sync();
     exit;
@@ -154,6 +159,11 @@ switch (state)
                     case "no_damage":
                     case "show_fps":
                         if (_menu.ok || _step != 0) { settings[$ _row] = !settings[$ _row]; play_sfx(sfx.select); }
+                        break;
+                    case "notes":
+                        // Left / Right: the F3 notes key on or off. Enter: open the notes folder.
+                        if (_step != 0) { settings.notes_key = !settings.notes_key; play_sfx(sfx.select); }
+                        else if (_menu.ok) { play_sfx(sfx.select); execute_shell_simple(game_save_id); }
                         break;
                     case "back":
                         if (_menu.ok) { settings_save(settings); menu_go("main"); }

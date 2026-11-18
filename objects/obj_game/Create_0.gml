@@ -135,6 +135,7 @@ options_rows = function()
         { name: "dev_lives",  header: "" },
         { name: "no_damage",  header: "" },
         { name: "show_fps",   header: "" },
+        { name: "notes",      header: "" },
         { name: "back",       header: "" },
     ];
 };
@@ -973,6 +974,7 @@ net_pause_peer = false;
 net_door_last = -1000;
 net_buf = buffer_create(2048, buffer_grow, 1);
 chat_init();            // online chat: see scr_chat
+notes_init();           // F3 developer notes: see scr_notes
 
 /// The room connected: online play starts with this PC as host or joiner.
 net_begin = function(_role)
@@ -996,6 +998,7 @@ net_end = function()
     if (net_pause_me || net_pause_peer) audio_resume_all();
     net_pause_me = false;
     net_pause_peer = false;
+    net_note_peer = false;
     chat_reset();
 };
 
@@ -1097,6 +1100,11 @@ net_apply_event = function(_e)
         // ----- from either side -----
         case "chat":
             chat_receive(_e.m);
+            break;
+
+        case "note":
+            // The other player is writing a developer note (or has finished): see scr_notes.
+            net_note_peer = _e.on;
             break;
 
         case "pause":

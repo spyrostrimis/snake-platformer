@@ -68,6 +68,7 @@ function settings_defaults()
         dev_lives: 3,       // lives each snake starts with
         no_damage: false,   // creatures and hazards take no hearts (pits still cost a life)
         show_fps: false,
+        notes_key: true,    // F3 writes a developer note (see scr_notes)
     };
 }
 
@@ -86,6 +87,7 @@ function settings_load()
     _s.dev_lives = max(1, ini_read_real("dev", "lives", _s.dev_lives));
     _s.no_damage = ini_read_real("dev", "no_damage", _s.no_damage) != 0;
     _s.show_fps = ini_read_real("dev", "show_fps", _s.show_fps) != 0;
+    _s.notes_key = ini_read_real("dev", "notes_key", _s.notes_key) != 0;
     var _sets = key_sets();
     var _acts = key_actions();
     for (var _j = 0; _j < array_length(_sets); _j++)
@@ -116,6 +118,7 @@ function settings_save(_s)
     ini_write_real("dev", "lives", _s.dev_lives);
     ini_write_real("dev", "no_damage", _s.no_damage);
     ini_write_real("dev", "show_fps", _s.show_fps);
+    ini_write_real("dev", "notes_key", _s.notes_key);
     var _sets = key_sets();
     var _acts = key_actions();
     for (var _j = 0; _j < array_length(_sets); _j++)
@@ -161,7 +164,7 @@ function key_capture()
 /// Keys the game keeps for itself: they can't be given to a snake.
 function key_reserved(_k)
 {
-    return _k == vk_escape || _k == ord("P") || _k == ord("M") || _k == ord("T") || _k == vk_f1 || _k == vk_f2;
+    return _k == vk_escape || _k == ord("P") || _k == ord("M") || _k == ord("T") || _k == vk_f1 || _k == vk_f2 || _k == vk_f3;
 }
 
 /// A short name for key code _k.

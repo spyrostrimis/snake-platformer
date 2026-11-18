@@ -7,6 +7,8 @@ var _g = obj_game;
 if (remote) { mirror_step(); exit; }
 if (_g.state != "play") exit;
 if (hidden) exit;
+// Online, while its player writes a developer note, this snake waits, frozen and safe.
+if (note_hold_snake(id)) exit;
 
 // Online, each PC plays one snake with the one-player keys (or any gamepad).
 var _in = read_controls(pid, (_g.net_mode != "") ? 1 : _g.players_n);
