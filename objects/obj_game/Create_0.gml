@@ -20,9 +20,24 @@ sfx = sfx_init();
 music_stream = -1;
 music_id = -1;
 music_file = "";
-sound_on = true;
+sound_on = true;        // M mutes and unmutes everything
 
-play_sfx = function(_e) { if (sound_on) audio_play_sound(_e.sound, 1, false); };
+// ---------- Options (keys, volumes, display, developer), saved in settings.ini ----------
+settings = settings_load();
+window_set_fullscreen(settings.fullscreen);
+
+/// The music's gain for the Music volume option (0-10).
+music_gain = function() { return 0.7 * settings.music / 10; };
+
+/// Plays the music at the volume chosen in the Options (after a change there too).
+apply_music_volume = function() { if (music_id != -1) audio_sound_gain(music_id, music_gain(), 0); };
+
+play_sfx = function(_e)
+{
+    if (!sound_on || settings.sfx <= 0) return;
+    var _snd = audio_play_sound(_e.sound, 1, false);
+    audio_sound_gain(_snd, settings.sfx / 10, 0);
+};
 
 /// Streams an Ogg file from the Included Files, if it is there (the album is not in the repo).
 play_music = function(_file)
@@ -33,7 +48,7 @@ play_music = function(_file)
     if (!sound_on || _file == "" || !file_exists(_file)) return;
     music_stream = audio_create_stream(_file);
     music_id = audio_play_sound(music_stream, 10, true);
-    audio_sound_gain(music_id, 0.55, 0);
+    audio_sound_gain(music_id, music_gain(), 0);
 };
 
 stop_music = function()
@@ -79,6 +94,49 @@ burst = function(_x, _y, _col, _n) { part_particles_create_colour(ps, _x, _y, pt
 // ---------- Run state ----------
 state      = "title";   // title | credits | online | play | paused | clear | gameover | victory
 levels     = level_list();
+level_names = [];       // for the Developer option "Start at level"
+for (var _i = 0; _i < array_length(levels); _i++) array_push(level_names, levels[_i]().name);
+
+// ---------- The title menus ----------
+// While state is "title", menu_page says which menu shows:
+//   main    : 1 PLAYER, 2 PLAYERS, OPTIONS, ABOUT
+//   solo    : one player picks Peto or Sockee
+//   duo     : 2 PLAYERS: local (one PC) or online
+//   local   : two players on one PC pick who plays which snake
+//   options : volumes, controls, display and developer options
+//   keys    : the Controls page (key bindings)
+menu_page = "main";
+menu_sel = { main: 0, duo: 0, options: 0, online: 0 };   // the highlighted item on each menu
+keys_set = 0;           // Controls page: which key set (key_sets())
+keys_row = 0;           // 0: the set's tabs, then one row per action, then Reset and Back
+keys_col = 0;           // the key slot (0 to KEY_SLOTS - 1)
+keys_wait = false;      // true: waiting for the key to put in the chosen slot
+keys_note = "";         // a short message on the Controls page
+keys_note_t = 0;
+
+/// Goes to title menu _page with a click.
+menu_go = function(_page)
+{
+    play_sfx(sfx.select);
+    menu_page = _page;
+    state = "title";
+};
+
+/// The Options menu's rows, in order (headers are drawn above the first row of each section).
+options_rows = function()
+{
+    return [
+        { name: "music",      header: "SOUND" },
+        { name: "sfx",        header: "" },
+        { name: "controls",   header: "CONTROLS" },
+        { name: "fullscreen", header: "DISPLAY" },
+        { name: "dev_level",  header: "DEVELOPER" },
+        { name: "dev_lives",  header: "" },
+        { name: "no_damage",  header: "" },
+        { name: "show_fps",   header: "" },
+        { name: "back",       header: "" },
+    ];
+};
 egg_next   = 0;         // the face the next egg gets (see obj_egg); load_level sets it
 level_index = 0;
 max_misses = MAX_MISSES;  // wrong guesses allowed this level (fewer from level 10 on)
@@ -101,7 +159,7 @@ make_player = function(_pid, _snake)
         pid: _pid,
         skin: snakes[_snake],
         score_now: 0,
-        lives_left: 3,
+        lives_left: (net_mode == "") ? settings.dev_lives : 3,
         hearts: 5,
         gems: 0,
         misses: 0,
@@ -669,8 +727,9 @@ hurt_player = function(_inst)
     // Online, the joiner's own snake has been hurt: the host keeps the hearts.
     if (net_mode == "client") { play_sfx(sfx.hurt); net_event({ t: "hurt" }); return; }
     var _p = _inst.stats;
-    _p.hearts--;
     play_sfx(sfx.hurt);
+    if (settings.no_damage && net_mode == "") return;    // Developer option
+    _p.hearts--;
     if (_p.hearts <= 0) player_died(_inst);
 };
 
@@ -961,7 +1020,8 @@ net_leave = function()
     net.stop();
     net_end();
     load_level(0, false);
-    state = "title";
+    state = "online";
+    online_mode = "menu";
 };
 
 /// Queues event _e (a struct) for the other PC.

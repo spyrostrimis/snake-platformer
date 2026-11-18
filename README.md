@@ -27,7 +27,11 @@ The levels play the [*Jazz Jackrabbit 2 – 20th Anniversary Tribute Album*](htt
 | Split screen, P2 (bottom) | Arrows, Down | Up | J | K | L |
 | Gamepad | Stick / D-pad | A | X | RB / LB / Y | B |
 
-On the title screen: Up / Down picks one or two players, Left / Right the snake, 1-2 starts at a level, **O** opens online play, C the credits, M music on/off. In a game: P pauses, N skips the level.
+These are the default keys: every one of them can be changed in **Options > Change keys** (gamepad buttons stay as above).
+
+The title menu: **1 PLAYER** (pick Peto or Sockee), **2 PLAYERS** (Local split screen, or Online), **OPTIONS** and **ABOUT** (the credits). Arrows choose, Enter confirms, Esc goes back; M turns the music on/off anywhere. In a game: P pauses, N (in the pause menu) skips the level.
+
+**Options** has the music and sound-effect volumes, the key bindings, full screen, and a few developer options for testing (start at any level, starting lives, no damage, show FPS). They're saved in `settings.ini` in the game's save folder (`%LOCALAPPDATA%\snake_hangman5`).
 
 Every 10 gems a snake collects give it an **extra life**.
 

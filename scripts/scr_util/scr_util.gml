@@ -246,50 +246,23 @@ function player_pad(_pid, _players)
     return (_n >= 2) ? _pads[0] : -1;
 }
 
-/// Player _pid's controls this step, as a struct. Keys (two players share one keyboard):
-///   one player : arrows / WASD, Z / Space / Up / W jump, X / J tongue, Shift roll, C boost
-///   player 1   : A D move, W jump, S down, F tongue, G roll (hold), H boost
-///   player 2   : arrows move, Up jump, Down down, J tongue, K roll (hold), L boost
+/// Player _pid's controls this step, as a struct. The keys come from the Options (see
+/// key_defaults in scr_settings for the defaults): one key set when playing alone, and one
+/// each for players 1 and 2 when two share the keyboard.
 ///   gamepad    : stick / D-pad, A jump, X tongue, RB / LB / Y roll (hold), B boost
 function read_controls(_pid, _players)
 {
     var _c = { left: false, right: false, down: false, jump_pressed: false, jump_held: false, tongue: false, tongue_held: false, roll_held: false, boost: false };
-    if (_players == 1)
-    {
-        _c.left  = keyboard_check(vk_left)  || keyboard_check(ord("A"));
-        _c.right = keyboard_check(vk_right) || keyboard_check(ord("D"));
-        _c.down  = keyboard_check(vk_down)  || keyboard_check(ord("S"));
-        _c.jump_pressed = keyboard_check_pressed(ord("Z")) || keyboard_check_pressed(vk_space) || keyboard_check_pressed(vk_up) || keyboard_check_pressed(ord("W"));
-        _c.jump_held    = keyboard_check(ord("Z")) || keyboard_check(vk_space) || keyboard_check(vk_up) || keyboard_check(ord("W"));
-        _c.tongue    = keyboard_check_pressed(ord("X")) || keyboard_check_pressed(ord("J"));
-        _c.tongue_held = keyboard_check(ord("X")) || keyboard_check(ord("J"));
-        _c.roll_held = keyboard_check(vk_shift);
-        _c.boost     = keyboard_check_pressed(ord("C"));
-    }
-    else if (_pid == 0)
-    {
-        _c.left  = keyboard_check(ord("A"));
-        _c.right = keyboard_check(ord("D"));
-        _c.down  = keyboard_check(ord("S"));
-        _c.jump_pressed = keyboard_check_pressed(ord("W"));
-        _c.jump_held    = keyboard_check(ord("W"));
-        _c.tongue    = keyboard_check_pressed(ord("F"));
-        _c.tongue_held = keyboard_check(ord("F"));
-        _c.roll_held = keyboard_check(ord("G"));
-        _c.boost     = keyboard_check_pressed(ord("H"));
-    }
-    else
-    {
-        _c.left  = keyboard_check(vk_left);
-        _c.right = keyboard_check(vk_right);
-        _c.down  = keyboard_check(vk_down);
-        _c.jump_pressed = keyboard_check_pressed(vk_up);
-        _c.jump_held    = keyboard_check(vk_up);
-        _c.tongue    = keyboard_check_pressed(ord("J"));
-        _c.tongue_held = keyboard_check(ord("J"));
-        _c.roll_held = keyboard_check(ord("K"));
-        _c.boost     = keyboard_check_pressed(ord("L"));
-    }
+    var _k = obj_game.settings.keys[$ (_players == 1) ? "solo" : ((_pid == 0) ? "p1" : "p2")];
+    _c.left  = keys_held(_k.left);
+    _c.right = keys_held(_k.right);
+    _c.down  = keys_held(_k.down);
+    _c.jump_pressed = keys_pressed(_k.jump);
+    _c.jump_held    = keys_held(_k.jump);
+    _c.tongue      = keys_pressed(_k.tongue);
+    _c.tongue_held = keys_held(_k.tongue);
+    _c.roll_held = keys_held(_k.roll);
+    _c.boost     = keys_pressed(_k.boost);
 
     var _pad = player_pad(_pid, _players);
     if (_pad >= 0)
@@ -338,6 +311,43 @@ function parallax_for_view()
 {
     var _cam = view_camera[view_current];
     obj_game.place_parallax(camera_get_view_x(_cam), camera_get_view_y(_cam));
+}
+
+/// A vertical menu of _items (strings) centred on _x from _y down, _gap apart; item _sel is
+/// highlighted between two blinking arrows.
+function menu_list(_x, _y, _items, _sel, _gap = 26, _scale = 0.5)
+{
+    var _blink = (obj_game.frame div 25) mod 2 == 0;
+    var _gold = make_colour_rgb(255, 230, 120);
+    var _dim = make_colour_rgb(150, 160, 200);
+    for (var _i = 0; _i < array_length(_items); _i++)
+    {
+        var _iy = _y + _i * _gap;
+        var _on = _i == _sel;
+        hud_text(_x, _iy, _items[_i], _scale, fa_center, _on ? _gold : _dim);
+        if (_on)
+        {
+            draw_set_font(obj_game.font_hud);
+            var _w = string_width(string_upper(_items[_i])) * _scale / 2;
+            var _h = string_height("A") * _scale / 2;
+            var _col = _blink ? c_white : make_colour_rgb(190, 210, 255);
+            var _bob = sin(obj_game.frame * 0.15) * 2;
+            title_arrow(_x - _w - 18 - _bob, _iy + _h, 1, _col);
+            title_arrow(_x + _w + 18 + _bob, _iy + _h, -1, _col);
+        }
+    }
+}
+
+/// A dark see-through panel behind a menu's text, so it reads well over the scenery.
+function menu_panel(_x1, _y1, _x2, _y2)
+{
+    draw_set_colour(make_colour_rgb(10, 16, 44));
+    draw_set_alpha(0.72);
+    draw_roundrect_ext(_x1, _y1, _x2, _y2, 14, 14, false);
+    draw_set_alpha(1);
+    draw_set_colour(make_colour_rgb(70, 90, 170));
+    draw_roundrect_ext(_x1, _y1, _x2, _y2, 14, 14, true);
+    draw_set_colour(c_white);
 }
 
 /// A small arrow on the title screen pointing left (_dir -1) or right (1), centred on (_x, _y).

@@ -28,77 +28,219 @@ for (var _v = 0; _v < _views; _v++)
 
 if (state == "title" || state == "credits" || state == "online")
 {
+    // Darker behind the busier pages, so their text reads well over the scenery.
+    var _busy = state == "online" || state == "credits" || (state == "title" && (menu_page == "options" || menu_page == "keys" || menu_page == "local"));
     draw_set_colour(c_black);
-    draw_set_alpha((state == "online") ? 0.6 : 0.35);
+    draw_set_alpha(_busy ? 0.6 : 0.35);
     draw_rectangle(0, 0, 640, 360, false);
     draw_set_alpha(1);
 }
 
+var _gold = make_colour_rgb(255, 230, 120);
+var _title_col = make_colour_rgb(255, 200, 80);
+var _hint_col = make_colour_rgb(190, 210, 255);
+var _dim_col = make_colour_rgb(150, 160, 200);
+
 switch (state)
 {
     case "title":
-        draw_sprite_ext(spr_logo, 0, 320, 88 + sin(frame * 0.04) * 4, 0.78, 0.78, sin(frame * 0.03) * 1.5, c_white, 1);
-        hud_text(320, 158, "JUNGLE JAM", 0.7, fa_center, make_colour_rgb(255, 200, 80));
-
-        // One or two players (Up / Down).
-        var _sel = make_colour_rgb(255, 230, 120);
-        var _dim = make_colour_rgb(150, 160, 200);
-        hud_text(250, 184, "1 PLAYER", 0.36, fa_center, players_n == 1 ? _sel : _dim);
-        hud_text(390, 184, "2 PLAYERS", 0.36, fa_center, players_n == 2 ? _sel : _dim);
-        var _fx = (players_n == 1) ? 250 : 390;
-        draw_set_colour(_blink ? _sel : make_colour_rgb(190, 150, 60));
-        draw_roundrect(_fx - 58, 181, _fx + 58, 198, true);
-        draw_set_colour(c_white);
-
-        var _arrow_col = _blink ? c_white : make_colour_rgb(190, 210, 255);
-        if (players_n == 1)
+        switch (menu_page)
         {
-            // Snake choice: the chosen snake's head between arrows, its name and its power.
-            var _sn = snakes[character];
-            title_arrow(196, 212, -1, _arrow_col);
-            title_arrow(444, 212, 1, _arrow_col);
-            draw_sprite_ext(_sn.head, 0, 224, 211, 0.8, 0.8, 0, c_white, 1);
-            hud_text(334, 201, _sn.name, 0.46, fa_center, _sn.colour);    // PETO or SOCKEE
-            body_text(334, 219, _sn.power, c_white, fa_center);
-            if (_blink) hud_text(320, 238, "PRESS ENTER TO START", 0.42, fa_center);
-            body_text(320, 256, "Arrows: move    Z / Space: jump    Left / Right on this screen: choose snake", c_white, fa_center);
-            body_text(320, 271, "X: tongue    Hold Shift: roll    C: boost (knocks out creatures)    Down + jump: drop through logs", c_white, fa_center);
+            case "main":
+                draw_sprite_ext(spr_logo, 0, 320, 92 + sin(frame * 0.04) * 4, 0.78, 0.78, sin(frame * 0.03) * 1.5, c_white, 1);
+                menu_list(320, 178, ["1 PLAYER", "2 PLAYERS", "OPTIONS", "ABOUT"], menu_sel.main, 30, 0.55);
+                body_text(320, 330, "Arrows: choose    Enter: OK    M: music on / off", _hint_col, fa_center);
+                break;
+
+            case "solo":
+                hud_text(320, 22, "1 PLAYER", 0.75, fa_center, _title_col);
+                body_text(320, 62, "Choose your snake", _hint_col, fa_center);
+                // Both snakes, the chosen one big and bright.
+                for (var _i = 0; _i < array_length(snakes); _i++)
+                {
+                    var _sn = snakes[_i];
+                    var _on = _i == character;
+                    var _sx = 230 + _i * 180;
+                    var _bob = _on ? sin(frame * 0.1) * 3 : 0;
+                    draw_sprite_ext(_sn.head, 0, _sx, 132 + _bob, _on ? 2.2 : 1.5, _on ? 2.2 : 1.5, 0, _on ? c_white : make_colour_rgb(90, 90, 110), 1);
+                    hud_text(_sx, 172, _sn.name, _on ? 0.55 : 0.42, fa_center, _on ? _sn.colour : _dim_col);
+                }
+                title_arrow(130, 140, -1, _blink ? c_white : _hint_col);
+                title_arrow(510, 140, 1, _blink ? c_white : _hint_col);
+                // The power text names the default boost key, C: show the one set in the Options.
+                body_text(320, 204, string_replace(snakes[character].power, "C:", keys_text(settings.keys.solo.boost) + ":"), c_white, fa_center);
+                if (_blink) hud_text(320, 230, "PRESS ENTER TO START", 0.45, fa_center);
+                if (settings.dev_level > 0) body_text(320, 254, "Starting at level " + string(settings.dev_level + 1) + " (Developer option)", make_colour_rgb(255, 170, 90), fa_center);
+                var _k = settings.keys.solo;
+                body_text(320, 274, "Move: " + keys_text(_k.left) + ", " + keys_text(_k.right) + "    Jump: " + keys_text(_k.jump), c_white, fa_center);
+                body_text(320, 290, "Tongue: " + keys_text(_k.tongue) + "    Roll (hold): " + keys_text(_k.roll) + "    Boost: " + keys_text(_k.boost), c_white, fa_center);
+                body_text(320, 306, "In a level:  P pause    F1 back to the checkpoint    F2 restart.  Keys: Options > Controls", _hint_col, fa_center);
+                body_text(320, 330, "Left / Right: choose    Enter: start    Esc: back", _hint_col, fa_center);
+                break;
+
+            case "duo":
+                hud_text(320, 40, "2 PLAYERS", 0.75, fa_center, _title_col);
+                menu_list(320, 130, ["LOCAL", "ONLINE"], menu_sel.duo, 36, 0.6);
+                var _about = (menu_sel.duo == 0)
+                    ? "Two players on this PC: split screen, one keyboard (or gamepads)."
+                    : "Play with a friend on another PC: host a room or join with its code.";
+                body_text(320, 226, _about, c_white, fa_center);
+                body_text(320, 330, "Arrows: choose    Enter: OK    Esc: back", _hint_col, fa_center);
+                break;
+
+            case "local":
+                hud_text(320, 22, "2 PLAYERS - LOCAL", 0.7, fa_center, _title_col);
+                body_text(320, 60, "Shared word, own lives and misses. Player 1 plays on top, player 2 below.", _hint_col, fa_center);
+                for (var _i = 0; _i < 2; _i++)
+                {
+                    var _sn = snakes[(_i == 0) ? character : 1 - character];
+                    var _cx = 180 + _i * 280;
+                    var _k = settings.keys[$ (_i == 0) ? "p1" : "p2"];
+                    draw_sprite_ext(_sn.head, 0, _cx, 112 + sin(frame * 0.1 + _i * 3) * 3, 1.8, 1.8, 0, c_white, 1);
+                    hud_text(_cx, 144, "P" + string(_i + 1) + " " + _sn.name, 0.48, fa_center, _sn.colour);
+                    body_text(_cx, 174, "Move: " + keys_text(_k.left) + ", " + keys_text(_k.right) + "    Down: " + keys_text(_k.down), c_white, fa_center);
+                    body_text(_cx, 190, "Jump: " + keys_text(_k.jump) + "    Tongue: " + keys_text(_k.tongue), c_white, fa_center);
+                    body_text(_cx, 206, "Roll (hold): " + keys_text(_k.roll) + "    Boost: " + keys_text(_k.boost), c_white, fa_center);
+                }
+                title_arrow(320, 120, -1, _blink ? c_white : _hint_col);
+                title_arrow(340, 120, 1, _blink ? c_white : _hint_col);
+                if (_blink) hud_text(320, 240, "PRESS ENTER TO START", 0.45, fa_center);
+                if (settings.dev_level > 0) body_text(320, 264, "Starting at level " + string(settings.dev_level + 1) + " (Developer option)", make_colour_rgb(255, 170, 90), fa_center);
+                body_text(320, 286, "One gamepad plays as player 2; two gamepads give one each.  Keys: Options > Controls", _hint_col, fa_center);
+                body_text(320, 330, "Left / Right: swap snakes    Enter: start    Esc: back", _hint_col, fa_center);
+                break;
+
+            case "options":
+                hud_text(320, 14, "OPTIONS", 0.7, fa_center, _title_col);
+                menu_panel(128, 44, 512, 296);
+                var _rows = options_rows();
+                var _y = 48;
+                for (var _i = 0; _i < array_length(_rows); _i++)
+                {
+                    var _r = _rows[_i];
+                    if (_r.header != "") { hud_text(150, _y + 2, _r.header, 0.3, fa_left, _hint_col); _y += 14; }
+                    if (_r.name == "back") _y += 8;
+                    var _on = _i == menu_sel.options;
+                    if (_on)
+                    {
+                        draw_set_colour(make_colour_rgb(60, 80, 160));
+                        draw_set_alpha(0.55);
+                        draw_roundrect(140, _y - 1, 500, _y + 17, false);
+                        draw_set_alpha(1);
+                    }
+                    var _lc = _on ? _gold : c_white;
+                    var _label = "";
+                    var _value = "";
+                    switch (_r.name)
+                    {
+                        case "music":      _label = "Music volume"; break;
+                        case "sfx":        _label = "Sound effects volume"; break;
+                        case "controls":   _label = "Change keys"; _value = "Enter >"; break;
+                        case "fullscreen": _label = "Full screen"; _value = settings.fullscreen ? "ON" : "OFF"; break;
+                        case "dev_level":  _label = "Start at level"; _value = "< " + string(settings.dev_level + 1) + ": " + level_names[settings.dev_level] + " >"; break;
+                        case "dev_lives":  _label = "Lives at the start"; _value = "< " + string(settings.dev_lives) + " >"; break;
+                        case "no_damage":  _label = "No damage (pits still count)"; _value = settings.no_damage ? "ON" : "OFF"; break;
+                        case "show_fps":   _label = "Show frames per second"; _value = settings.show_fps ? "ON" : "OFF"; break;
+                        case "back":       _label = "Back"; break;
+                    }
+                    body_text(150, _y, _label, _lc, fa_left);
+                    if (_r.name == "music" || _r.name == "sfx")
+                    {
+                        // A bar of ten blocks.
+                        var _vol = settings[$ _r.name];
+                        for (var _b = 0; _b < 10; _b++)
+                        {
+                            draw_set_colour((_b < _vol) ? (_on ? _gold : make_colour_rgb(140, 230, 120)) : make_colour_rgb(40, 46, 80));
+                            draw_rectangle(340 + _b * 13, _y + 3, 350 + _b * 13, _y + 13, false);
+                        }
+                        draw_set_colour(c_white);
+                        body_text(490, _y, string(_vol * 10) + "%", _lc, fa_right);
+                    }
+                    else if (_value != "") body_text(490, _y, _value, (_value == "ON") ? make_colour_rgb(140, 255, 140) : _lc, fa_right);
+                    _y += 20;
+                }
+                var _sel_row = _rows[menu_sel.options].name;
+                if (string_pos("dev_", _sel_row) == 1 || _sel_row == "no_damage" || _sel_row == "show_fps")
+                    body_text(320, 308, "Developer options, for testing: they change games on this PC only, not online.", make_colour_rgb(255, 170, 90), fa_center);
+                body_text(320, 330, "Up / Down: choose    Left / Right: change    Enter: OK    Esc: back", _hint_col, fa_center);
+                break;
+
+            case "keys":
+                hud_text(320, 12, "CONTROLS", 0.7, fa_center, _title_col);
+                var _sets = key_sets();
+                var _acts = key_actions();
+                var _set_name = _sets[keys_set].name;
+                var _keys = settings.keys[$ _set_name];
+                menu_panel(96, 36, 584, 274);
+                // The key sets, as tabs.
+                for (var _i = 0; _i < array_length(_sets); _i++)
+                {
+                    var _tx = 200 + _i * 120;
+                    var _on = _i == keys_set;
+                    hud_text(_tx, 44, _sets[_i].label, 0.34, fa_center, _on ? _gold : _dim_col);
+                    if (_on)
+                    {
+                        draw_set_colour((keys_row == 0 && _blink) ? _gold : make_colour_rgb(190, 150, 60));
+                        draw_roundrect(_tx - 54, 40, _tx + 54, 58, true);
+                        draw_set_colour(c_white);
+                    }
+                }
+                var _set_about = ["Playing alone", "Two players on one keyboard: player 1 (top screen)", "Two players on one keyboard: player 2 (bottom screen)"];
+                body_text(320, 64, _set_about[keys_set], _hint_col, fa_center);
+
+                // The table: one row per action, one column per key slot.
+                var _ty = 86;
+                body_text(110, _ty, "Action", _dim_col, fa_left);
+                for (var _c = 0; _c < KEY_SLOTS; _c++) body_text(290 + _c * 80, _ty, "Key " + string(_c + 1), _dim_col, fa_center);
+                for (var _i = 0; _i < array_length(_acts); _i++)
+                {
+                    var _ry = _ty + 18 + _i * 18;
+                    var _row_on = keys_row == _i + 1;
+                    body_text(110, _ry, _acts[_i].label, _row_on ? _gold : c_white, fa_left);
+                    var _list = _keys[$ _acts[_i].name];
+                    for (var _c = 0; _c < KEY_SLOTS; _c++)
+                    {
+                        var _cx = 290 + _c * 80;
+                        var _cell_on = _row_on && _c == keys_col;
+                        if (_cell_on)
+                        {
+                            draw_set_colour(make_colour_rgb(60, 80, 160));
+                            draw_set_alpha(0.6);
+                            draw_roundrect(_cx - 36, _ry - 1, _cx + 36, _ry + 16, false);
+                            draw_set_alpha(1);
+                            draw_set_colour(keys_wait ? _gold : make_colour_rgb(190, 150, 60));
+                            draw_roundrect(_cx - 36, _ry - 1, _cx + 36, _ry + 16, true);
+                            draw_set_colour(c_white);
+                        }
+                        var _txt = key_name(_list[_c]);
+                        var _col = (_list[_c] < 0) ? make_colour_rgb(90, 100, 140) : c_white;
+                        if (key_clashes(settings.keys, _set_name, _acts[_i].name, _list[_c])) _col = make_colour_rgb(255, 110, 110);
+                        if (_cell_on && keys_wait) { _txt = _blink ? "press a key" : ""; _col = _gold; }
+                        body_text(_cx, _ry, _txt, _col, fa_center);
+                    }
+                }
+                var _reset_row = array_length(_acts) + 1;
+                menu_list(320, 236, ["RESET TO DEFAULTS", "BACK"], keys_row - _reset_row, 20, 0.36);
+                if (keys_wait) body_text(320, 284, "Press the new key for " + string_lower(_acts[keys_row - 1].label) + "    (Esc: cancel)", _gold, fa_center);
+                else if (keys_note_t > 0) body_text(320, 284, keys_note, make_colour_rgb(255, 200, 120), fa_center);
+                body_text(320, 308, "Gamepads: stick / D-pad move, A jump, X tongue, hold RB / LB / Y roll, B boost.", _dim_col, fa_center);
+                body_text(320, 330, "Up / Down: choose    Left / Right: key slot    Enter: change    Delete: clear    Esc: back", _hint_col, fa_center);
+                break;
         }
-        else
-        {
-            // Two players: P1 on the top half, P2 on the bottom; Left / Right swaps the snakes.
-            var _s1 = snakes[character];
-            var _s2 = snakes[1 - character];
-            title_arrow(140, 212, -1, _arrow_col);
-            title_arrow(500, 212, 1, _arrow_col);
-            draw_sprite_ext(_s1.head, 0, 172, 211, 0.7, 0.7, 0, c_white, 1);
-            hud_text(232, 203, "P1 " + _s1.name, 0.34, fa_center, _s1.colour);
-            draw_sprite_ext(_s2.head, 0, 372, 211, 0.7, 0.7, 0, c_white, 1);
-            hud_text(432, 203, "P2 " + _s2.name, 0.34, fa_center, _s2.colour);
-            body_text(320, 219, "Shared word, own lives and misses. P1 plays on top, P2 below.", c_white, fa_center);
-            if (_blink) hud_text(320, 238, "PRESS ENTER TO START", 0.42, fa_center);
-            body_text(320, 256, "P1: A D move   W jump   S down   F tongue   hold G roll   H boost", _s1.colour, fa_center);
-            body_text(320, 271, "P2: Arrows move / jump / down   J tongue   hold K roll   L boost", _s2.colour, fa_center);
-        }
-        body_text(320, 286, "Gamepads: stick, A jump, X tongue, hold RB roll, B boost.  Grab the letters to open the door!", make_colour_rgb(255, 230, 140), fa_center);
-        body_text(320, 302, "Up / Down: players    O: online    C: credits    M: music on/off    P: pause", make_colour_rgb(190, 210, 255), fa_center);
-        body_text(320, 317, "In a level:  F1: back to the checkpoint    F2: restart the level", make_colour_rgb(190, 210, 255), fa_center);
-        body_text(320, 334, "A tribute to the 90s PC platformers. Made with GameMaker.", make_colour_rgb(170, 190, 230), fa_center);
         break;
 
     case "online":
-        hud_text(320, 22, "ONLINE", 0.8, fa_center, make_colour_rgb(255, 200, 80));
-        body_text(320, 62, "Connection test: host or join a room, and see the link between the two PCs work.", make_colour_rgb(190, 210, 255), fa_center);
-        var _gold = make_colour_rgb(255, 230, 120);
+        hud_text(320, 22, "ONLINE", 0.8, fa_center, _title_col);
         switch (online_mode)
         {
             case "menu":
-                hud_text(320, 110, "H: HOST A ROOM", 0.5, fa_center, _gold);
-                hud_text(320, 145, "J: JOIN WITH A CODE", 0.5, fa_center, _gold);
-                hud_text(320, 180, "I: JOIN BY IP", 0.5, fa_center, _gold);
-                body_text(320, 216, "Join by IP is the fallback when the code doesn't connect: type the host's IP", c_white, fa_center);
-                body_text(320, 232, "(for example its Tailscale address), then the room code.", c_white, fa_center);
-                body_text(320, 300, "Esc: back", make_colour_rgb(190, 210, 255), fa_center);
+                body_text(320, 66, "Play with a friend on another PC.", _hint_col, fa_center);
+                menu_list(320, 110, ["HOST A ROOM", "JOIN WITH A CODE", "JOIN BY IP"], menu_sel.online, 34, 0.5);
+                var _about = ["Make a room and give your friend its code (it's copied to the clipboard).",
+                              "Type the 5-character code your friend's room shows.",
+                              "The fallback when the code doesn't connect: type the host's IP (for example its Tailscale address), then the code."];
+                body_text(320, 232, _about[menu_sel.online], c_white, fa_center);
+                body_text(320, 330, "Arrows: choose    Enter: OK    Esc: back", _hint_col, fa_center);
                 break;
 
             case "type_ip":
@@ -145,22 +287,25 @@ switch (state)
                 }
                 var _me = (_n.pub_ip != "") ? _n.pub_ip + ":" + string(_n.pub_port) : "unknown";
                 body_text(320, 296, "Your internet address: " + _me + "    Local port: " + string(_n.lport), make_colour_rgb(170, 190, 230), fa_center);
-                body_text(320, 318, "Esc: leave the room", make_colour_rgb(190, 210, 255), fa_center);
+                body_text(320, 318, "Esc: leave the room", _hint_col, fa_center);
                 break;
         }
         break;
 
     case "credits":
-        hud_text(320, 24, "CREDITS", 0.8, fa_center, make_colour_rgb(255, 200, 80));
-        body_text(320, 68, "Game, art and code: Spyros Trimis, Can Dereli and Claude, made with GameMaker", c_white, fa_center);
-        body_text(320, 96, "Music: \"Jazz Jackrabbit 2 - 20th Anniversary Tribute Album\" by the JJ20 Team", make_colour_rgb(255, 230, 140), fa_center);
-        body_text(320, 114, "jj20.bandcamp.com - licensed CC BY-NC-ND 4.0, used unchanged", make_colour_rgb(255, 230, 140), fa_center);
-        body_text(320, 140, "Tubelectric: Megahit    Jazz Jackrabbit 2 Theme: Zyrit    Carrotus: Vincenzo", c_white, fa_center);
-        body_text(320, 158, "Pull Back the Bass, Water Level: BPStudio    Dark Groove: Gridscape", c_white, fa_center);
-        body_text(320, 176, "Bonus Stage: Bitrotator    Labratory Level: SIDNIFY    Jazz be Damned: Ziona", c_white, fa_center);
-        body_text(320, 202, "The album covers music by Alexander Brandon; Jazz Jackrabbit 2 belongs to Epic Games.", make_colour_rgb(190, 210, 255), fa_center);
-        body_text(320, 220, "This game is a free, unofficial fan tribute and is not endorsed by Epic Games.", make_colour_rgb(190, 210, 255), fa_center);
-        if (_blink) hud_text(320, 290, "PRESS ENTER", 0.5, fa_center);
+        hud_text(320, 20, "ABOUT", 0.8, fa_center, _title_col);
+        menu_panel(108, 52, 532, 268);
+        body_text(320, 58, "SNAGMAN: a tribute to the 90s PC platformers, starring Peto and Sockee.", _hint_col, fa_center);
+        hud_text(320, 82, "CREDITS", 0.4, fa_center, _gold);
+        body_text(320, 102, "Game, art and code: Spyros Trimis, Can Dereli and Claude, made with GameMaker", c_white, fa_center);
+        body_text(320, 126, "Music: \"Jazz Jackrabbit 2 - 20th Anniversary Tribute Album\" by the JJ20 Team", make_colour_rgb(255, 230, 140), fa_center);
+        body_text(320, 144, "jj20.bandcamp.com - licensed CC BY-NC-ND 4.0, used unchanged", make_colour_rgb(255, 230, 140), fa_center);
+        body_text(320, 168, "Tubelectric: Megahit    Jazz Jackrabbit 2 Theme: Zyrit    Carrotus: Vincenzo", c_white, fa_center);
+        body_text(320, 186, "Pull Back the Bass, Water Level: BPStudio    Dark Groove: Gridscape", c_white, fa_center);
+        body_text(320, 204, "Bonus Stage: Bitrotator    Labratory Level: SIDNIFY    Jazz be Damned: Ziona", c_white, fa_center);
+        body_text(320, 230, "The album covers music by Alexander Brandon; Jazz Jackrabbit 2 belongs to Epic Games.", _hint_col, fa_center);
+        body_text(320, 248, "This game is a free, unofficial fan tribute and is not endorsed by Epic Games.", _hint_col, fa_center);
+        body_text(320, 330, "Enter / Esc: back", _hint_col, fa_center);
         break;
 
     case "play":
@@ -415,4 +560,7 @@ switch (state)
         if (_blink) hud_text(320, 270, "PRESS ENTER", 0.5, fa_center);
         break;
 }
+
+// Developer option: frames per second, bottom centre.
+if (settings.show_fps) body_text(320, 344, "FPS " + string(fps) + " (" + string(round(fps_real)) + ")", make_colour_rgb(140, 255, 140), fa_center);
 matrix_set(matrix_world, matrix_build_identity());
