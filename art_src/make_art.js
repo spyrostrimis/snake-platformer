@@ -1354,7 +1354,7 @@ let bigPalm = "";
 save("spr_palm_big", 560, 424, bigPalm);
 
 // ---------- Giant oysters: snap shut, open to show a pearl and spit it ----------
-// Frames: shut, peeking, open with the pearl, open (pearl spat), snapping. 60 x 46, origin (30, 44).
+// Frames: shut, peeking, open with the pearl, open (pearl spat), snapping. Drawn in 60 x 46 (saved in 60 x 64, below).
 function oyster(f) {
   const sh = { top: "#8a8a9a", topL: "#c8c8d8", line: "#2a2a36", in: "#f4d0dc", lip: "#e890a8" };
   const bottom = `<path d="M4 34 Q6 44 30 44 Q54 44 56 34 Q50 28 30 28 Q10 28 4 34 Z" fill="${sh.top}" stroke="${sh.line}" stroke-width="2"/>
@@ -1379,7 +1379,9 @@ function oyster(f) {
 }
 const oysterDefs = `<linearGradient id="oy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8b8c8"/><stop offset="1" stop-color="#6a6a7a"/></linearGradient>
   <radialGradient id="pearl" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#ffffff"/><stop offset="0.6" stop-color="#f0e8ff"/><stop offset="1" stop-color="#b8a8d8"/></radialGradient>`;
-for (let f = 0; f < 5; f++) save("oyster_" + f, 60, 46, oyster(f), oysterDefs);
+// On a bigger canvas (66 x 64, everything 3 px right, 18 px lower) so the open lid fits; origin
+// (33, 46), the middle of its 32 px tall body, so its shell rests on the sand.
+for (let f = 0; f < 5; f++) save("oyster_" + f, 66, 64, `<g transform="translate(3 18)">${oyster(f)}</g>`, oysterDefs);
 save("spr_pearl", 14, 14, `<circle cx="7" cy="7" r="6" fill="url(#pearl)" stroke="#6a5a8a" stroke-width="1.2"/><circle cx="5" cy="5" r="1.6" fill="#fff"/>`, oysterDefs);
 
 // ---------- Giant mosquitoes: wings A, wings B, aiming the needle (to dive) ----------

@@ -21,14 +21,14 @@ sfx = sfx_init();
 music_stream = -1;
 music_id = -1;
 music_file = "";
-sound_on = true;        // M mutes and unmutes everything
+sound_on = true;        // M mutes and unmutes everything (the music keeps going, silently)
 
 // ---------- Options (keys, volumes, display, developer), saved in settings.ini ----------
 settings = settings_load();
 window_set_fullscreen(settings.fullscreen);
 
-/// The music's gain for the Music volume option (0-10).
-music_gain = function() { return 0.7 * settings.music / 10; };
+/// The music's gain for the Music volume option (0-10); silent while muted.
+music_gain = function() { return sound_on ? 0.7 * settings.music / 10 : 0; };
 
 /// Plays the music at the volume chosen in the Options (after a change there too).
 apply_music_volume = function() { if (music_id != -1) audio_sound_gain(music_id, music_gain(), 0); };
@@ -46,7 +46,8 @@ play_music = function(_file)
     if (_file == music_file && music_id != -1) return;
     stop_music();
     music_file = _file;
-    if (!sound_on || _file == "" || !file_exists(_file)) return;
+    // Muted, the music still plays (silently), so unmuting carries on where it is.
+    if (_file == "" || !file_exists(_file)) return;
     music_stream = audio_create_stream(_file);
     music_id = audio_play_sound(music_stream, 10, true);
     audio_sound_gain(music_id, music_gain(), 0);

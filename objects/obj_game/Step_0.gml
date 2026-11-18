@@ -42,10 +42,9 @@ var _typing = (state == "online" && (online_mode == "type" || online_mode == "ty
 var _menu = menu_input();
 if (keyboard_check_pressed(ord("M")) && !_typing)
 {
+    // The music never stops for this: it just goes silent, and comes back where it is.
     sound_on = !sound_on;
-    if (!sound_on) stop_music();
-    else if (state == "play") play_music(lvl.music);
-    else if (state == "title" || state == "credits" || state == "online") play_music("music_02.ogg");
+    apply_music_volume();
 }
 
 // Secret code: typing JJNXT during a level skips straight to the next one (online: the host only).
@@ -67,8 +66,8 @@ switch (state)
         switch (menu_page)
         {
             case "main":
-                // 1 PLAYER, 2 PLAYERS, OPTIONS, ABOUT.
-                if (_menu.up || _menu.down) { menu_sel.main = (menu_sel.main + (_menu.down ? 1 : 3)) mod 4; play_sfx(sfx.select); }
+                // 1 PLAYER, 2 PLAYERS, OPTIONS, ABOUT, QUIT GAME.
+                if (_menu.up || _menu.down) { menu_sel.main = (menu_sel.main + (_menu.down ? 1 : 4)) mod 5; play_sfx(sfx.select); }
                 else if (_menu.ok)
                 {
                     switch (menu_sel.main)
@@ -77,6 +76,7 @@ switch (state)
                         case 1: menu_go("duo"); break;
                         case 2: menu_go("options"); break;
                         case 3: play_sfx(sfx.select); state = "credits"; break;
+                        case 4: settings_save(settings); game_end(); break;
                     }
                 }
                 break;
@@ -305,7 +305,8 @@ switch (state)
                 if (keyboard_check_pressed(vk_space) && net.state == "connected") { play_sfx(sfx.jump); net.send_wave(); }
                 if (net_mode == "host")
                 {
-                    if (keyboard_check_pressed(vk_left) || keyboard_check_pressed(vk_right)) { character = 1 - character; play_sfx(sfx.select); }
+                    // Left / Right: the host's snake (the friend gets the other one).
+                    if (_menu.left || _menu.right) { character = 1 - character; play_sfx(sfx.select); }
                     if (keyboard_check_pressed(vk_enter)) { play_sfx(sfx.select); players_n = 2; new_game(0); }
                     else
                     {

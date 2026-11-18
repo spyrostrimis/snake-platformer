@@ -52,8 +52,10 @@ if (_boost_key && tongue_t == 0 && boost_t == 0 && boost_cd == 0 && boost_ready 
     boost_ready = false;
     if (skin.boost == "up")
     {
+        // Straight up, higher than a jump (~170 px: 5 tiles), with no sideways movement.
         boost_t = 36;
-        vy = -11;
+        vx = 0;
+        vy = -12.4;
     }
     else
     {
@@ -89,6 +91,9 @@ else if (on_ground)
 }
 vx = clamp(vx, -_max, _max);
 if (_dashing) vx = boost_dir * boost_speed;
+// The green rocket goes only straight up: no steering until it's over.
+var _rocket = boost_t > 0 && skin.boost == "up";
+if (_rocket) vx = 0;
 if (ball) ball_angle -= vx * 4;
 
 // ---------- Water: swimming at the surface ----------

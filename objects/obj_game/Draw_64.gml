@@ -48,8 +48,8 @@ switch (state)
         {
             case "main":
                 draw_sprite_ext(spr_logo, 0, 320, 92 + sin(frame * 0.04) * 4, 0.78, 0.78, sin(frame * 0.03) * 1.5, c_white, 1);
-                menu_list(320, 178, ["1 PLAYER", "2 PLAYERS", "OPTIONS", "ABOUT"], menu_sel.main, 30, 0.55);
-                body_text(320, 330, "Arrows: choose    Enter: OK    M: music on / off", _hint_col, fa_center);
+                menu_list(320, 172, ["1 PLAYER", "2 PLAYERS", "OPTIONS", "ABOUT", "QUIT GAME"], menu_sel.main, 28, 0.55);
+                body_text(320, 330, "Arrows: choose    Enter: OK    M: sound on / off", _hint_col, fa_center);
                 break;
 
             case "solo":
@@ -263,34 +263,64 @@ switch (state)
 
             case "room":
                 var _n = net;
+                if (_n.state == "connected")
+                {
+                    // The lobby: both snakes side by side. The host picks one; the friend gets
+                    // the other (the same snake can't be in a game twice).
+                    hud_text(320, 66, "ROOM " + _n.code, 0.55, fa_center, _gold);
+                    var _ping = (_n.ping_ms < 0) ? "..." : string(round(_n.ping_ms)) + " ms";
+                    body_text(320, 94, "Connected    Ping " + _ping + "    linked over " + _n.link, make_colour_rgb(140, 255, 140), fa_center);
+                    var _host_c = (_n.role == "host") ? character : net_lobby_c;
+                    var _my_c = (_n.role == "host") ? _host_c : 1 - _host_c;
+                    body_text(320, 114, (_n.role == "host") ? "Choose your snake. Your friend gets the other one." : "Your friend (the host) chooses the snakes.", _hint_col, fa_center);
+                    for (var _i = 0; _i < array_length(snakes); _i++)
+                    {
+                        var _sn = snakes[_i];
+                        var _on = _i == _my_c;
+                        var _sx = 230 + _i * 180;
+                        var _bob = sin(frame * 0.1 + _i * 3) * 3;
+                        // A frame round each: bright for yours, in your friend's colour for theirs.
+                        draw_set_colour(_on ? make_colour_rgb(255, 230, 120) : make_colour_rgb(70, 80, 120));
+                        draw_set_alpha(_on ? 0.9 : 0.6);
+                        draw_roundrect(_sx - 62, 128, _sx + 62, 232, true);
+                        draw_roundrect(_sx - 61, 129, _sx + 61, 231, true);
+                        draw_set_alpha(0.25);
+                        draw_set_colour(c_black);
+                        draw_roundrect(_sx - 60, 130, _sx + 60, 230, false);
+                        draw_set_alpha(1);
+                        draw_sprite_ext(_sn.head, 0, _sx, 168 + _bob, _on ? 2 : 1.6, _on ? 2 : 1.6, 0, c_white, 1);
+                        hud_text(_sx, 196, _sn.name, _on ? 0.5 : 0.42, fa_center, _sn.colour);
+                        hud_text(_sx, 214, _on ? "YOU" : "FRIEND", 0.36, fa_center, _on ? _gold : _dim_col);
+                    }
+                    if (_n.role == "host")
+                    {
+                        title_arrow(140, 178, -1, _blink ? c_white : _hint_col);
+                        title_arrow(500, 178, 1, _blink ? c_white : _hint_col);
+                    }
+                    var _mine = snakes[_my_c];
+                    body_text(320, 240, _mine.nice + ": " + string_replace(_mine.power, "C:", keys_text(settings.keys.solo.boost) + ":"), c_white, fa_center);
+                    if (_n.role == "host")
+                    {
+                        if (_blink) hud_text(320, 258, "ENTER: START THE GAME", 0.45, fa_center, make_colour_rgb(160, 255, 140));
+                        body_text(320, 280, "Left / Right: choose your snake    1-" + string(min(array_length(levels), 9)) + ": start at that level", c_white, fa_center);
+                    }
+                    else body_text(320, 264, "Waiting for your friend to start the game...", make_colour_rgb(160, 255, 140), fa_center);
+                    body_text(320, 300, "Space: wave to your friend    You waved " + string(_n.waves_out) + "    Your friend waved " + string(_n.waves_in), _gold, fa_center);
+                    body_text(320, 318, "T: chat with your friend    Esc: leave the room", _hint_col, fa_center);
+                    break;
+                }
                 if (_n.role == "host")
                 {
                     body_text(320, 92, "Your room code (copied to the clipboard):", c_white, fa_center);
                     hud_text(320, 108, _n.code, 1.1, fa_center, _gold);
                 }
                 else hud_text(320, 108, "ROOM " + _n.code, 0.7, fa_center, _gold);
-                var _col = (_n.state == "connected") ? make_colour_rgb(140, 255, 140) : ((_n.state == "failed" || _n.state == "lost") ? make_colour_rgb(255, 130, 140) : c_white);
+                var _col = (_n.state == "failed" || _n.state == "lost") ? make_colour_rgb(255, 130, 140) : c_white;
                 body_text(320, 168, _n.status, _col, fa_center);
                 if (_n.detail != "") body_text(320, 186, _n.detail, make_colour_rgb(255, 230, 140), fa_center);
-                if (_n.state == "connected")
-                {
-                    var _ping = (_n.ping_ms < 0) ? "..." : string(round(_n.ping_ms)) + " ms";
-                    body_text(320, 186, "Ping " + _ping + "    linked over " + _n.link + " with " + _n.peer_ip + ":" + string(_n.peer_port), make_colour_rgb(140, 255, 140), fa_center);
-                    body_text(320, 204, "Space: wave to your friend    You waved " + string(_n.waves_out) + "    Your friend waved " + string(_n.waves_in), _gold, fa_center);
-                    // The lobby: the host picks the snakes and starts the game.
-                    var _mine = (_n.role == "host") ? snakes[character] : snakes[1 - net_lobby_c];
-                    var _yours = (_n.role == "host") ? snakes[1 - character] : snakes[net_lobby_c];
-                    body_text(320, 222, "You play " + _mine.nice + " (" + _mine.kind + "), your friend plays " + _yours.nice + ".", _mine.colour, fa_center);
-                    if (_n.role == "host")
-                    {
-                        if (_blink) hud_text(320, 244, "ENTER: START THE GAME", 0.45, fa_center, make_colour_rgb(160, 255, 140));
-                        body_text(320, 266, "Left / Right: swap snakes    1-" + string(min(array_length(levels), 9)) + ": start at that level", c_white, fa_center);
-                    }
-                    else body_text(320, 250, "Waiting for your friend to start the game...", make_colour_rgb(160, 255, 140), fa_center);
-                }
                 var _me = (_n.pub_ip != "") ? _n.pub_ip + ":" + string(_n.pub_port) : "unknown";
                 body_text(320, 296, "Your internet address: " + _me + "    Local port: " + string(_n.lport), make_colour_rgb(170, 190, 230), fa_center);
-                body_text(320, 318, (net.state == "connected") ? "T: chat with your friend    Esc: leave the room" : "Esc: leave the room", _hint_col, fa_center);
+                body_text(320, 318, "Esc: leave the room", _hint_col, fa_center);
                 break;
         }
         break;
