@@ -26,19 +26,38 @@
 /// The states, in the order the snake packets number them.
 function snug_states() { return ["", "call", "snug", "hold", "fling", "caught", "fired"]; }
 
-/// True when two snakes are playing (split screen or online): the only time it works.
+/// True when two snakes are playing (split screen or online), or when one player has the
+/// partner with them (see scr_buddy): the only times it works.
 function snug_available()
 {
-    return array_length(obj_game.pl) == 2;
+    return array_length(obj_game.pl) == 2 || instance_exists(obj_buddy);
 }
 
-/// The other snake (local, or the other PC's copy), or noone.
+/// The other snake (local, or the other PC's copy), or the one player's partner, or noone.
 function snug_partner()
 {
     var _me = id;
     var _r = noone;
     with (obj_player) if (id != _me && pid != _me.pid) _r = id;
+    if (_r == noone && object_index == obj_player) with (obj_buddy) _r = id;
+    if (_r == noone && object_index == obj_buddy) _r = owner;
     return _r;
+}
+
+/// The flung ball (moving at _vx) smashes the cracked blocks and speed blocks in its way:
+/// the only thing fast enough to break speed blocks. _smash(_tx, _ty) does the smashing.
+function snug_smash_ahead(_vx, _smash)
+{
+    if (abs(_vx) < 1) return;
+    var _d = sign(_vx);
+    for (var _ahead = hw; _ahead <= hw + abs(_vx) + 4; _ahead += 8)
+    {
+        for (var _yy = y - hh + 3; _yy <= y + hh - 3; _yy += 9)
+        {
+            var _t = tile_at(x + _d * _ahead, _yy);
+            if (_t == T_CRACK || _t == T_SPEED) _smash(floor((x + _d * _ahead) / TILE), floor(_yy / TILE));
+        }
+    }
 }
 
 /// Leaves the move and is an ordinary snake again.
@@ -215,6 +234,7 @@ function snug_fly()
     ball_angle -= vx * 4;
     vy = min(vy + SNUG_GRAVITY, fall_max);
     var _vx = vx;
+    snug_smash_ahead(vx, smash);
     entity_move();
     if (hit_wall == 0) vx = on_ground ? _vx * 0.985 : _vx;
     if (_g.frame mod 2 == 0) _g.burst(x, y, make_colour_rgb(255, 220, 60), 2);

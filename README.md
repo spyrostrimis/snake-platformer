@@ -43,7 +43,7 @@ A super move for when you play together, split screen or online: **Sockee** catc
 
 1. **Sockee** presses **Roll + Tongue** (Shift + X). A quick tap is a call: a "SNUG!" bubble over his head on both screens, so Peto knows. Held, Sockee curls up into a C on the spot, ready to catch, for up to 5 seconds.
 2. **Peto** rolls (hold **Roll**) towards Sockee. When the ball rolls into the C, Sockee snugs it for a moment and flings it back the way it came.
-3. Peto stays a ball: **whatever it hits is knocked out** (skeletons too) and a **boss takes a huge hit** (a third of its health bar); the ball bounces off it.
+3. Peto stays a ball: **whatever it hits is knocked out** (skeletons too) and a **boss takes a huge hit** (a third of its health bar); the ball bounces off it. It's the only thing fast enough to smash **speed blocks** (dark blocks with orange arrows), and it smashes cracked blocks too.
 
 The numbers (5 seconds, fling, damage) are at the top of `scripts/scr_snug`.
 
@@ -57,6 +57,12 @@ The second super move: **Peto** is the bow, **Sockee** the arrow.
 4. The arrow knocks out every creature it touches, skeletons too, and bounces off a boss. Unlike SNUG-ATTACK's ball it only hurts creatures: it doesn't break cracked walls or crates.
 
 The numbers (5 seconds, the levels, damage) are at the top of `scripts/scr_sling`.
+
+### Combo spots, and a partner when you play alone
+
+Some places need a combo move: a **super gem** (worth 10 gems, so an extra life too) on a ledge high in the sky in level 2 (THE SLINGSHOT), a super gem behind speed blocks in level 5 (SNUG-ATTACK), the **switch** for the log gate in level 12 (SNUG-ATTACK: "THE PATH IS BLOCKED!") and the bombard on the pirate ship in level 12 (THE SLINGSHOT). A glowing mark on the ground shows where, with arrows the way the move throws.
+
+Playing alone, the other snake comes in a **crate under a parachute** (red for Sockee, green for Peto) when you get near the mark. Touch the crate to open it: your partner pops out and tells you what to do ("HOLD RUN AND WAIT FOR ME!", "RUN THROUGH ME WITH BOOST!"...), then plays its half. When the partner is the one thrown, your keys rest and the camera follows it while it grabs the gem or pulls the switch (what it collects is yours). When the job's done, it says goodbye and goes. (`scripts/scr_buddy`)
 
 ### Box Snake Egg (two players)
 

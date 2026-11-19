@@ -1759,4 +1759,193 @@ save("spr_missile", 44, 18,
    <path d="M8 5 L4 0 L14 5 Z M8 13 L4 18 L14 13 Z" fill="#d82a2a" stroke="#2a2a30" stroke-width="1"/>
    <path d="M12 7 H30" stroke="#fff" stroke-width="1.2" opacity="0.8"/>`);
 
+// =====================================================================================
+// ---------- Combo moves for everyone: speed blocks, the super gem, the partner's crate ----------
+// A speed block, 32 x 32: dark steel-blue stone with glowing orange chevrons. Only a snake
+// flung by SNUG-ATTACK is fast enough to smash it.
+save("spr_speedblock", 32, 32,
+  `<rect x="1" y="1" width="30" height="30" rx="3" fill="url(#sbk)" stroke="#0e1424" stroke-width="2"/>
+   <path d="M3 10 L29 10 M3 22 L29 22" stroke="#2a3654" stroke-width="1.4"/>
+   <path d="M7 9 L14 16 L7 23 M16 9 L23 16 L16 23" stroke="#ff8a1c" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+   <path d="M7 9 L14 16 L7 23 M16 9 L23 16 L16 23" stroke="#ffe28a" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+   <circle cx="5" cy="5" r="1.6" fill="#8a9ac0"/><circle cx="27" cy="5" r="1.6" fill="#8a9ac0"/>
+   <circle cx="5" cy="27" r="1.6" fill="#8a9ac0"/><circle cx="27" cy="27" r="1.6" fill="#8a9ac0"/>`,
+  `<linearGradient id="sbk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5a80"/><stop offset="1" stop-color="#26304e"/></linearGradient>`);
+
+// The super gem (worth 10 gems), 34 x 34, origin centre: a big golden-pink gem.
+save("spr_super_gem", 34, 34,
+  `<path d="M17 2 L31 13 L17 32 L3 13 Z" fill="url(#sgm)" stroke="#7a3a00" stroke-width="2"/>
+   <path d="M3 13 L31 13 M9 13 L17 2 L25 13 L17 32 Z" stroke="#7a3a00" stroke-width="1.2" fill="none"/>
+   <path d="M10 12 L17 4 L15 12 Z" fill="#fff6d0"/><path d="M17 27 L23 15 L19 15 Z" fill="#ffd060" opacity="0.7"/>
+   <path d="M29 3 l1 3 3 1 -3 1 -1 3 -1 -3 -3 -1 3 -1 Z" fill="#fff"/>`,
+  `<linearGradient id="sgm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2a0"/><stop offset="0.45" stop-color="#ffb020"/><stop offset="1" stop-color="#ff4a8a"/></linearGradient>`);
+
+// The partner's crate, 36 x 32, origin (18, 32): planks, a cross brace and a snake stencil.
+save("spr_crate", 36, 32,
+  `<rect x="1" y="1" width="34" height="30" rx="2" fill="#c08a4a" stroke="#4a2a10" stroke-width="2"/>
+   <path d="M1 11 H35 M1 21 H35" stroke="#8a5a28" stroke-width="1.6"/>
+   <path d="M4 4 L32 28 M32 4 L4 28" stroke="#8a5a28" stroke-width="3"/>
+   <rect x="1" y="1" width="34" height="30" rx="2" fill="none" stroke="#4a2a10" stroke-width="2"/>
+   <rect x="2" y="2" width="5" height="28" fill="#a87238"/><rect x="29" y="2" width="5" height="28" fill="#a87238"/>
+   <circle cx="18" cy="16" r="7" fill="#fff4d8" stroke="#4a2a10" stroke-width="1.4"/>
+   <path d="M14 18 Q18 11 22 15 Q20 19 16 18" fill="none" stroke="#2a8a2a" stroke-width="2"/>
+   <circle cx="20.5" cy="14" r="1" fill="#111"/>`);
+
+// A log gate, made of 44 x 32 pieces stacked up: frame 0 a log section with an iron band,
+// frame 1 the sharpened tops. Origin (22, 32).
+function gatePiece(top) {
+  let s = "";
+  for (let i = 0; i < 3; i++) {
+    const x = 2 + i * 14;
+    if (top) s += `<path d="M${x} 32 L${x} 12 L${x + 6} 2 L${x + 12} 12 L${x + 12} 32 Z" fill="#8a5a2c" stroke="#3a2008" stroke-width="2"/>
+      <path d="M${x + 3} 30 L${x + 3} 14" stroke="#a8743c" stroke-width="2"/>`;
+    else s += `<rect x="${x}" y="0" width="12" height="32" fill="#8a5a2c" stroke="#3a2008" stroke-width="2"/>
+      <path d="M${x + 3} 2 L${x + 3} 30" stroke="#a8743c" stroke-width="2"/><path d="M${x + 8} 6 q2 4 0 8" stroke="#5a3a18" stroke-width="1.2" fill="none"/>`;
+  }
+  if (!top) s += `<rect x="0" y="12" width="44" height="7" fill="#4a4a52" stroke="#1a1a20" stroke-width="1.5"/>
+    <circle cx="8" cy="15.5" r="1.6" fill="#9a9aa8"/><circle cx="22" cy="15.5" r="1.6" fill="#9a9aa8"/><circle cx="36" cy="15.5" r="1.6" fill="#9a9aa8"/>`;
+  return s;
+}
+save("gate_0", 44, 32, gatePiece(false));
+save("gate_1", 44, 32, gatePiece(true));
+
+// A lever, 32 x 44, origin (16, 44): frame 0 off (leaning left, red light), frame 1 on.
+function lever(on) {
+  const a = on ? 35 : -35;
+  return `<g transform="rotate(${a} 16 30)"><path d="M16 30 L16 6" stroke="#3a3a42" stroke-width="5" stroke-linecap="round"/>
+      <path d="M16 30 L16 6" stroke="#9a9aa8" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="16" cy="6" r="5" fill="${on ? "#3ad83a" : "#e83030"}" stroke="#1a1a20" stroke-width="1.6"/></g>
+    <rect x="3" y="28" width="26" height="16" rx="3" fill="#6a6a78" stroke="#1a1a20" stroke-width="2"/>
+    <rect x="8" y="32" width="16" height="4" rx="2" fill="#2a2a30"/>
+    <circle cx="16" cy="40" r="2.4" fill="${on ? "#7aff7a" : "#ff6a6a"}"/>`;
+}
+save("switch_0", 32, 44, lever(false));
+save("switch_1", 32, 44, lever(true));
+
+// ---------- Level 12, Sunset Shore: beach crabs, the bombard on the pirate ship ----------
+// A beach crab, 52 x 34, origin (26, 20). Frames: walking A, walking B, claws up snapping.
+function beachCrab(f) {
+  const line = "#4a1008";
+  const legY = f === 1 ? 2 : 0;
+  let s = "";
+  for (let k = 0; k < 3; k++) {
+    const dy = (k % 2 === 0) ? legY : -legY;
+    s += `<path d="M${16 - k * 3} ${22 + k * 2} L${6 - k * 3} ${28 + dy}" stroke="${line}" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M${36 + k * 3} ${22 + k * 2} L${46 + k * 3} ${28 - dy}" stroke="${line}" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M${16 - k * 3} ${22 + k * 2} L${6 - k * 3} ${28 + dy}" stroke="#e8582a" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M${36 + k * 3} ${22 + k * 2} L${46 + k * 3} ${28 - dy}" stroke="#e8582a" stroke-width="1.8" stroke-linecap="round"/>`;
+  }
+  // Body and eyes on stalks.
+  s += `<ellipse cx="26" cy="21" rx="15" ry="9" fill="url(#crb)" stroke="${line}" stroke-width="2"/>
+    <path d="M14 18 q12 -6 24 0" stroke="#ffb08a" stroke-width="2" fill="none" opacity="0.8"/>
+    <path d="M21 13 L20 6 M31 13 L32 6" stroke="${line}" stroke-width="2.4"/>
+    <circle cx="20" cy="5" r="3.4" fill="#fff" stroke="${line}" stroke-width="1.4"/><circle cx="32" cy="5" r="3.4" fill="#fff" stroke="${line}" stroke-width="1.4"/>
+    <circle cx="${f === 2 ? 20 : 19}" cy="5" r="1.6" fill="#111"/><circle cx="${f === 2 ? 32 : 31}" cy="5" r="1.6" fill="#111"/>
+    <path d="M22 25 q4 3 8 0" stroke="${line}" stroke-width="1.6" fill="none"/>`;
+  // Claws: low and forward when walking, raised and open when snapping.
+  const claw = (cx, cy, dir, open) => `<path d="M${26 + dir * 10} 20 L${cx} ${cy + 6}" stroke="${line}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M${cx - 6} ${cy} Q${cx} ${cy - 9} ${cx + 6} ${cy} Q${cx} ${cy + 9} ${cx - 6} ${cy} Z" fill="#e8402a" stroke="${line}" stroke-width="1.6"
+      transform="rotate(${open ? dir * -30 : 0} ${cx} ${cy})"/>
+    ${open ? `<path d="M${cx + dir * 2} ${cy - 1} l${dir * 6} -6" stroke="${line}" stroke-width="2"/>` : `<path d="M${cx - 2} ${cy} h5" stroke="${line}" stroke-width="1.4"/>`}`;
+  if (f === 2) s += claw(9, 8, -1, true) + claw(43, 8, 1, true);
+  else s += claw(7, 17, -1, false) + claw(45, 17, 1, false);
+  return s;
+}
+const beachCrabDefs = `<radialGradient id="crb" cx="0.45" cy="0.35" r="0.75"><stop offset="0" stop-color="#ff8a5a"/><stop offset="1" stop-color="#c8301a"/></radialGradient>`;
+for (let f = 0; f < 3; f++) save("bcrab_" + f, 52, 34, beachCrab(f), beachCrabDefs);
+
+// A bomb, 22 x 22, origin centre: an iron ball with a lit fuse.
+save("spr_bomb", 22, 22,
+  `<circle cx="10" cy="12" r="8.5" fill="url(#bmb)" stroke="#0a0a0e" stroke-width="1.6"/>
+   <rect x="7" y="2" width="6" height="4" rx="1" fill="#4a4a52" stroke="#0a0a0e" stroke-width="1"/>
+   <path d="M12 3 Q16 -1 18 3" stroke="#c8a060" stroke-width="1.6" fill="none"/>
+   <circle cx="18.5" cy="3.5" r="2.6" fill="#ffd040"/><circle cx="18.5" cy="3.5" r="1.2" fill="#fff"/>
+   <circle cx="7" cy="9" r="2.2" fill="#8a8a9a" opacity="0.8"/>`,
+  `<radialGradient id="bmb" cx="0.35" cy="0.35" r="0.75"><stop offset="0" stop-color="#5a5a68"/><stop offset="1" stop-color="#14141a"/></radialGradient>`);
+
+// The bombard: a big bronze cannon on a wooden carriage, pointing left (at the shore).
+// 112 x 72, origin (56, 46). Frames: ready, firing (flash and recoil), hurt (cracked, smoking).
+function bombard(f) {
+  const line = "#2a1608";
+  const rec = f === 1 ? 8 : 0;
+  let s = "";
+  // Carriage and wheels.
+  s += `<path d="M30 52 L90 52 L96 62 L24 62 Z" fill="#7a4a24" stroke="${line}" stroke-width="2"/>
+    <circle cx="38" cy="62" r="9" fill="#5a3418" stroke="${line}" stroke-width="2"/><circle cx="38" cy="62" r="3" fill="#2a1608"/>
+    <circle cx="82" cy="62" r="9" fill="#5a3418" stroke="${line}" stroke-width="2"/><circle cx="82" cy="62" r="3" fill="#2a1608"/>`;
+  // The barrel, tilted up a little, muzzle on the left.
+  s += `<g transform="translate(${rec} 0) rotate(-14 70 40)">
+      <path d="M14 30 L84 26 Q104 26 104 40 Q104 54 84 54 L14 50 Z" fill="url(#brz)" stroke="${line}" stroke-width="2.4"/>
+      <rect x="8" y="26" width="10" height="28" rx="3" fill="#c88a3a" stroke="${line}" stroke-width="2"/>
+      <path d="M34 29 L34 51 M60 27.5 L60 52.5" stroke="#7a4a14" stroke-width="3"/>
+      <circle cx="104" cy="40" r="5" fill="#c88a3a" stroke="${line}" stroke-width="2"/>
+      <path d="M22 32 L82 30" stroke="#ffe0a0" stroke-width="2" opacity="0.7"/>
+      <ellipse cx="9" cy="40" rx="3" ry="9" fill="#1a1008"/>
+    </g>`;
+  // Angry painted eyes on the barrel (it's a pirate cannon).
+  s += `<g transform="translate(${rec} 0) rotate(-14 70 40)">
+      <circle cx="46" cy="38" r="5" fill="#fff" stroke="${line}" stroke-width="1.4"/><circle cx="44" cy="38" r="2.4" fill="#111"/>
+      <path d="M38 31 L52 35" stroke="${line}" stroke-width="2.6" stroke-linecap="round"/></g>`;
+  if (f === 1) s += `<path d="M10 22 L-4 14 L4 26 L-8 30 L6 32 L0 42 L14 34 Z" fill="#ffd040" stroke="#ff7a1a" stroke-width="2"/>
+      <circle cx="16" cy="14" r="9" fill="#c8c0b8" opacity="0.8"/><circle cx="6" cy="8" r="6" fill="#d8d0c8" opacity="0.7"/>`;
+  if (f === 2) s += `<path d="M58 30 L64 38 L60 44 L66 50" stroke="#1a1008" stroke-width="2" fill="none"/>
+      <circle cx="80" cy="16" r="8" fill="#5a5a5a" opacity="0.6"/><circle cx="88" cy="8" r="6" fill="#6a6a6a" opacity="0.5"/>`;
+  return s;
+}
+const bombardDefs = `<linearGradient id="brz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8a84a"/><stop offset="0.5" stop-color="#b8782a"/><stop offset="1" stop-color="#7a4a14"/></linearGradient>`;
+for (let f = 0; f < 3; f++) save("bombard_" + f, 112, 72, bombard(f), bombardDefs);
+
+// The pirate ship, afloat again (drawn in its own coordinates, deck top at y = 112, 288 px
+// above the waterline).
+function ship() {
+  const plank = "#6a4a30", plankD = "#3a2618", plankL = "#8a6a4a", gold = "#e0b030";
+  const hull = `M40 112 L480 112 Q500 112 498 140 L470 330 Q450 420 260 430 Q90 420 60 330 L30 150 Q26 112 40 112 Z`;
+  let planks = "";
+  for (let y = 140; y < 430; y += 24) planks += `<path d="M${40 + (y - 112) * 0.08} ${y} L${480 - (y - 112) * 0.08} ${y}" stroke="${plankD}" stroke-width="2.4" opacity="0.8"/>`;
+  let ports = "";
+  for (let x = 110; x <= 420; x += 78) ports += `<rect x="${x - 15}" y="186" width="30" height="24" rx="3" fill="#1a1008" stroke="${gold}" stroke-width="3"/>
+      <rect x="${x - 11}" y="214" width="22" height="6" fill="${plankD}"/>`;
+  const stern = `<path d="M380 112 L380 60 L496 52 L500 112 Z" fill="${plank}" stroke="${plankD}" stroke-width="4"/>
+    <rect x="400" y="70" width="24" height="20" rx="3" fill="#ffd080" stroke="${plankD}" stroke-width="3"/><rect x="440" y="68" width="24" height="20" rx="3" fill="#ffd080" stroke="${plankD}" stroke-width="3"/>
+    <path d="M376 56 L500 48" stroke="${gold}" stroke-width="5"/>`;
+  const rail = `<path d="M30 104 L380 104" stroke="${plankL}" stroke-width="6"/>${[50, 90, 130, 170, 210, 250, 290, 330, 370].map((x) => `<path d="M${x} 112 l0 -10" stroke="${plankL}" stroke-width="4"/>`).join("")}`;
+  const bowsprit = `<path d="M44 118 L-20 60" stroke="${plankD}" stroke-width="12" stroke-linecap="round"/><path d="M44 118 L-20 60" stroke="${plank}" stroke-width="7" stroke-linecap="round"/>`;
+  const mast = (x, top) => `<rect x="${x - 9}" y="${top}" width="18" height="${112 - top}" fill="${plank}" stroke="${plankD}" stroke-width="3"/>
+    <rect x="${x - 62}" y="${top + 26}" width="124" height="9" rx="3" fill="${plank}" stroke="${plankD}" stroke-width="2.4"/>`;
+  const sail = (x, top, w, h) => `<path d="M${x - w / 2} ${top} Q${x} ${top - 8} ${x + w / 2} ${top} Q${x + w / 2 + 14} ${top + h / 2} ${x + w / 2} ${top + h} Q${x} ${top + h - 10} ${x - w / 2} ${top + h} Q${x - w / 2 + 12} ${top + h / 2} ${x - w / 2} ${top} Z" fill="#f4e4c0" stroke="#8a7a5a" stroke-width="2.4"/>`;
+  const flag = `<path d="M300 -60 L300 -96 L346 -88 L336 -78 L346 -68 L300 -60 Z" fill="#1a1a1a" stroke="#000" stroke-width="1.4"/>
+    <circle cx="318" cy="-80" r="6" fill="#f4f0e8"/><path d="M310 -70 l16 -4 M310 -74 l16 4" stroke="#f4f0e8" stroke-width="2"/>`;
+  return `<g transform="translate(30 120)">
+    ${mast(160, -60)}${mast(300, -100)}${sail(160, -26, 120, 90)}${sail(300, -66, 150, 120)}${flag}
+    <path d="M160 -60 L-20 60 M300 -100 L480 52" stroke="#5a4a38" stroke-width="2"/>
+    ${bowsprit}<path d="${hull}" fill="${plank}" stroke="${plankD}" stroke-width="5"/>${planks}
+    <path d="M30 150 L498 140" stroke="${gold}" stroke-width="5"/>${ports}${stern}${rail}
+    <path d="M60 330 Q90 420 260 430 Q450 420 470 330" stroke="#2a1a10" stroke-width="10" fill="none" opacity="0.4"/>
+  </g>`;
+}
+// Drawn 30 px right and 120 px lower inside the picture, so the bowsprit and masts fit: deck top
+// at 232 (x 70..510), waterline at 520. 560 x 600, origin (290, 520).
+save("spr_ship", 560, 600, ship());
+
+// ---------- Sunset backgrounds: the sun going down over the sea, islands in silhouette ----------
+let sfar2 = `<circle cx="600" cy="176" r="72" fill="#ffd27a"/><circle cx="600" cy="176" r="96" fill="#ffb060" opacity="0.35"/><circle cx="600" cy="176" r="130" fill="#ff8a50" opacity="0.18"/>`;
+for (let i = 0; i < 7; i++) {
+  const y = 40 + i * 20, x = (i * 173) % 900;
+  sfar2 += `<path d="M${x} ${y} q${80 + i * 6} -10 ${200 + i * 20} 0 q-90 8 -${200 + i * 20} 0 Z" fill="#c85a8a" opacity="0.55"/>`;
+}
+const isle2 = (x, w, h) => `<path d="M${x - w} 180 Q${x - w * 0.4} ${180 - h} ${x} ${180 - h} Q${x + w * 0.5} ${180 - h} ${x + w} 180 Z" fill="#3a1e3a"/>
+  <path d="M${x - w * 0.3} ${181 - h * 0.9} q4 -30 10 -36 m0 0 q-14 -2 -22 6 m22 -6 q12 -6 22 2 m-22 -2 q-4 -10 -14 -12" stroke="#2a142a" stroke-width="3" fill="none"/>`;
+sfar2 += isle2(150, 90, 34) + isle2(330, 50, 18) + isle2(900, 120, 40);
+sfar2 += `<rect x="0" y="178" width="1024" height="82" fill="#7a3a6a"/><rect x="0" y="178" width="1024" height="5" fill="#ffb07a"/>`;
+// The sun's path on the water.
+for (let i = 0; i < 12; i++) {
+  const y = 186 + i * 6, w = 70 - i * 3;
+  sfar2 += `<rect x="${600 - w / 2 + ((i * 13) % 9) - 4}" y="${y}" width="${w}" height="3" rx="1.5" fill="#ffd27a" opacity="${0.85 - i * 0.05}"/>`;
+}
+for (let i = 0; i < 30; i++) {
+  const x = (i * 97) % 1000, y = 196 + (i * 37) % 60;
+  sfar2 += `<path d="M${x} ${y} q8 -4 16 0" stroke="#e88aa0" stroke-width="2" fill="none" opacity="0.6"/>`;
+}
+save("spr_bg_sunset_far", 1024, 260, sfar2);
+
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

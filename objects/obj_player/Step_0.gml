@@ -25,6 +25,7 @@ if (invuln > 0) invuln--;
 if (inked > 0) inked--;
 if (gulp_t > 0) gulp_t--;
 if (blink > 0) blink--; else if (irandom(180) == 0) blink = 8;
+if (talk_t > 0) talk_t--;
 
 // ---------- SNUG-ATTACK (two players): calling, snugging, caught or flung, it runs this step ----------
 if (snug_step(_in))

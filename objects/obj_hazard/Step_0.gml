@@ -111,6 +111,17 @@ if (life <= 0 || (!_still && (is_blocking(_t) || y > _g.lvl_h * TILE)))
         _g.shake(4);
         _g.play_sfx(_g.sfx.smash);
     }
+    // A bomb blows up where it lands, and the blast hurts a snake close by.
+    if (sprite_index == spr_bomb && life > 0)
+    {
+        _g.burst(x, y, make_colour_rgb(255, 150, 40), 16);
+        _g.burst(x, y - 8, make_colour_rgb(90, 90, 90), 10);
+        _g.shake(5);
+        _g.play_sfx(_g.sfx.smash);
+        var _bx = x;
+        var _by = y;
+        with (obj_player) if (!remote && !hidden && point_distance(x, y, _bx, _by) < 46) take_hit(sign(x - _bx));
+    }
     // Venom splashes into a poison puddle on the floor.
     if (sprite_index == spr_venom && life > 0 && is_blocking(_t))
     {

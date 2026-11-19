@@ -27,6 +27,9 @@ for (var _i = 0; _i < array_length(_g.lights); _i++)
     draw_sprite_ext(spr_light, 0, _l.x - _cx, _l.y - _cy, _r, _r, 0, c_white, 1);
 }
 with (obj_player) if (!hidden) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy, 1.9, 1.9, 0, c_white, 1);
+with (obj_buddy) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy, 1.6, 1.6, 0, c_white, 1);
+with (obj_crate) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy - 30, 1.2, 1.2, 0, c_white, 0.9);
+with (obj_switch) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy - 20, 0.8, 0.8, 0, c_white, 0.9);
 with (obj_pickup) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy, 0.6, 0.6, 0, c_white, 0.8);
 with (obj_boss) draw_sprite_ext(spr_light, 0, x - _cx, y - _cy - 20, 2.6, 2.6, 0, c_white, 0.9);
 // Creatures that glow (jellyfish, octopuses) light up a little patch round them.

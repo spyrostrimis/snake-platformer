@@ -40,6 +40,8 @@ blink = 0;
 gulp_t = 0;             // counts down while a swallowed egg travels down the body
 was_swim = false;       // in water last step (for the splash)
 inked = 0;              // hit by an octopus's ink: its screen is blotted for a while
+talk = "";              // something the snake says, in a bubble over its head ("THE PATH IS BLOCKED!")
+talk_t = 0;             // frames the bubble still shows
 image_speed = 0;
 
 // ---------- SNUG-ATTACK (two players): Sockee catches, Peto is the ball ----------
@@ -120,6 +122,8 @@ mouth_y = function() { return y + 6; };
 /// Hurt by a creature or spikes: knocked back, blinking and safe for a moment.
 take_hit = function(_dir = -facing)
 {
+    // (One player: while the partner is thrown, the snake can't move, so it can't be hurt.)
+    if (instance_exists(obj_game.buddy_focus)) return;
     if (invuln > 0 || snug == "fired" || sling == "flying") return;    // the flung ball and the arrow can't be hurt
     if (sling != "" && sling != "call") sling_end();                    // a hit breaks the bow (or drops the arrow)
     if (snug != "" && snug != "call") snug_end();   // a hit breaks SNUG-ATTACK
@@ -138,7 +142,7 @@ take_hit = function(_dir = -facing)
 smash = function(_tx, _ty)
 {
     var _g = obj_game;
-    if (grid_type(_tx, _ty) != T_CRACK) return;
+    if (grid_type(_tx, _ty) != T_CRACK && grid_type(_tx, _ty) != T_SPEED) return;
     _g.smash_tile(_tx, _ty, stats);
     if (_g.net_mode == "client") _g.net_event({ t: "smash", x: _tx, y: _ty });
 };

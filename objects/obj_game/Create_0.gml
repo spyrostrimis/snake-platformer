@@ -181,6 +181,7 @@ make_player = function(_pid, _snake)
 
 // ---------- Level state ----------
 boss = noone;
+buddy_focus = noone;    // one player: the partner while it's thrown (the camera follows it; see scr_buddy)
 lvl = undefined;
 grid = [];
 lvl_w = 1;
@@ -314,6 +315,14 @@ clear_level = function()
     with (obj_darkness) instance_destroy();
     with (obj_water) instance_destroy();
     with (obj_box_egg) instance_destroy();
+    with (obj_buddy) instance_destroy();
+    with (obj_crate) instance_destroy();
+    with (obj_combo_spot) instance_destroy();
+    with (obj_speedblocks) instance_destroy();
+    with (obj_gate) instance_destroy();
+    with (obj_switch) instance_destroy();
+    with (obj_ship) instance_destroy();
+    buddy_focus = noone;
     lights = [];
     for (var _i = 0; _i < array_length(layers_made); _i++) layer_destroy(layers_made[_i]);
     layers_made = [];
@@ -330,6 +339,7 @@ auto_tile = function(_tx, _ty)
         case T_ONEWAY: return 7;
         case T_CRACK:  return 8;
         case T_SPIKES: return 9;
+        case T_SPEED:  return 0;    // speed blocks are drawn by obj_speedblocks
         case T_SOLID:
             var _base = 0;
             // The top row counts as covered, so a cave ceiling has no grass on top of it.
@@ -529,6 +539,7 @@ load_level = function(_i, _with_player)
             case "boss_octo":
             case "boss_hive":
             case "boss_skeeter":
+            case "boss_bombard":
                 var _boss_obj = obj_boss_mouse;
                 if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
                 else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
@@ -540,12 +551,15 @@ load_level = function(_i, _with_player)
                 else if (_s.kind == "boss_octo") _boss_obj = obj_boss_octo;
                 else if (_s.kind == "boss_hive") _boss_obj = obj_boss_hive;
                 else if (_s.kind == "boss_skeeter") _boss_obj = obj_boss_skeeter;
+                else if (_s.kind == "boss_bombard") _boss_obj = obj_boss_bombard;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.y = _s.ty * TILE + 32 - boss.hh;     // standing on the floor, whatever its size
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
                 boss.arena_x2 = lvl.arena[1] * TILE;
                 // The hive hangs from a leaning palm: the crown is right above where it's placed.
                 if (_s.kind == "boss_hive") layer_sprite_create(_deco, _px + 210, _s.ty * TILE + 32, spr_palm_big);
+                // The bombard is up on its ship's deck: the level says where the shore is.
+                if (_s.kind == "boss_bombard") { boss.shore_x = lvl.shore[0] * TILE + 16; boss.shore_y = lvl.shore[1] * TILE; }
                 _inst = boss;
                 break;
             case "bug":    _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 12, "Instances", obj_bug); break;
@@ -598,12 +612,37 @@ load_level = function(_i, _with_player)
                 layer_sprite_create(_deco, _px, _s.ty * TILE + 34, spr_beachbush);
                 _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 22, "Instances", obj_pirate);
                 break;
+            // Combo moves: a super gem; a combo spot (alone, the partner comes there in a crate);
+            // a log gate and the switch that opens it; Sunset Shore's crabs and pirate ship.
+            case "super_gem": _inst = instance_create_layer(_px, _py, "Instances", obj_super_gem); break;
+            case "combo":
+                instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_combo_spot,
+                    { type: _s.type, dir: _s.dir, goal: _s.goal, land_x1: _s.land_x1, land_x2: _s.land_x2, land_top: _s.land_top });
+                break;
+            case "gate":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_gate, { rows: _s.rows }); break;
+            case "switch": instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_switch); break;
+            case "crab":   _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 13, "Instances", obj_crab); break;
+            case "ship":
+                var _shl = layer_create(105, "Ship");
+                array_push(layers_made, _shl);
+                instance_create_layer(_px, _s.ty * TILE, _shl, obj_ship, { hull: _s.hull, door_tx: _s.door[0], door_ty: _s.door[1] });
+                break;
             case "spring": instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_spring); break;
             case "flag":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_flag); break;
             case "door":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_door); break;
         }
         // Online, both PCs build the same level, so the plan's index names each thing.
         if (_inst != noone) _inst.net_id = _k;
+    }
+
+    // Speed blocks (only SNUG-ATTACK breaks them) are drawn by their own object.
+    var _speed = false;
+    for (var _x = 0; _x < lvl_w && !_speed; _x++) for (var _y = 0; _y < lvl_h; _y++) if (grid[_x][_y] == T_SPEED) { _speed = true; break; }
+    if (_speed)
+    {
+        var _sl = layer_create(99, "Speed");
+        array_push(layers_made, _sl);
+        instance_create_layer(0, 0, _sl, obj_speedblocks);
     }
 
     // Letters: every letter of the word once, the other spots get different wrong letters.
@@ -917,7 +956,9 @@ respawn_at_checkpoints = function()
 /// snake _p. Online, the host passes it on so both PCs have the same blocks.
 smash_tile = function(_tx, _ty, _p = undefined)
 {
-    if (_tx < 0 || _ty < 0 || _tx >= lvl_w || _ty >= lvl_h || grid[_tx][_ty] != T_CRACK) return;
+    if (_tx < 0 || _ty < 0 || _tx >= lvl_w || _ty >= lvl_h || (grid[_tx][_ty] != T_CRACK && grid[_tx][_ty] != T_SPEED)) return;
+    // A speed block bursts in sparks as well as rubble.
+    if (grid[_tx][_ty] == T_SPEED) burst(_tx * TILE + 16, _ty * TILE + 16, make_colour_rgb(255, 160, 40), 10);
     grid[_tx][_ty] = T_EMPTY;
     for (var _ox = -1; _ox <= 1; _ox++)
     {
@@ -1289,6 +1330,11 @@ net_apply_event = function(_e)
         case "hazard":
             var _h = net_find(obj_hazard, _e.i);
             if (_h != noone) instance_destroy(_h);
+            break;
+
+        case "switch":
+            // The other PC's snake pulled a switch: the gates open here too.
+            with (obj_switch) pull(false);
             break;
 
         case "umb":

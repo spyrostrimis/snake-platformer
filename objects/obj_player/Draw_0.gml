@@ -4,6 +4,8 @@
 if (hidden) exit;
 if (invuln > 0 && (invuln div 4) mod 2 == 0) exit;
 var _g = obj_game;
+// Something it says (above the SNUG! / SLING! call when curled up or a bow).
+if (talk_t > 0) speech_bubble(x, y - ((snug == "snug" || snug == "hold" || sling == "bow") ? 84 : 30), talk, skin.colour);
 
 // SNUG-ATTACK: Sockee's call, his C and the fling. (Peto caught or flung is his ball.)
 if (snug == "call") snug_draw_call();

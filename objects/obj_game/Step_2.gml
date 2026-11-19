@@ -9,6 +9,11 @@ if (_playing)
 {
     var _vw = split_on ? SPLIT_VIEW_W : 640;
     var _vh = split_on ? SPLIT_VIEW_H : 360;
+    // A boss up high (the bombard on its ship): one full view zooms out a little, so the deck
+    // and the shore below both fit.
+    var _wide = !split_on && instance_exists(boss) && boss.active && variable_instance_exists(boss, "cam_lock_y");
+    if (_wide) { _vw = 800; _vh = 450; }
+    if (!split_on) camera_set_view_size(view_camera[0], _vw, _vh);
     for (var _k = 0; _k < array_length(pl); _k++)
     {
         // Online, this PC shows only its own snake, in the one full view.
@@ -17,6 +22,8 @@ if (_playing)
         var _p = pl[_k];
         // A snake that is out watches the other one.
         var _who = instance_exists(_p.inst) ? _p.inst : noone;
+        // One player: while the partner is thrown and does its job, the camera follows it.
+        if (net_mode == "" && instance_exists(buddy_focus)) _who = buddy_focus;
         if (_who == noone)
         {
             var _other = any_player_in();
@@ -26,6 +33,14 @@ if (_playing)
         {
             var _tx = _who.x - _vw / 2 + _who.facing * 70;
             var _ty = _who.y - _vh / 2 - 20;
+            // A boss up high (the bombard on its ship): the view rises to show it and the shore.
+            if (_wide && _who.x > boss.arena_x1 - 160)
+            {
+                _ty = min(_ty, boss.cam_lock_y);
+                _tx = max(_tx, min(boss.x + 80 - _vw, _who.x - 80));
+            }
+            // Near a combo spot for a super gem up high: the view rises to show the ledge.
+            with (obj_combo_spot) if (!done && goal == "gem" && land_top < other.lvl_h * TILE - 360 + 60 && abs(_who.x - x) < 360 && abs(_who.y - y) < 200) _ty = min(_ty, land_top - 50);
             _p.cam_x = cam_snap ? _tx : lerp(_p.cam_x, _tx, 0.1);
             _p.cam_y = cam_snap ? _ty : lerp(_p.cam_y, _ty, 0.12);
         }

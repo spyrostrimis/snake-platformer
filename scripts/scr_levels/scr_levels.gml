@@ -14,7 +14,7 @@ function lvl_create(_name, _w, _h, _music, _sky_top, _sky_bottom)
     return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0],
              bg_tint: c_white, vine_odds: 3, tileset: ts_jungle, bg: [spr_bg_mountains, spr_bg_clouds, spr_bg_hills],
              cloud_drift: 1, deco: "jungle", mushrooms: true, dark: 0, dark_col: make_colour_rgb(10, 4, 16),
-             water: [], currents: [], swim: "surface", rocks: [] };
+             water: [], currents: [], swim: "surface", rocks: [], shore: [0, 0] };
 }
 
 /// Water in tiles _x1.._x2, rows _y1.._y2 (the top row is the surface). Snakes float and swim
@@ -54,6 +54,37 @@ function lvl_ground(_l, _x1, _x2, _top)
 function lvl_put(_l, _kind, _tx, _ty)
 {
     array_push(_l.spawns, { kind: _kind, tx: _tx, ty: _ty });
+}
+
+/// A combo spot (obj_combo_spot) on the floor under tile (_tx, _ty): THE SLINGSHOT (_type
+/// "sling") or SNUG-ATTACK ("snug"), throwing towards side _dir, for _goal: "gem" (a super gem
+/// on the ledge _land = [x1, x2, row]: tiles x1..x2 whose tops are at row), "switch" or "boss".
+/// Alone, the partner is delivered there in a crate.
+function lvl_combo(_l, _type, _tx, _ty, _dir, _goal, _land = undefined)
+{
+    var _s = { kind: "combo", tx: _tx, ty: _ty, type: _type, dir: _dir, goal: _goal, land_x1: 0, land_x2: 0, land_top: 0 };
+    if (!is_undefined(_land))
+    {
+        _s.land_x1 = _land[0] * TILE + 2;
+        _s.land_x2 = (_land[1] + 1) * TILE - 2;
+        _s.land_top = _land[2] * TILE;
+    }
+    array_push(_l.spawns, _s);
+}
+
+/// A log gate (obj_gate) _rows tiles tall in column _tx, its foot on the floor under row _ty.
+/// A switch (lvl_put "switch") opens it.
+function lvl_gate(_l, _tx, _ty, _rows)
+{
+    array_push(_l.spawns, { kind: "gate", tx: _tx, ty: _ty, rows: _rows });
+}
+
+/// The pirate ship (obj_ship) centred on tile column _tx with its waterline at the top of row
+/// _ty; _hull = [x1, y1, x2, y2] tiles are solid while it floats; _door = [tx, ty] is where the
+/// exit shows once it sinks.
+function lvl_ship(_l, _tx, _ty, _hull, _door)
+{
+    array_push(_l.spawns, { kind: "ship", tx: _tx, ty: _ty, hull: _hull, door: _door });
 }
 
 function lvl_gems(_l, _x1, _x2, _ty)
@@ -135,7 +166,15 @@ function level_mushroom()
     var L = lvl_create("MUSHROOM HEIGHTS", 150, 15, "music_01.ogg", make_colour_rgb(58, 26, 106), make_colour_rgb(228, 122, 184));
     lvl_ground(L, 0, 18, 11);
     lvl_put(L, "start", 3, 10);
-    lvl_put(L, "bug", 12, 10);
+    // A dip in the meadow under a ledge high in the sky with a super gem: too high to jump
+    // (9 tiles above the dip, 8 above the meadow), only THE SLINGSHOT gets a snake up there.
+    lvl_rect(L, 5, 11, 18, 11, T_EMPTY);
+    lvl_rect(L, 7, 3, 11, 3, T_SOLID);
+    lvl_put(L, "super_gem", 9, 2);
+    lvl_put(L, "gem", 8, 2);
+    lvl_put(L, "gem", 10, 2);
+    lvl_combo(L, "sling", 15, 11, -1, "gem", [7, 11, 3]);
+    lvl_put(L, "bug", 13, 11);
     lvl_put(L, "letter", 15, 10);
 
     lvl_ground(L, 22, 30, 11);
@@ -441,6 +480,14 @@ function level_shadowrock()
     lvl_put(L, "letter", 74, 10);
     lvl_put(L, "bat_crack", 76, 2);
     lvl_ground(L, 80, 108, 9);
+    // In the face of the step: speed blocks, and behind them a little den with a super gem.
+    // Only a snake flung by SNUG-ATTACK from the floor below is fast enough to smash in.
+    lvl_rect(L, 80, 9, 80, 10, T_SPEED);
+    lvl_rect(L, 81, 10, 86, 10, T_EMPTY);
+    lvl_put(L, "super_gem", 85, 10);
+    lvl_put(L, "gem", 83, 10);
+    lvl_put(L, "gem", 86, 10);
+    lvl_combo(L, "snug", 70, 10, 1, "gem", [81, 86, 11]);
     lvl_rect(L, 84, 6, 87, 6, T_ONEWAY);
     lvl_put(L, "letter", 85, 5);
     lvl_put(L, "letter", 87, 5);
@@ -1176,7 +1223,103 @@ function level_bay()
     return L;
 }
 
+/// Level 12: Sunset Shore. The beach again, as the sun goes down: no sunbathers now, only
+/// pirates in the bushes, crabs on the sand and mosquitoes. Halfway, a log gate blocks the
+/// way: its switch is in a den in the rock, behind speed blocks that only SNUG-ATTACK breaks
+/// (alone, a partner comes in a crate). At the end, the pirate ship from the deep, afloat
+/// again off the shore, with THE BOMBARD on its deck lobbing bombs: only THE SLINGSHOT gets a
+/// snake up there. Beat it and the ship sinks, clearing the way to the exit on the rocks.
+/// Reach: rock steps are 2-3 tiles; the gate (11 tall) and the deck (8 above the sand and the
+/// sea) are out of any jump's reach; letters at most 3 above a floor or the water.
+function level_sunset()
+{
+    var L = lvl_create("SUNSET SHORE", 206, 16, "music_07.ogg", make_colour_rgb(70, 30, 100), make_colour_rgb(255, 150, 90));
+    L.tileset = ts_beach2;
+    L.bg = [spr_bg_sunset_far, spr_bg_clouds, spr_bg_beach_near];
+    L.bg_tint = make_colour_rgb(255, 175, 160);
+    L.cloud_drift = 0.5;
+    L.deco = "beach";
+    L.vine_odds = 100000;
+    L.mushrooms = false;
+
+    // ---- The sand at sundown: a crab, a pirate in a bush ----
+    lvl_ground(L, 0, 20, 13);
+    lvl_put(L, "start", 3, 12);
+    lvl_put(L, "palm", 1, 12);
+    lvl_gems(L, 5, 7, 11);
+    lvl_put(L, "letter", 9, 10);
+    lvl_put(L, "crab", 12, 12);
+    lvl_put(L, "bushpirate", 17, 12);
+
+    // ---- Rocks: up and over ----
+    lvl_rock(L, 21, 11, 23, 15);
+    lvl_rock(L, 24, 9, 28, 15);
+    lvl_rock(L, 29, 11, 30, 15);
+    lvl_put(L, "letter", 26, 6);
+    lvl_gems(L, 24, 25, 7);
+    lvl_put(L, "mosquito", 28, 4);
+
+    // ---- Sand: crabs and a pirate ----
+    lvl_ground(L, 31, 107, 13);
+    lvl_put(L, "crab", 35, 12);
+    lvl_put(L, "letter", 38, 10);
+    lvl_put(L, "bushpirate", 44, 12);
+    lvl_put(L, "mosquito", 48, 8);
+    lvl_put(L, "crab", 52, 12);
+    lvl_put(L, "letter", 55, 10);
+    lvl_put(L, "flag", 58, 12);
+
+    // ---- The gate. The switch is in a den in the rock (76-82), behind two speed blocks:
+    //      SNUG-ATTACK from the sand to the left flings a snake in through them. ----
+    lvl_combo(L, "snug", 66, 12, 1, "switch");
+    lvl_put(L, "letter", 63, 10);
+    lvl_rock(L, 76, 10, 82, 15);
+    lvl_rect(L, 77, 11, 80, 12, T_EMPTY);
+    lvl_rect(L, 76, 11, 76, 12, T_SPEED);
+    lvl_put(L, "switch", 80, 12);
+    lvl_put(L, "letter", 79, 8);
+    lvl_gate(L, 86, 12, 11);
+
+    // ---- Past the gate: more sand, crabs and pirates ----
+    lvl_put(L, "crab", 92, 12);
+    lvl_put(L, "letter", 95, 10);
+    lvl_put(L, "bushpirate", 100, 12);
+    lvl_put(L, "mosquito", 104, 7);
+
+    // ---- A tide pool between two rocks ----
+    lvl_rock(L, 108, 11, 110, 15);
+    lvl_ground(L, 111, 118, 14);
+    lvl_water(L, 111, 11, 118, 13);
+    lvl_rock(L, 119, 11, 121, 15);
+    lvl_rock(L, 122, 12, 123, 15);
+    lvl_put(L, "letter", 115, 8);
+    lvl_put(L, "mosquito", 114, 5);
+
+    // ---- The last stretch of sand ----
+    lvl_ground(L, 124, 176, 13);
+    lvl_put(L, "crab", 128, 12);
+    lvl_put(L, "letter", 131, 10);
+    lvl_put(L, "bushpirate", 136, 12);
+    lvl_put(L, "crab", 141, 12);
+    lvl_put(L, "letter", 144, 10);
+    lvl_put(L, "flag", 148, 12);
+    lvl_put(L, "egg", 149, 12);
+    lvl_put(L, "palm", 151, 12);
+
+    // ---- The shore, the sea and the ship: THE BOMBARD up on the deck (8 tiles above the
+    //      sand); THE SLINGSHOT from the sand. The exit is on the rocks past the ship. ----
+    L.arena = [152, 197];
+    L.shore = [166, 13];
+    lvl_combo(L, "sling", 170, 12, 1, "boss");
+    lvl_ground(L, 177, 197, 15);
+    lvl_water(L, 177, 13, 197, 14);
+    lvl_ship(L, 187, 13, [181, 5, 194, 14], [201, 12]);
+    lvl_put(L, "boss_bombard", 184, 4);
+    lvl_rock(L, 198, 13, 205, 15);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep, level_wreck, level_beach, level_bay];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep, level_wreck, level_beach, level_bay, level_sunset];
 }

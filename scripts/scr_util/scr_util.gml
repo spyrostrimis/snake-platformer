@@ -7,6 +7,7 @@
 #macro T_ONEWAY 2
 #macro T_SPIKES 3
 #macro T_CRACK 4
+#macro T_SPEED 5        // a speed block: only a snake flung by SNUG-ATTACK is fast enough to smash it
 
 /// Tile type at grid cell (_tx, _ty). The level's sides are walls; above and below are open.
 function grid_type(_tx, _ty)
@@ -24,7 +25,7 @@ function tile_at(_px, _py)
 
 function is_blocking(_t)
 {
-    return _t == T_SOLID || _t == T_CRACK;
+    return _t == T_SOLID || _t == T_CRACK || _t == T_SPEED;
 }
 
 /// True if any tile in the column at _px, between _y1 and _y2, blocks.
@@ -254,7 +255,8 @@ function read_controls(_pid, _players)
 {
     var _c = { left: false, right: false, down: false, jump_pressed: false, jump_held: false, tongue: false, tongue_held: false, roll_held: false, boost: false };
     // While the chat or note box is up, keys are letters, not moves: the snake stands still.
-    if (obj_game.chat_open || obj_game.note_open) return _c;
+    // So it does while the partner (one player) is thrown and does its job (see scr_buddy).
+    if (obj_game.chat_open || obj_game.note_open || instance_exists(obj_game.buddy_focus)) return _c;
     var _k = obj_game.settings.keys[$ (_players == 1) ? "solo" : ((_pid == 0) ? "p1" : "p2")];
     _c.left  = keys_held(_k.left);
     _c.right = keys_held(_k.right);
