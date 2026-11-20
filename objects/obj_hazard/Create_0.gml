@@ -6,6 +6,7 @@ vy = 0;
 grav = 0;
 life = 360;
 sway = false;
+curve = 0;              // degrees a step it turns as it flies (the jellyfish queen's spiral sparks)
 spin = true;            // tumbles as it flies (the mole's shockwave sets this false)
 image_speed = 0;
 image_angle = random(360);

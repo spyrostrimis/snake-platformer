@@ -51,8 +51,8 @@ The numbers (5 seconds, fling, damage) are at the top of `scripts/scr_snug`.
 
 The second super move: **Peto** is the bow, **Sockee** the arrow.
 
-1. **Peto** presses **Roll + Tongue** (Shift + X). A quick tap is a call: a "SLING!" bubble over his head on both screens, so Sockee knows. Held, Peto rears up into a bow on the spot, his tongue as the string, opening towards Sockee, for up to 5 seconds. **Up / Down** (Jump / Down) aim it.
-2. **Sockee** holds **Roll** and presses **Boost** (Shift + C) towards Peto: the dashing ball shoots into the string and sits there as the arrow. (Just rolling in isn't enough.)
+1. **Peto** presses **Roll + Tongue** (Shift + X). A quick tap is a call: a "SLING!" bubble over his head on both screens, so Sockee knows. Held, Peto rears up into a bow on the spot, his tongue as the string, for up to 5 seconds. It first aims back towards Sockee: the arrow is shot back the way it came in. **Left / Right** turn the aim round (all the way over, from one side to the other); **Up / Down** (Jump / Down) raise and lower it.
+2. **Sockee** holds **Roll** and presses **Boost** (Shift + C) towards Peto: the dashing ball shoots into the string (from either side) and sits there as the arrow. (Just rolling in isn't enough.)
 3. The longer Peto keeps holding, the further it's drawn: the **SLINGSHOT** meter at the bottom fills through **three levels**. When Peto lets go, Sockee flies like an arrow: level 1 is one hit, level 2 two hits (as much as SNUG-ATTACK), level 3 three hits.
 4. The arrow knocks out every creature it touches, skeletons too, and bounces off a boss. Unlike SNUG-ATTACK's ball it only hurts creatures: it doesn't break cracked walls or crates.
 
@@ -60,13 +60,13 @@ The numbers (5 seconds, the levels, damage) are at the top of `scripts/scr_sling
 
 ### Combo spots, and a partner when you play alone
 
-Some places need a combo move: a **super gem** (worth 10 gems, so an extra life too) on a ledge high in the sky in level 2 (THE SLINGSHOT), a super gem behind speed blocks in level 5 (SNUG-ATTACK), the **switch** for the log gate in level 12 (SNUG-ATTACK: "THE PATH IS BLOCKED!") and the bombard on the pirate ship in level 12 (THE SLINGSHOT). A glowing mark on the ground shows where, with arrows the way the move throws.
+Some places need a combo move: a **super gem** (worth 10 gems, so an extra life too) on a ledge high in the sky in level 2 (THE SLINGSHOT), a super gem behind speed blocks in level 5 (SNUG-ATTACK), the **switch** for the log gate in level 9 (SNUG-ATTACK: "THE PATH IS BLOCKED!") and the bombard on the pirate ship in level 9 (THE SLINGSHOT). A glowing mark on the ground shows where, with arrows the way the move throws.
 
 Playing alone, the other snake comes in a **crate under a parachute** (red for Sockee, green for Peto) when you get near the mark. Touch the crate to open it: your partner pops out and tells you what to do ("HOLD RUN AND WAIT FOR ME!", "RUN THROUGH ME WITH BOOST!"...), then plays its half. When the partner is the one thrown, your keys rest and the camera follows it while it grabs the gem or pulls the switch (what it collects is yours). When the job's done, it says goodbye and goes. (`scripts/scr_buddy`)
 
-### Box Snake Egg (two players)
+### Snake Egg (two players)
 
-When a snake runs out of lives while its friend is still playing, it curls up into a **Box Snake Egg** where it last stood safely, and its screen follows the friend. The friend is told, and a small arrow at the edge of their screen points to the egg. **Three hits** (tongue, stomp, boost or a fast roll) break it, and the snake comes back right there with **one life**. If both snakes are out, it's game over.
+When a snake runs out of lives while its friend is still playing, it comes back in a **giant shiny egg** in its own colour (green for Peto, red for Sockee), floating down under a parachute to where it last stood safely; meanwhile its screen follows the friend. The friend is told, and a small arrow at the edge of their screen points to the egg. **One hit** (tongue, stomp, boost or a fast roll) hatches it: the shell cracks, the top lifts off, the snake's head peeks out and it jumps out with **one life**. If both snakes are out, it's game over.
 
 ### Online
 

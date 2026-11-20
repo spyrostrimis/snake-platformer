@@ -842,12 +842,12 @@ player_died = function(_inst, _tell_mate = true)
             stop_music();
             return;
         }
-        // Two players: the snake curls up into a Box Snake Egg where it last stood safely,
+        // Two players: the snake comes back in a Snake Egg, parachuted to where it last stood safely,
         // and watches its friend, who can break the egg to bring it back with one life.
         make_box_egg(_p.pid, _ex, _ey);
         if (net_mode == "host") net_event({ t: "egg", p: _p.pid, x: _ex, y: _ey });
-        say(_p.skin.name + " IS A BOX SNAKE EGG!", 180, _mate);
-        say("FIND THE EGG AND BREAK IT TO BRING " + _p.skin.name + " BACK!", 200, _mate);
+        say(_p.skin.name + " IS COMING BACK IN AN EGG!", 180, _mate);
+        say("FIND THE EGG AND HIT IT TO HATCH " + _p.skin.name + "!", 200, _mate);
     }
     else
     {
@@ -883,7 +883,7 @@ player_died = function(_inst, _tell_mate = true)
     }
 };
 
-/// Makes the Box Snake Egg of the snake with pid _pid at (_x, _y) (one per snake).
+/// Makes the Snake Egg of the snake with pid _pid at (_x, _y) (one per snake).
 make_box_egg = function(_pid, _x, _y)
 {
     with (obj_box_egg) if (pid == _pid) instance_destroy();
@@ -1225,7 +1225,7 @@ net_apply_event = function(_e)
             break;
 
         case "egg":
-            // A snake ran out of lives and is a Box Snake Egg (ours: we watch our friend).
+            // A snake ran out of lives and is a Snake Egg (ours: we watch our friend).
             if (array_length(pl) == 2)
             {
                 var _ep = pl[_e.p];
@@ -1289,7 +1289,7 @@ net_apply_event = function(_e)
             break;
 
         case "ehit":
-            // The other PC's snake hit a Box Snake Egg: show the crack here too.
+            // The other PC's snake hit a Snake Egg: show the crack here too.
             with (obj_box_egg) if (pid == _e.p && hits < _e.n) { hits = _e.n; show_hit(); }
             break;
 

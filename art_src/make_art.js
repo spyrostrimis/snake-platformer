@@ -1641,13 +1641,14 @@ save("spr_tiles_beach2", 32 * beach2.length, 32,
   beach2.map((t, i) => `<g transform="translate(${i * 32},0)" clip-path="url(#cell)">${t}</g>`).join(""),
   recolorBeach(stoneGrad) + `<clipPath id="cell"><rect x="0" y="0" width="32" height="32"/></clipPath>`);
 
-// ---------- A big tropical bush (pirates hide in them). 70 x 44, origin (35, 44). ----------
-save("spr_beachbush", 70, 44,
-  `${[[-24, 8, -40], [-14, 2, -20], [0, 0, 0], [14, 2, 20], [24, 8, 40], [-30, 18, -60], [30, 18, 60]].map(([dx, dy, r]) =>
+// ---------- A big tropical bush (pirates hide in them). Drawn in 70 x 44; saved in 110 x 64
+// (everything 20 px right and down, so the leaves aren't cut off), origin (55, 64). ----------
+save("spr_beachbush", 110, 64,
+  `<g transform="translate(20 20)">${[[-24, 8, -40], [-14, 2, -20], [0, 0, 0], [14, 2, 20], [24, 8, 40], [-30, 18, -60], [30, 18, 60]].map(([dx, dy, r]) =>
     `<g transform="rotate(${r} ${35 + dx * 0.3} 44)"><path d="M${35 + dx * 0.3} 44 Q${35 + dx - 10} ${dy + 14} ${35 + dx} ${dy + 2} Q${35 + dx + 10} ${dy + 14} ${35 + dx * 0.3} 44 Z" fill="#2e8a3a" stroke="#14501e" stroke-width="1.4"/>
      <path d="M${35 + dx * 0.3} 44 L${35 + dx} ${dy + 4}" stroke="#7ad85a" stroke-width="1"/></g>`).join("")}
    <ellipse cx="35" cy="34" rx="30" ry="12" fill="#3aa83a" stroke="#14501e" stroke-width="1.6"/>
-   <circle cx="20" cy="30" r="3" fill="#ff5a8a"/><circle cx="50" cy="28" r="3" fill="#ffd23a"/><circle cx="38" cy="36" r="2.6" fill="#ff5a8a"/>`);
+   <circle cx="20" cy="30" r="3" fill="#ff5a8a"/><circle cx="50" cy="28" r="3" fill="#ffd23a"/><circle cx="38" cy="36" r="2.6" fill="#ff5a8a"/></g>`);
 
 // ---------- Pirates (alive this time): walk A, walk B, leaping, slashing, peeking out of a
 // bush, hidden (empty). 60 x 58, origin (28, 34), facing right; feet at y 56. ----------
@@ -1809,7 +1810,8 @@ function gatePiece(top) {
 save("gate_0", 44, 32, gatePiece(false));
 save("gate_1", 44, 32, gatePiece(true));
 
-// A lever, 32 x 44, origin (16, 44): frame 0 off (leaning left, red light), frame 1 on.
+// A lever, drawn in 32 x 44, saved in 48 x 44 (8 px right, so the leaning lever isn't cut off),
+// origin (24, 44): frame 0 off (leaning left, red light), frame 1 on.
 function lever(on) {
   const a = on ? 35 : -35;
   return `<g transform="rotate(${a} 16 30)"><path d="M16 30 L16 6" stroke="#3a3a42" stroke-width="5" stroke-linecap="round"/>
@@ -1819,8 +1821,8 @@ function lever(on) {
     <rect x="8" y="32" width="16" height="4" rx="2" fill="#2a2a30"/>
     <circle cx="16" cy="40" r="2.4" fill="${on ? "#7aff7a" : "#ff6a6a"}"/>`;
 }
-save("switch_0", 32, 44, lever(false));
-save("switch_1", 32, 44, lever(true));
+save("switch_0", 48, 44, `<g transform="translate(8 0)">${lever(false)}</g>`);
+save("switch_1", 48, 44, `<g transform="translate(8 0)">${lever(true)}</g>`);
 
 // ---------- Level 12, Sunset Shore: beach crabs, the bombard on the pirate ship ----------
 // A beach crab, 52 x 34, origin (26, 20). Frames: walking A, walking B, claws up snapping.
@@ -1895,7 +1897,7 @@ function bombard(f) {
 const bombardDefs = `<linearGradient id="brz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8a84a"/><stop offset="0.5" stop-color="#b8782a"/><stop offset="1" stop-color="#7a4a14"/></linearGradient>`;
 for (let f = 0; f < 3; f++) save("bombard_" + f, 112, 72, bombard(f), bombardDefs);
 
-// The pirate ship, afloat again (drawn in its own coordinates, deck top at y = 112, 288 px
+// The pirate ship, afloat (it sinks at the end of level 9; drawn in its own coordinates, deck top at y = 112, 288 px
 // above the waterline).
 function ship() {
   const plank = "#6a4a30", plankD = "#3a2618", plankL = "#8a6a4a", gold = "#e0b030";

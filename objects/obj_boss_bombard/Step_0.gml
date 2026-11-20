@@ -27,7 +27,8 @@ switch (state)
 {
     case "idle":
         image_index = 0;
-        if (timer <= 0 && _p != noone) { state = "fire"; timer = 16; shots = _angry ? 2 : 1; }
+        // It only fires at a snake on its beach (or up on the deck).
+        if (timer <= 0 && _p != noone && snake_in_arena(_p)) { state = "fire"; timer = 16; shots = _angry ? 2 : 1; }
         break;
 
     case "fire":

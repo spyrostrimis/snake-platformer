@@ -35,8 +35,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_octo_body",
-    "path":"sprites/spr_octo_body/spr_octo_body.yy",
+    "name":"spr_octo_sync",
+    "path":"sprites/spr_octo_sync/spr_octo_sync.yy",
   },
   "spriteMaskId":null,
   "visible":true,

@@ -2,10 +2,13 @@
 ///
 ///  1. Peto presses Roll + Tongue (Shift + X). A quick tap is a call: "SLING!" shows over
 ///     his head on both screens, so Sockee knows. Held, Peto rears up into a bow on the spot,
-///     his tongue strung as the bowstring, opening towards Sockee, for up to 5 seconds (a bar
-///     under the bubble shows the time left). Up (Jump) / Down raise and lower the aim.
+///     his tongue strung as the bowstring, for up to 5 seconds (a bar under the bubble shows
+///     the time left). It first aims back towards Sockee's side (the arrow is shot back the
+///     way it came in); Left / Right turn the aim round (all the way over, from one side to
+///     the other) and Up (Jump) / Down raise and lower it.
 ///  2. Sockee holds Roll and presses Boost (Shift + C) towards Peto: his dashing ball shoots
-///     into the string and sits there as the arrow. (Just rolling in isn't enough.)
+///     into the string (from either side) and sits there as the arrow. (Just rolling in isn't
+///     enough.)
 ///  3. The longer Peto keeps holding, the further the string is drawn: the SLINGSHOT meter at
 ///     the bottom of the screen fills through three levels. When Peto lets go (or the 5
 ///     seconds run out), Sockee flies like an arrow: level 1 is one hit, level 2 two hits
@@ -122,7 +125,7 @@ function sling_step(_in)
                         sling_t = 0;
                         sling_draw = 0;
                         sling_elev = 30;
-                        sling_side = instance_exists(_mate) && _mate.x != x ? sign(x - _mate.x) : facing;
+                        sling_side = instance_exists(_mate) && _mate.x != x ? sign(_mate.x - x) : facing;
                         _g.play_sfx(_g.sfx.ball);
                     }
                     return true;
@@ -133,7 +136,7 @@ function sling_step(_in)
 
             // Sockee: a dashing ball (Roll + Boost) that reaches the middle of Peto's string.
             if (!_green && ball && boost_t > 0 && instance_exists(_mate) && _mate.sling == "bow"
-                && sign(vx) == _mate.sling_side && point_distance(x, y, sling_nock_x(_mate), sling_nock_y(_mate)) < SLING_NOCK)
+                && point_distance(x, y, sling_nock_x(_mate), sling_nock_y(_mate)) < SLING_NOCK)
             {
                 sling = "nocked";
                 sling_t = 0;
@@ -157,9 +160,15 @@ function sling_step(_in)
             vy = min(vy + gravity_pull, fall_max);
             entity_move();
             var _nocked = instance_exists(_mate) && _mate.sling == "nocked";
-            if (!_nocked && instance_exists(_mate) && _mate.x != x) sling_side = sign(x - _mate.x);   // opening towards Sockee
-            if (_in.jump_held) sling_elev = min(80, sling_elev + 1.2);
-            if (_in.down)      sling_elev = max(0, sling_elev - 1.2);
+            // The aim: Left / Right turn it round over the top (0 is flat to the right, 180 flat
+            // to the left); Up / Down raise it towards straight up or lower it towards flat.
+            var _aim = sling_angle(id);
+            if (_in.left)  _aim = min(_aim + 1.6, 180);
+            if (_in.right) _aim = max(_aim - 1.6, 0);
+            if (_in.jump_held) _aim = (_aim < 90) ? min(_aim + 1.2, 90) : max(_aim - 1.2, 90);
+            if (_in.down)      _aim = (_aim <= 90) ? max(_aim - 1.2, 0) : min(_aim + 1.2, 180);
+            sling_side = (_aim <= 90) ? 1 : -1;
+            sling_elev = (_aim <= 90) ? _aim : 180 - _aim;
             facing = sling_side;
             if (_nocked) sling_draw = min(sling_draw + 1, SLING_LEVEL * 3);
             if (!(_in.roll_held && _in.tongue_held) || sling_t > SLING_TIME || !on_ground)

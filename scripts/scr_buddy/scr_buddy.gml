@@ -136,3 +136,39 @@ function buddy_aim_free(_x, _y, _sp, _side, _g)
     }
     return _best;
 }
+
+/// A parachute: a dome (centre (_cx, _cy), half-width _w, height _h) in six panels, colour
+/// _col and white in turn, on four strings down to the load at (_lx, _ly), _lw wide each side.
+/// Used by the partner's crate and by the egg a snake comes back in.
+function draw_parachute(_cx, _cy, _w, _h, _lx, _ly, _lw, _col)
+{
+    draw_set_colour(make_colour_rgb(60, 40, 30));
+    draw_line_width(_cx - _w, _cy, _lx - _lw, _ly, 1);
+    draw_line_width(_cx - _w * 0.4, _cy + 2, _lx - _lw * 0.4, _ly, 1);
+    draw_line_width(_cx + _w * 0.4, _cy + 2, _lx + _lw * 0.4, _ly, 1);
+    draw_line_width(_cx + _w, _cy, _lx + _lw, _ly, 1);
+    var _n = 6;
+    for (var _k = 0; _k < _n; _k++)
+    {
+        var _a0 = 180 - _k * 180 / _n;
+        var _a1 = 180 - (_k + 1) * 180 / _n;
+        draw_set_colour((_k mod 2 == 0) ? _col : c_white);
+        draw_primitive_begin(pr_trianglefan);
+        draw_vertex(_cx, _cy);
+        for (var _s = 0; _s <= 4; _s++)
+        {
+            var _a = lerp(_a0, _a1, _s / 4);
+            draw_vertex(_cx + lengthdir_x(_w, _a), _cy + lengthdir_y(_h, _a));
+        }
+        draw_primitive_end();
+    }
+    draw_set_colour(make_colour_rgb(40, 24, 30));
+    for (var _s = 0; _s < 18; _s++)
+    {
+        var _a = 180 - _s * 10;
+        var _b = 180 - (_s + 1) * 10;
+        draw_line_width(_cx + lengthdir_x(_w, _a), _cy + lengthdir_y(_h, _a), _cx + lengthdir_x(_w, _b), _cy + lengthdir_y(_h, _b), 1.5);
+    }
+    draw_line_width(_cx - _w, _cy, _cx + _w, _cy, 1.5);
+    draw_set_colour(c_white);
+}

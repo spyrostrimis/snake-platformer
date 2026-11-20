@@ -88,23 +88,24 @@ switch (mode)
                             shot_ok = !is_undefined(buddy_shot(_p.x, _p.y - 30, spot.dir, spot.shot_goal(), 3));
                             if (!shot_ok && talk_t < 200) { talk = "MAKE THE BOW ON THE MARK!"; talk_t = 240; }
                         }
-                        // Round behind the bow, then dash into its string.
+                        // Round to the target's side of the bow (it shoots back the way the arrow
+                        // came in), then dash into its string.
                         if (!shot_ok) { dash = false; ball = false; walk_to(home_x, 2.5); }
                         else if (!dash)
                         {
                             ball = false;
-                            if (walk_to(_p.x - spot.dir * 70, 4) && on_ground) { dash = true; dash_t = 0; }
+                            if (walk_to(_p.x + spot.dir * 70, 4) && on_ground) { dash = true; dash_t = 0; }
                         }
                         else
                         {
                             dash_t++;
                             ball = true;
                             boost_t = 10;
-                            vx = spot.dir * 9;
-                            facing = spot.dir;
+                            vx = -spot.dir * 9;
+                            facing = -spot.dir;
                             ball_angle -= vx * 4;
                             physics();
-                            if (sign(vx) == _p.sling_side && point_distance(x, y, sling_nock_x(_p), sling_nock_y(_p)) < SLING_NOCK)
+                            if (point_distance(x, y, sling_nock_x(_p), sling_nock_y(_p)) < SLING_NOCK)
                             {
                                 sling = "nocked";
                                 sling_t = 0;
@@ -136,7 +137,7 @@ switch (mode)
                         // Shot off: it flies where it's needed (whatever the player's aim).
                         var _lv = clamp(_p.sling_level, 1, 3);
                         var _a = sling_angle(_p);
-                        var _shot = buddy_shot(x, y, _p.sling_side, spot.shot_goal(), _lv);
+                        var _shot = buddy_shot(x, y, spot.dir, spot.shot_goal(), _lv);
                         if (!is_undefined(_shot)) { _a = _shot.a; _lv = _shot.lv; }
                         var _sp = 10 + _lv * 2.5;
                         vx = lengthdir_x(_sp, _a);

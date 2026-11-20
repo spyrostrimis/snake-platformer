@@ -54,8 +54,8 @@ switch (state)
             var _broods = 0;
             with (obj_jelly) if (seeker) _broods++;
             var _r = irandom(99);
-            if (_r < 40) { state = "charge"; timer = _angry ? 28 : 40; _g.play_sfx(_g.sfx.charge); }
-            else if (_r < 75 || _broods >= 3) { state = "rise"; timer = 18; }
+            if (_r < (_angry ? 62 : 52)) { state = "charge"; timer = _angry ? 28 : 40; nova_kind = irandom(3); _g.play_sfx(_g.sfx.charge); }
+            else if (_r < 82 || _broods >= 3) { state = "rise"; timer = 18; }
             else { state = "brood"; timer = 30; }
         }
         break;
@@ -66,7 +66,15 @@ switch (state)
         x += irandom_range(-1, 1);
         if (timer <= 0)
         {
-            spark_nova(_angry ? 12 : 9, _angry ? 3.6 : 3);
+            // A different burst each time.
+            nova_off = random(360);
+            switch (nova_kind)
+            {
+                case 0: spark_nova(_angry ? 12 : 9, _angry ? 3.6 : 3, nova_off); break;
+                case 1: spark_nova(_angry ? 10 : 8, _angry ? 3.4 : 2.9, nova_off, choose(-1.4, 1.4)); break;
+                case 2: spark_fan(_p, _angry ? 7 : 5, _angry ? 80 : 60, _angry ? 4.4 : 3.8); break;
+                case 3: spark_nova(_angry ? 10 : 8, _angry ? 3.4 : 2.8, nova_off); break;
+            }
             _g.play_sfx(_g.sfx.smash);
             _g.shake(10);
             state = "nova";
@@ -76,7 +84,9 @@ switch (state)
 
     case "nova":
         image_index = 3;
-        if (timer <= 0) { state = "drift"; timer = _angry ? 60 : 85; }
+        // Two rings: the second one a moment later, its sparks in the gaps of the first.
+        if (nova_kind == 3 && timer == 13) { spark_nova(_angry ? 10 : 8, _angry ? 3.4 : 2.8, nova_off + 180 / (_angry ? 10 : 8)); _g.play_sfx(_g.sfx.smash); }
+        if (timer <= 0) { state = "drift"; timer = _angry ? 42 : 62; }
         break;
 
     case "rise":

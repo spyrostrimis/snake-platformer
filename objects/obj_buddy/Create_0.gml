@@ -51,12 +51,12 @@ sling_dir = 0;
 sling_cd = 0;
 
 // Its part of the move: Peto is the bow (SLINGSHOT) or the ball (SNUG-ATTACK); Sockee is the
-// arrow or the C. Where it waits: the C and the bow on the spot; the arrow behind the
-// player's bow; the ball on the far side of the player's C.
+// arrow or the C. Where it waits: the C and the bow on the spot; the arrow on the target's
+// side of the player's bow (the shot goes back the way it came in); the ball on the far side of the player's C.
 var _green = skin.boost == "up";
 role = (spot.type == "sling") ? (_green ? "bow" : "arrow") : (_green ? "ball" : "catch");
 home_x = spot.x;
-if (role == "arrow") home_x = spot.x - spot.dir * 70;
+if (role == "arrow") home_x = spot.x + spot.dir * 70;
 if (role == "ball") home_x = spot.x + spot.dir * 150;
 home_y = spot.y - hh;
 mode = "pop";               // pop | ready | thrown | task | leave
@@ -148,7 +148,7 @@ explain = function()
     if (spot.goal == "gem" && spot.type == "sling") _what = "A SUPER GEM'S UP THERE!";
     switch (role)
     {
-        case "bow":   speak("RUN THROUGH ME WITH BOOST!", [_what, "I'M THE BOW: DASH IN FROM BEHIND ME!", "HOLD " + _roll + " AND PRESS " + _boost + " TO DASH"]); break;
+        case "bow":   speak("RUN THROUGH ME WITH BOOST!", [_what, "I'M THE BOW: DASH INTO MY STRING!", "HOLD " + _roll + " AND PRESS " + _boost + " TO DASH"]); break;
         case "arrow": speak("BE MY BOW!", [_what, "BE MY BOW: HOLD " + _roll + " + " + _tongue, "I'LL JUMP IN. LET GO TO SHOOT ME!"]); break;
         case "catch": speak("ROLL INTO ME!", [_what, "I'LL CURL UP: ROLL INTO ME FROM THAT SIDE", "HOLD " + _roll + " TO ROLL. I'LL FLING YOU!"]); break;
         case "ball":  speak("HOLD RUN AND WAIT FOR ME!", [_what, "STAND ON THE MARK AND HOLD " + _roll + " + " + _tongue, "WAIT FOR ME: I'LL ROLL INTO YOU!"]); break;

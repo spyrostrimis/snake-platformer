@@ -164,6 +164,7 @@
     {"id":{"name":"spr_mouse","path":"sprites/spr_mouse/spr_mouse.yy",},},
     {"id":{"name":"spr_mushroom","path":"sprites/spr_mushroom/spr_mushroom.yy",},},
     {"id":{"name":"spr_octo_body","path":"sprites/spr_octo_body/spr_octo_body.yy",},},
+    {"id":{"name":"spr_octo_sync","path":"sprites/spr_octo_sync/spr_octo_sync.yy",},},
     {"id":{"name":"spr_octo","path":"sprites/spr_octo/spr_octo.yy",},},
     {"id":{"name":"spr_orb","path":"sprites/spr_orb/spr_orb.yy",},},
     {"id":{"name":"spr_oyster","path":"sprites/spr_oyster/spr_oyster.yy",},},

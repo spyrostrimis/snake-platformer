@@ -1,7 +1,7 @@
-/// Eight rubbery arms (stretching out when he strikes), a cutlass in each, then his body.
+/// Eight rubbery arms (stretching out when they swing), a cutlass in each, then his body.
+/// A clang makes his steel shimmer white.
 var _flash = hurt_t > 0 && (hurt_t div 4) mod 2 == 0;
 if (_flash) gpu_set_fog(true, c_white, 0, 0);
-var _f = floor(image_index);
 var _wobble = obj_game.frame * 0.25;
 var _hands = [];
 for (var _k = 0; _k < 8; _k++)
@@ -36,6 +36,28 @@ for (var _k = 0; _k < 8; _k++)
     }
 }
 draw_set_colour(c_white);
-for (var _k = 0; _k < 8; _k++) draw_sprite_ext(spr_cutlass, 0, _hands[_k][0], _hands[_k][1], 1, 1, _hands[_k][2], c_white, 1);
-draw_sprite_ext(sprite_index, image_index, x, y, facing, 1, 0, c_white, 1);
+// The blades: swinging ones a little bigger; all of them shimmer after a clang.
+var _shine = clang_t > 0 && (clang_t div 3) mod 2 == 0;
+for (var _k = 0; _k < 8; _k++)
+{
+    var _h = _hands[_k];
+    var _sc = _h[3] ? 1.25 : 1;
+    if (_shine && !_h[3]) gpu_set_fog(true, c_white, 0, 0);
+    draw_sprite_ext(spr_cutlass, 0, _h[0], _h[1], _sc, _sc, _h[2], c_white, 1);
+    if (_shine && !_h[3] && !_flash) gpu_set_fog(false, c_white, 0, 0);
+}
+if (_flash) gpu_set_fog(true, c_white, 0, 0);
+// His body: calm on guard, fierce while attacking, hurt when hit.
+var _f = (state == "hurt") ? 6 : ((state == "attack") ? 2 + (obj_game.frame div 8) mod 4 : (obj_game.frame div 30) mod 2);
+draw_sprite_ext(spr_octo_body, _f, x, y, facing, 1, 0, c_white, 1);
 if (_flash) gpu_set_fog(false, c_white, 0, 0);
+// The shimmer: a star of light where the attack clanged off.
+if (clang_t > 0)
+{
+    var _a = clang_t / 24;
+    draw_set_alpha(_a);
+    draw_set_colour(c_white);
+    for (var _r = 0; _r < 4; _r++) draw_line_width(clang_x - lengthdir_x(14, _r * 45), clang_y - lengthdir_y(14, _r * 45), clang_x + lengthdir_x(14, _r * 45), clang_y + lengthdir_y(14, _r * 45), 2);
+    draw_circle(clang_x, clang_y, 4, false);
+    draw_set_alpha(1);
+}

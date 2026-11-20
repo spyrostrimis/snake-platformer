@@ -92,6 +92,13 @@ if (boomer != 0)
 }
 
 t += 0.1;
+if (curve != 0)
+{
+    var _cs = point_distance(0, 0, vx, vy);
+    var _cd = point_direction(0, 0, vx, vy) + curve;
+    vx = lengthdir_x(_cs, _cd);
+    vy = lengthdir_y(_cs, _cd);
+}
 vy += grav;
 x += vx + (sway ? sin(t) * 1.2 : 0);
 y += vy;

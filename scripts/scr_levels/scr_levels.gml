@@ -438,14 +438,22 @@ function level_shadowrock()
     // The cave roof over the whole level (rows 0-1).
     lvl_rect(L, 0, 0, 171, 1, T_SOLID);
 
-    // ---- The way in: the first mole hole ----
+    // ---- The way in. Behind the start, in the rock wall at the level's left end: speed
+    //      blocks, and behind them a den with a super gem. Only a snake flung by SNUG-ATTACK
+    //      from the floor here (well away from the moles, bats and boulders) smashes in. ----
     lvl_ground(L, 0, 21, 11);
-    lvl_put(L, "start", 3, 10);
-    lvl_put(L, "torch", 2, 7);
+    lvl_rect(L, 0, 2, 4, 10, T_SOLID);
+    lvl_rect(L, 1, 9, 3, 10, T_EMPTY);
+    lvl_rect(L, 4, 9, 4, 10, T_SPEED);
+    lvl_put(L, "super_gem", 2, 10);
+    lvl_put(L, "gem", 1, 10);
+    lvl_put(L, "gem", 3, 10);
+    lvl_combo(L, "snug", 15, 10, -1, "gem", [1, 3, 11]);
+    lvl_put(L, "start", 7, 10);
+    lvl_put(L, "torch", 6, 7);
     lvl_gems(L, 6, 9, 9);
-    lvl_put(L, "torch", 10, 7);
+    lvl_put(L, "torch", 11, 7);
     lvl_put(L, "letter", 12, 10);
-    lvl_put(L, "mole_hole", 16, 10);
     lvl_put(L, "torch", 19, 7);
 
     // ---- Boulder run 1: they roll out of the tunnel at 45 and drop into the pit at 22-24.
@@ -480,14 +488,6 @@ function level_shadowrock()
     lvl_put(L, "letter", 74, 10);
     lvl_put(L, "bat_crack", 76, 2);
     lvl_ground(L, 80, 108, 9);
-    // In the face of the step: speed blocks, and behind them a little den with a super gem.
-    // Only a snake flung by SNUG-ATTACK from the floor below is fast enough to smash in.
-    lvl_rect(L, 80, 9, 80, 10, T_SPEED);
-    lvl_rect(L, 81, 10, 86, 10, T_EMPTY);
-    lvl_put(L, "super_gem", 85, 10);
-    lvl_put(L, "gem", 83, 10);
-    lvl_put(L, "gem", 86, 10);
-    lvl_combo(L, "snug", 70, 10, 1, "gem", [81, 86, 11]);
     lvl_rect(L, 84, 6, 87, 6, T_ONEWAY);
     lvl_put(L, "letter", 85, 5);
     lvl_put(L, "letter", 87, 5);
@@ -642,7 +642,7 @@ function level_bonepit()
     return L;
 }
 
-/// Level 7: under the caverns, a sunken grotto of sand, rocks and water. Lakes to swim
+/// Level 10: down under the sea where the pirate ship sank, a sunken grotto of sand, rocks and water. Lakes to swim
 /// across (snakes float and can jump out of the water), currents that drag the snakes along
 /// (a friendly one across the first lake, a water spout up to a high ledge, a flooded tunnel
 /// that sweeps you through; and a dangerous one pulling towards a waterfall), jumping
@@ -763,7 +763,7 @@ function level_grotto()
     return L;
 }
 
-/// Level 8: the deep. Completely under water: the snakes swim anywhere (Jump/Up swims up,
+/// Level 11: the deep. Completely under water: the snakes swim anywhere (Jump/Up swims up,
 /// Down dives). Reefs, a channel with a current against you, a vent that lifts you to a high
 /// shelf, a down-current over a bed of sea urchins, a jellyfish forest with a fast lane
 /// along the top, a reef maze, and at the end Queen Voltella guarding a huge sunken ship
@@ -885,7 +885,7 @@ function level_deep()
     return L;
 }
 
-/// Level 9: inside the sunken ship. Dry decks lit by lanterns, with pirate skeletons that
+/// Level 12: inside the sunken ship (the one that sank off Sunset Shore). Dry decks lit by lanterns, with pirate skeletons that
 /// leap at you (only a boost breaks them), and flooded holds full of piranhas, jellyfish and
 /// octopuses: swim freely under water, jump out at the surface. A hold to cross on planks (or
 /// by swimming), a flooded corridor with no air, a bulkhead to dive under, and at the end
@@ -1011,7 +1011,7 @@ function level_wreck()
     return L;
 }
 
-/// Level 10: up from the wreck and out onto a sunny Caribbean beach. Giant oysters on the sand
+/// Level 7: up from the caverns and out onto a sunny Caribbean beach. Giant oysters on the sand
 /// (shut, only a boost breaks them; open, any attack does), giant mosquitoes that dive at you,
 /// two lagoons to swim, and people relaxing under umbrellas: bounce on an umbrella to reach the
 /// high boardwalks (it folds onto its owner's head, and opens again a while later). At the end
@@ -1119,7 +1119,7 @@ function level_beach()
     return L;
 }
 
-/// Level 11: further along the beach, where coastal rocks rise out of the sand: climb up over
+/// Level 8: further along the beach, where coastal rocks rise out of the sand: climb up over
 /// them and back down to the sand. Pirates hide in the bushes and leap out at you (living
 /// ones: the tongue, a stomp or a boost beats them), giant mosquitoes buzz about, sunbathers'
 /// umbrellas bounce you up to the boardwalks, and a tide pool lies between the rocks. At the
@@ -1223,12 +1223,13 @@ function level_bay()
     return L;
 }
 
-/// Level 12: Sunset Shore. The beach again, as the sun goes down: no sunbathers now, only
+/// Level 9: Sunset Shore. The beach again, as the sun goes down: no sunbathers now, only
 /// pirates in the bushes, crabs on the sand and mosquitoes. Halfway, a log gate blocks the
 /// way: its switch is in a den in the rock, behind speed blocks that only SNUG-ATTACK breaks
-/// (alone, a partner comes in a crate). At the end, the pirate ship from the deep, afloat
-/// again off the shore, with THE BOMBARD on its deck lobbing bombs: only THE SLINGSHOT gets a
-/// snake up there. Beat it and the ship sinks, clearing the way to the exit on the rocks.
+/// (alone, a partner comes in a crate). At the end, the pirates' ship, afloat
+/// off the shore, with THE BOMBARD on its deck lobbing bombs: only THE SLINGSHOT gets a snake up
+/// there. Beat it and the ship sinks (levels 10-12 follow it down to the deep and its wreck),
+/// clearing the way to the exit on the rocks.
 /// Reach: rock steps are 2-3 tiles; the gate (11 tall) and the deck (8 above the sand and the
 /// sea) are out of any jump's reach; letters at most 3 above a floor or the water.
 function level_sunset()
@@ -1308,7 +1309,8 @@ function level_sunset()
 
     // ---- The shore, the sea and the ship: THE BOMBARD up on the deck (8 tiles above the
     //      sand); THE SLINGSHOT from the sand. The exit is on the rocks past the ship. ----
-    L.arena = [152, 197];
+    // (The bombard wakes, and starts firing, only once a snake is down on its beach.)
+    L.arena = [158, 197];
     L.shore = [166, 13];
     lvl_combo(L, "sling", 170, 12, 1, "boss");
     lvl_ground(L, 177, 197, 15);
@@ -1321,5 +1323,5 @@ function level_sunset()
 
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_grotto, level_deep, level_wreck, level_beach, level_bay, level_sunset];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_beach, level_bay, level_sunset, level_grotto, level_deep, level_wreck];
 }

@@ -433,7 +433,7 @@ switch (state)
                 }
             }
 
-            // The friend's Box Snake Egg, when it's off this snake's screen: a small arrow at
+            // The friend's Snake Egg, when it's off this snake's screen: a small arrow at
             // the edge, in the friend's colour, points the way.
             if (!_p.out && instance_exists(obj_box_egg))
             {
@@ -468,7 +468,7 @@ switch (state)
                 }
             }
 
-            // Out of lives, inside a Box Snake Egg: this screen now follows the friend.
+            // Out of lives, inside a Snake Egg: this screen now follows the friend.
             var _egg_in = false;
             with (obj_box_egg) if (pid == _p.pid) _egg_in = true;
             if (_p.out && _egg_in && array_length(pl) == 2)
@@ -479,8 +479,8 @@ switch (state)
                 draw_set_alpha(0.15);
                 draw_rectangle(0, _oy, 640, _oy + _vh, false);
                 draw_set_alpha(1);
-                hud_text(320, _ty, _p.skin.name + " IS A BOX SNAKE EGG", (_views == 1) ? 0.5 : 0.4, fa_center, _p.skin.colour);
-                body_text(320, _ty + ((_views == 1) ? 28 : 20), "Watching " + _mate.skin.nice + ". When " + _mate.skin.nice + " breaks your egg, you're back with one life!", c_white, fa_center);
+                hud_text(320, _ty, _p.skin.name + " IS IN A SNAKE EGG", (_views == 1) ? 0.5 : 0.4, fa_center, _p.skin.colour);
+                body_text(320, _ty + ((_views == 1) ? 28 : 20), "Watching " + _mate.skin.nice + ". When " + _mate.skin.nice + " hatches your egg, you're back with one life!", c_white, fa_center);
             }
             // Out of lives: say so over this snake's half, which now follows the other snake.
             else if (_p.out)

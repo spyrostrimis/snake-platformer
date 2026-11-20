@@ -1,5 +1,5 @@
-/// THE BOMBARD: the pirates' great bronze cannon, up on the deck of their ship (the one that
-/// lay sunk in the deep, afloat again) off Sunset Shore. It lobs bombs at the snakes on the
+/// THE BOMBARD: the pirates' great bronze cannon, up on the deck of their ship off Sunset Shore
+/// (the ship that sinks here, and lies in the deep in levels 11 and 12). It lobs bombs at the snakes on the
 /// shore (two at a time when angry), and a snake that gets up on the deck gets a point-blank
 /// shot. It's far too high to jump to: THE SLINGSHOT gets a snake up there (alone, a partner
 /// comes in a crate to help). Once it's beaten the ship sinks and the way to the exit is clear.
