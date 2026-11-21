@@ -62,6 +62,29 @@ draw_sprite_ext(skin.head, image_index, x, y - 3 + _bob, facing, 1, 0, c_white, 
 // With two players, a small P1 / P2 tag above the head.
 if (_g.players_n == 2 && snug != "call" && sling != "call") hud_text(x, y - 40, "P" + string(pid + 1), 0.3, fa_center, skin.colour);   // (the SNUG! call shows there instead)
 
+// Stuck in honey: golden goo over its head and back, dripping.
+if (honey_t > 0)
+{
+    var _hx = x;
+    var _hy = y - 3;
+    draw_set_colour(make_colour_rgb(255, 184, 26));
+    draw_set_alpha(0.85);
+    draw_circle(_hx, _hy - 10, 11, false);
+    draw_circle(_hx - facing * 9, _hy - 4, 8, false);
+    for (var _k = 0; _k < 3 && _k < body_len; _k++) draw_circle(segs[_k][0], segs[_k][1] - 4, 7, false);
+    for (var _d = 0; _d < 3; _d++)
+    {
+        var _dx = _hx - 8 + _d * 8;
+        var _dl = 4 + ((_g.frame div 6 + _d * 3) mod 7);
+        draw_line_width(_dx, _hy - 4, _dx, _hy + _dl, 3);
+        draw_circle(_dx, _hy + _dl, 2.2, false);
+    }
+    draw_set_alpha(1);
+    draw_set_colour(make_colour_rgb(255, 244, 176));
+    draw_ellipse(_hx - 7, _hy - 18, _hx - 1, _hy - 14, false);
+    draw_set_colour(c_white);
+}
+
 // Tongue: a long pink ribbon with a forked tip.
 if (tongue_len > 0)
 {

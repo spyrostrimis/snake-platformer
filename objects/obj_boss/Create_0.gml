@@ -88,6 +88,9 @@ spiky_back = function() { return false; };
 /// hanging in the air sets it, so a snake can't keep bouncing on it.
 stomp_throw = 0;
 
+/// True while touching this boss doesn't hurt (Granitor stuck in honey). Bosses override it.
+touch_safe = function() { return false; };
+
 /// True while landing on this boss stings (the snake is thrown off), without making the rest
 /// of it more dangerous to touch. Bosses override it.
 stomp_stings = function() { return false; };

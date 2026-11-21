@@ -40,6 +40,8 @@ blink = 0;
 gulp_t = 0;             // counts down while a swallowed egg travels down the body
 was_swim = false;       // in water last step (for the splash)
 inked = 0;              // hit by an octopus's ink: its screen is blotted for a while
+honey_t = 0;            // stuck in honey (the monkey's): frames left
+honey_cd = 0;           // just wriggled free: honey can't stick again for a moment
 talk = "";              // something the snake says, in a bubble over its head ("THE PATH IS BLOCKED!")
 talk_t = 0;             // frames the bubble still shows
 image_speed = 0;
@@ -128,6 +130,7 @@ take_hit = function(_dir = -facing)
     if (sling != "" && sling != "call") sling_end();                    // a hit breaks the bow (or drops the arrow)
     if (snug != "" && snug != "call") snug_end();   // a hit breaks SNUG-ATTACK
     invuln = 110;
+    honey_t = 0;            // a hit knocks it out of the honey, too
     vx = _dir * 3.5;
     vy = -5;
     ball = false;
@@ -135,6 +138,25 @@ take_hit = function(_dir = -facing)
     tongue_t = 0;
     tongue_len = 0;
     obj_game.hurt_player(id);
+};
+
+/// Hit by a chunk of honey: stuck where it lands for a while (no heart lost). A flung ball or
+/// arrow flies through it.
+honey_stick = function()
+{
+    if (snug == "fired" || sling == "flying" || honey_cd > 0) return;
+    var _g = obj_game;
+    if (sling != "") sling_end();
+    if (snug != "") snug_end();
+    if (honey_t == 0 && !variable_global_exists("honey_told")) { global.honey_told = true; _g.say("STUCK IN HONEY! PRESS JUMP TO WRIGGLE FREE", 150, stats); }
+    honey_t = 120;
+    ball = false;
+    boost_t = 0;
+    tongue_t = 0;
+    tongue_len = 0;
+    vx = 0;
+    _g.play_sfx(_g.sfx.slurp);
+    _g.burst(x, y - 4, make_colour_rgb(255, 190, 40), 10);
 };
 
 /// Breaks the cracked block at tile (_tx, _ty) (see obj_game.smash_tile). Online, the

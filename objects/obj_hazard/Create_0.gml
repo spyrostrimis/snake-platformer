@@ -51,6 +51,7 @@ touches = function(_p)
     else if (sprite_index == spr_whirl) { _sw = 18; _sh = 40; }
     else if (sprite_index == spr_missile) { _sw = 6; _sh = 16; }
     else if (sprite_index == spr_bomb) { _sw = 9; _sh = 9; }
+    else if (sprite_index == spr_honey) { _sw = 9; _sh = 8; }
     return abs(_p.x - x) < _p.hw + _sw && abs(_p.y - y) < _p.hh + _sh;
 };
 

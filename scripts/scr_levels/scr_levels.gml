@@ -14,7 +14,8 @@ function lvl_create(_name, _w, _h, _music, _sky_top, _sky_bottom)
     return { name: _name, w: _w, h: _h, grid: _grid, spawns: [], music: _music, sky_top: _sky_top, sky_bottom: _sky_bottom, arena: [0, 0],
              bg_tint: c_white, vine_odds: 3, tileset: ts_jungle, bg: [spr_bg_mountains, spr_bg_clouds, spr_bg_hills],
              cloud_drift: 1, deco: "jungle", mushrooms: true, dark: 0, dark_col: make_colour_rgb(10, 4, 16),
-             water: [], currents: [], swim: "surface", rocks: [], shore: [0, 0] };
+             water: [], currents: [], swim: "surface", rocks: [], shore: [0, 0],
+             vertical: false, perches: [], monkey_hide: [0, 0] };
 }
 
 /// Water in tiles _x1.._x2, rows _y1.._y2 (the top row is the surface). Snakes float and swim
@@ -85,6 +86,13 @@ function lvl_gate(_l, _tx, _ty, _rows)
 function lvl_ship(_l, _tx, _ty, _hull, _door)
 {
     array_push(_l.spawns, { kind: "ship", tx: _tx, ty: _ty, hull: _hull, door: _door });
+}
+
+/// A perch for Mango the monkey (obj_monkey): his rock on the floor under tile (_tx, _ty).
+/// Add them from the bottom of the level up.
+function lvl_perch(_l, _tx, _ty)
+{
+    array_push(_l.perches, [_tx * TILE + 16, (_ty + 1) * TILE]);
 }
 
 function lvl_gems(_l, _x1, _x2, _ty)
@@ -1321,7 +1329,137 @@ function level_sunset()
     return L;
 }
 
+/// Level 13: the volcano. A tall climb, not a long walk: up a smoking mountain, ledge by ledge
+/// (rock ledges and logs, zigzagging between the cliffs), past scorpions and pools of lava.
+/// Mango, an orange monkey, always stays a few ledges higher, hiding behind a rock and throwing
+/// honey that sticks a snake to the spot for a while; the higher the snakes climb, the higher
+/// he leaps. At the top, on the summit, Granitor the rock monster: quick, hard to catch, it
+/// rolls, quakes and throws rocks. Mango, scared behind his rock, throws honey at it, and
+/// stuck in honey it's easy to hit. Beaten, it has no letter: Mango gives the snakes the last
+/// one, with a kiss.
+/// Reach: every ledge is at most 3 rows above the one before and 3 tiles across from it; the
+/// summit (row 14) is 3 rows above the last step, in the shaft on the right.
+function level_volcano()
+{
+    var L = lvl_create("MOUNT EMBERFANG", 36, 124, "music_06.ogg", make_colour_rgb(60, 12, 32), make_colour_rgb(232, 96, 44));
+    L.tileset = ts_volcano;
+    L.bg = [spr_bg_volcano_far, spr_bg_clouds, spr_bg_volcano_near];
+    L.bg_tint = make_colour_rgb(255, 170, 150);
+    L.cloud_drift = 0.3;
+    L.deco = "volcano";
+    L.vine_odds = 2;
+    L.mushrooms = false;
+    L.vertical = true;
+    L.dark = 0.2;
+    L.dark_col = make_colour_rgb(40, 0, 12);
+
+    // The cliffs on both sides, all the way up, and the foot of the mountain.
+    lvl_rect(L, 0, 0, 1, 123, T_SOLID);
+    lvl_rect(L, 34, 0, 35, 123, T_SOLID);
+    lvl_ground(L, 0, 35, 121);
+    lvl_put(L, "start", 5, 120);
+    lvl_gems(L, 9, 12, 119);
+    lvl_rect(L, 25, 120, 28, 120, T_SPIKES);      // a pool of lava at the foot
+    lvl_put(L, "scorpion", 18, 120);
+
+    // ---- The climb: ledges zigzagging up (bottom first) ----
+    lvl_rect(L, 8, 118, 14, 118, T_SOLID);
+    lvl_rect(L, 17, 115, 23, 115, T_SOLID);
+    lvl_rect(L, 26, 112, 32, 112, T_SOLID);
+    lvl_rect(L, 18, 109, 22, 109, T_ONEWAY);
+    lvl_rect(L, 8, 106, 15, 106, T_SOLID);
+    lvl_rect(L, 2, 103, 6, 103, T_SOLID);
+    lvl_rect(L, 9, 100, 14, 100, T_ONEWAY);
+    lvl_rect(L, 17, 97, 25, 97, T_SOLID);
+    lvl_rect(L, 27, 94, 32, 94, T_SOLID);
+    lvl_rect(L, 18, 91, 23, 91, T_SOLID);
+    lvl_rect(L, 8, 88, 14, 88, T_SOLID);
+    lvl_rect(L, 2, 85, 6, 85, T_SOLID);
+    lvl_rect(L, 9, 82, 16, 82, T_SOLID);
+    lvl_rect(L, 19, 79, 24, 79, T_ONEWAY);
+    lvl_rect(L, 27, 76, 32, 76, T_SOLID);
+    lvl_rect(L, 19, 73, 25, 73, T_SOLID);
+    lvl_rect(L, 10, 70, 16, 70, T_SOLID);
+    lvl_rect(L, 2, 67, 7, 67, T_SOLID);
+    lvl_rect(L, 10, 64, 15, 64, T_ONEWAY);
+    lvl_rect(L, 18, 61, 24, 61, T_SOLID);
+    lvl_rect(L, 26, 58, 32, 58, T_SOLID);
+    lvl_rect(L, 17, 55, 22, 55, T_SOLID);
+    lvl_rect(L, 8, 52, 14, 52, T_SOLID);
+    lvl_rect(L, 2, 49, 6, 49, T_SOLID);
+    lvl_rect(L, 9, 46, 14, 46, T_ONEWAY);
+    lvl_rect(L, 17, 43, 24, 43, T_SOLID);
+    lvl_rect(L, 27, 40, 32, 40, T_SOLID);
+    lvl_rect(L, 18, 37, 23, 37, T_SOLID);
+    lvl_rect(L, 9, 34, 15, 34, T_SOLID);
+    lvl_rect(L, 2, 31, 6, 31, T_SOLID);
+    lvl_rect(L, 9, 28, 14, 28, T_ONEWAY);
+    lvl_rect(L, 17, 25, 23, 25, T_SOLID);
+    lvl_rect(L, 26, 22, 29, 22, T_SOLID);
+    lvl_rect(L, 30, 19, 33, 19, T_SOLID);
+    lvl_rect(L, 31, 17, 33, 17, T_SOLID);
+
+    // Pools of lava on a few ledges (jump them).
+    lvl_rect(L, 11, 105, 12, 105, T_SPIKES);
+    lvl_rect(L, 12, 69, 13, 69, T_SPIKES);
+    lvl_rect(L, 22, 42, 23, 42, T_SPIKES);
+
+    // Scorpions on the wide ledges.
+    lvl_put(L, "scorpion", 21, 96);
+    lvl_put(L, "scorpion", 12, 81);
+    lvl_put(L, "scorpion", 22, 72);
+    lvl_put(L, "scorpion", 21, 60);
+    lvl_put(L, "scorpion", 19, 42);
+    lvl_put(L, "scorpion", 20, 24);
+
+    // Checkpoints, health and letters on the way up.
+    lvl_put(L, "flag", 19, 90);
+    lvl_put(L, "flag", 19, 60);
+    lvl_put(L, "super_egg", 22, 60);   // two players only
+    lvl_put(L, "flag", 19, 36);
+    lvl_put(L, "egg", 4, 84);
+    lvl_put(L, "egg", 4, 48);
+    lvl_put(L, "letter", 11, 116);
+    lvl_put(L, "letter", 29, 110);
+    lvl_put(L, "letter", 13, 104);
+    lvl_put(L, "letter", 23, 95);
+    lvl_put(L, "letter", 11, 86);
+    lvl_put(L, "letter", 14, 80);
+    lvl_put(L, "letter", 29, 74);
+    lvl_put(L, "letter", 4, 65);
+    lvl_put(L, "letter", 12, 50);
+    lvl_put(L, "letter", 29, 38);
+    lvl_put(L, "letter", 12, 32);
+    lvl_gems(L, 20, 22, 113);
+    lvl_gems(L, 28, 30, 92);
+    lvl_gems(L, 20, 22, 71);
+    lvl_gems(L, 28, 30, 56);
+    lvl_gems(L, 10, 12, 26);
+
+    // Mango's perches: a rock at the far end of every third ledge or so (bottom first).
+    lvl_perch(L, 31, 111);
+    lvl_perch(L, 3, 102);
+    lvl_perch(L, 31, 93);
+    lvl_perch(L, 3, 84);
+    lvl_perch(L, 31, 75);
+    lvl_perch(L, 3, 66);
+    lvl_perch(L, 31, 57);
+    lvl_perch(L, 3, 48);
+    lvl_perch(L, 31, 39);
+    lvl_perch(L, 3, 30);
+    lvl_perch(L, 28, 21);
+    lvl_put(L, "monkey", 31, 111);
+
+    // ---- The summit: a wide slab of rock; Granitor; Mango's hiding rock; the exit ----
+    lvl_rect(L, 2, 14, 29, 16, T_SOLID);
+    L.arena = [2, 29];
+    L.monkey_hide = [4 * TILE + 16, 14 * TILE];
+    lvl_put(L, "boss_golem", 16, 13);
+    lvl_put(L, "door", 27, 13);
+    return L;
+}
+
 function level_list()
 {
-    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_beach, level_bay, level_sunset, level_grotto, level_deep, level_wreck];
+    return [level_greenleaf, level_mushroom, level_tangleroot, level_emberstone, level_shadowrock, level_bonepit, level_beach, level_bay, level_sunset, level_grotto, level_deep, level_wreck, level_volcano];
 }

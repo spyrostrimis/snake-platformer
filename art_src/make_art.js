@@ -1950,4 +1950,193 @@ for (let i = 0; i < 30; i++) {
 }
 save("spr_bg_sunset_far", 1024, 260, sfar2);
 
+// =====================================================================================
+// ---------- Level 13, the volcano: a climb up a smoking mountain ----------
+// =====================================================================================
+// The meadow tiles recoloured: ash on top with embers glowing at the edges, dark basalt below
+// with lava glowing in the cracks between the stones. Instead of thorns: a pool of lava.
+const KV = {
+  [C.grass]: "#5a4644", [C.grassLight]: "#ffa040", [C.grassDark]: "#3a2826", [C.grassLine]: "#1a0c0a",
+  [C.dirt]: "#3a2622", [C.stone]: "#5e4640", [C.stoneLight]: "#8a6a5e", [C.stoneDark]: "#2a1a16", [C.mortar]: "#ff6a1a",
+  "#d6ff9a": "#ffc070",
+};
+const recolorVolcano = (s) => Object.entries(KV).reduce((t, [a, b]) => t.split(a).join(b), s);
+const volcanoTiles = tiles.map(recolorVolcano);
+volcanoTiles[9] = `<rect x="0" y="6" width="32" height="26" fill="url(#lava)"/>
+  <path d="M0 8 Q4 4 8 8 T16 8 T24 8 T32 8 L32 12 L0 12 Z" fill="#ffe27a"/>
+  <circle cx="9" cy="18" r="2.4" fill="#ffd060"/><circle cx="22" cy="24" r="1.8" fill="#ffd060"/><circle cx="26" cy="15" r="1.4" fill="#fff0a0"/>
+  <path d="M0 8 Q4 4 8 8 T16 8 T24 8 T32 8" stroke="#8a1a06" stroke-width="1.2" fill="none"/>`;
+save("spr_tiles_volcano", 32 * volcanoTiles.length, 32,
+  volcanoTiles.map((t, i) => `<g transform="translate(${i * 32},0)" clip-path="url(#cell)">${t}</g>`).join(""),
+  recolorVolcano(stoneGrad) + `<linearGradient id="lava" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a1a"/><stop offset="1" stop-color="#c81e08"/></linearGradient>
+   <clipPath id="cell"><rect x="0" y="0" width="32" height="32"/></clipPath>`);
+
+// Backgrounds: far off, a smoking volcano and dark peaks against a red sky; nearer, black crags
+// with glowing lava trickling down them.
+let vfar = `<path d="M380 260 L470 120 Q500 96 530 98 Q560 96 590 120 L700 260 Z" fill="#4a1a22"/>
+  <path d="M470 120 Q500 96 530 98 Q560 96 590 120 L572 134 Q530 116 488 134 Z" fill="#ff7a2a" opacity="0.8"/>
+  <path d="M520 112 L506 180 L530 150 L540 200 L548 140 L566 176 L552 112 Z" fill="#ff8a2a" opacity="0.7"/>`;
+for (let i = 0; i < 6; i++) vfar += `<circle cx="${510 + i * 9 - 20 + (i % 2) * 18}" cy="${80 - i * 14}" r="${18 + i * 6}" fill="#3a2a2e" opacity="${0.55 - i * 0.06}"/>`;
+vfar += `<path d="M0 260 L0 180 L80 130 L150 170 L230 110 L320 190 L360 160 L380 260 Z" fill="#2e1018"/>
+  <path d="M700 260 L760 150 L830 190 L900 120 L980 170 L1024 140 L1024 260 Z" fill="#2e1018"/>`;
+save("spr_bg_volcano_far", 1024, 260, vfar);
+let vnear = `<path d="M0 200 L0 120 L60 70 L120 110 L170 40 L250 120 L300 90 L360 150 L430 60 L500 130 L560 100 L640 160 L700 70 L780 120 L840 50 L920 130 L980 90 L1024 120 L1024 200 Z" fill="#1c0a0e"/>`;
+[[170, 40], [430, 60], [700, 70], [840, 50]].forEach(([x, y]) => {
+  vnear += `<path d="M${x} ${y + 6} Q${x + 6} ${y + 50} ${x - 4} ${y + 90} Q${x + 10} ${y + 120} ${x + 2} 200" stroke="#ff6a1a" stroke-width="4" fill="none" opacity="0.85"/>
+    <path d="M${x} ${y + 6} Q${x + 6} ${y + 50} ${x - 4} ${y + 90} Q${x + 10} ${y + 120} ${x + 2} 200" stroke="#ffd060" stroke-width="1.4" fill="none" opacity="0.9"/>`;
+});
+save("spr_bg_volcano_near", 1024, 200, vnear);
+
+// ---------- The monkey: orange fur, a cheeky face. 64 x 64, origin (32, 60), facing right ----------
+// Frames: crouched behind its rock, peeking out, throwing honey, leaping, scared (hands over its
+// eyes), happy (blowing a kiss).
+function monkey(f) {
+  const fur = "#e8862a", furD = "#a8541a", face = "#ffd2a0", line = "#4a2008";
+  let s = "";
+  const crouch = f === 0 || f === 4;
+  const by = crouch ? 40 : (f === 3 ? 30 : 34);       // body centre
+  // Tail.
+  s += `<path d="M18 ${by + 10} Q2 ${by + 6} 6 ${by - 14} Q10 ${by - 24} 18 ${by - 18}" stroke="${line}" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M18 ${by + 10} Q2 ${by + 6} 6 ${by - 14} Q10 ${by - 24} 18 ${by - 18}" stroke="${fur}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  // Legs and feet.
+  if (f === 3) s += `<path d="M26 ${by + 10} L14 ${by + 22} M38 ${by + 10} L48 ${by + 24}" stroke="${furD}" stroke-width="7" stroke-linecap="round"/>`;
+  else s += `<path d="M24 ${by + 10} Q20 ${by + 22} 22 60 M40 ${by + 10} Q44 ${by + 22} 42 60" stroke="${furD}" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <ellipse cx="21" cy="60" rx="6" ry="3" fill="${face}" stroke="${line}" stroke-width="1"/><ellipse cx="43" cy="60" rx="6" ry="3" fill="${face}" stroke="${line}" stroke-width="1"/>`;
+  // Body.
+  s += `<ellipse cx="32" cy="${by + 2}" rx="13" ry="14" fill="${fur}" stroke="${line}" stroke-width="1.6"/>
+        <ellipse cx="32" cy="${by + 5}" rx="8" ry="9" fill="${face}"/>`;
+  // Arms.
+  const arm = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${line}" stroke-width="7" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${fur}" stroke-width="5" stroke-linecap="round"/><circle cx="${x2}" cy="${y2}" r="3.6" fill="${face}" stroke="${line}" stroke-width="1"/>`;
+  const hy = by - 16;      // head centre
+  if (f === 2) s += arm(22, by - 4, 18, by + 8) + arm(42, by - 4, 50, hy - 16) + `<circle cx="52" cy="${hy - 22}" r="7" fill="#ffb81a" stroke="#8a5a06" stroke-width="1.4"/><circle cx="50" cy="${hy - 24}" r="2" fill="#fff4b0"/>`;
+  else if (f === 3) s += arm(22, by - 4, 8, by - 14) + arm(42, by - 4, 56, by - 14);
+  else if (f === 4) s += arm(22, by - 4, 26, hy - 1) + arm(42, by - 4, 38, hy - 1);
+  else if (f === 5) s += arm(22, by - 4, 10, by - 12) + arm(42, by - 4, 54, by - 12);
+  else s += arm(22, by - 4, 20, by + 10) + arm(42, by - 4, 44, by + 10);
+  // Head: ears, face, eyes, mouth.
+  s += `<circle cx="19" cy="${hy - 2}" r="6" fill="${fur}" stroke="${line}" stroke-width="1.4"/><circle cx="19" cy="${hy - 2}" r="3" fill="${face}"/>
+        <circle cx="45" cy="${hy - 2}" r="6" fill="${fur}" stroke="${line}" stroke-width="1.4"/><circle cx="45" cy="${hy - 2}" r="3" fill="${face}"/>
+        <circle cx="32" cy="${hy}" r="13" fill="${fur}" stroke="${line}" stroke-width="1.6"/>
+        <path d="M22 ${hy + 2} Q22 ${hy - 8} 29 ${hy - 6} Q32 ${hy - 4} 35 ${hy - 6} Q42 ${hy - 8} 42 ${hy + 2} Q42 ${hy + 11} 32 ${hy + 11} Q22 ${hy + 11} 22 ${hy + 2} Z" fill="${face}"/>
+        <path d="M27 ${hy - 14} q3 -5 5 0 q2 -5 5 0" stroke="${furD}" stroke-width="2" fill="none"/>`;
+  if (f === 4) s += `<path d="M25 ${hy + 7} q7 -4 14 0" stroke="${line}" stroke-width="1.6" fill="none"/>`;
+  else {
+    const look = f === 1 ? -1 : 1;
+    s += `<circle cx="28" cy="${hy - 1}" r="3.4" fill="#fff" stroke="${line}" stroke-width="1"/><circle cx="36" cy="${hy - 1}" r="3.4" fill="#fff" stroke="${line}" stroke-width="1"/>
+          <circle cx="${28 + look}" cy="${hy - 1}" r="1.8" fill="#111"/><circle cx="${36 + look}" cy="${hy - 1}" r="1.8" fill="#111"/>
+          <ellipse cx="32" cy="${hy + 4}" rx="2.4" ry="1.4" fill="${line}"/>`;
+    if (f === 5) s += `<ellipse cx="32" cy="${hy + 8}" rx="3" ry="2.6" fill="#e83a5a" stroke="${line}" stroke-width="1"/>
+          <path d="M50 ${hy - 14} l3 -3 3 3 -3 4 Z" fill="#ff4a7a"/><path d="M54 ${hy - 24} l2.4 -2.4 2.4 2.4 -2.4 3 Z" fill="#ff4a7a"/>`;
+    else if (f === 2 || f === 1) s += `<path d="M27 ${hy + 7} q5 4 10 0" stroke="${line}" stroke-width="1.6" fill="none"/><path d="M26 ${hy - 6} l5 2 M38 ${hy - 6} l-5 2" stroke="${line}" stroke-width="1.6"/>`;
+    else s += `<path d="M28 ${hy + 8} q4 2 8 0" stroke="${line}" stroke-width="1.6" fill="none"/>`;
+  }
+  return s;
+}
+for (let f = 0; f < 6; f++) save("monkey_" + f, 64, 64, monkey(f));
+
+// The rock the monkey hides behind, 76 x 52, origin (38, 52).
+save("spr_hide_rock", 76, 52,
+  `<path d="M4 52 Q0 30 14 20 Q22 6 40 6 Q58 4 66 18 Q78 28 72 52 Z" fill="#5e4640" stroke="#1a0c0a" stroke-width="2.4"/>
+   <path d="M14 22 Q24 12 38 12" stroke="#8a6a5e" stroke-width="3" fill="none"/>
+   <path d="M30 30 L36 40 L32 50 M52 24 L48 36" stroke="#2a1a16" stroke-width="2" fill="none"/>
+   <path d="M30 30 L36 40 L32 50" stroke="#ff6a1a" stroke-width="1" fill="none" opacity="0.8"/>`);
+
+// A chunk of honey, 22 x 20, origin centre: a golden blob with a shine.
+save("spr_honey", 22, 20,
+  `<path d="M3 11 Q2 3 11 3 Q20 2 19 11 Q20 18 11 18 Q2 19 3 11 Z" fill="#ffb81a" stroke="#8a5a06" stroke-width="1.4"/>
+   <path d="M7 15 q0 4 2 4 q2 0 2 -3" fill="#ffb81a" stroke="#8a5a06" stroke-width="1"/>
+   <ellipse cx="8" cy="7" rx="3" ry="2" fill="#fff4b0"/>`);
+
+// ---------- A scorpion: walks along the ledges, stings when you're close ----------
+// 64 x 44, origin (32, 30), facing right. Frames: walking A, walking B, stinging.
+function scorpion(f) {
+  const sh = "#8a2e1a", shD = "#4a1208", shL = "#c8583a", line = "#200804";
+  let s = "";
+  const lg = f === 1 ? 3 : 0;
+  for (let k = 0; k < 3; k++) {
+    const x = 26 + k * 8, d = (k % 2 === 0) ? lg : -lg;
+    s += `<path d="M${x} 34 L${x - 6 + d} 42" stroke="${line}" stroke-width="3" stroke-linecap="round"/><path d="M${x + 2} 34 L${x + 8 - d} 42" stroke="${line}" stroke-width="3" stroke-linecap="round"/>`;
+  }
+  // The tail: curled up over the back, or whipped forward to sting.
+  const tail = f === 2
+    ? `M20 30 Q8 20 14 8 Q22 -2 38 2 Q52 4 56 12`
+    : `M20 30 Q6 26 6 14 Q6 2 18 4 Q26 6 24 14`;
+  s += `<path d="${tail}" stroke="${line}" stroke-width="8" fill="none" stroke-linecap="round"/><path d="${tail}" stroke="${sh}" stroke-width="5.4" fill="none" stroke-linecap="round"/>`;
+  s += f === 2 ? `<path d="M54 9 L63 14 L54 16 Z" fill="#f4e8c0" stroke="${line}" stroke-width="1.2"/>`
+               : `<path d="M22 12 L30 16 L23 19 Z" fill="#f4e8c0" stroke="${line}" stroke-width="1.2"/>`;
+  // Body segments and head.
+  s += `<ellipse cx="32" cy="30" rx="14" ry="7" fill="${sh}" stroke="${line}" stroke-width="1.6"/>
+        <path d="M24 26 v8 M30 24 v12 M36 24 v12" stroke="${shD}" stroke-width="1.4"/>
+        <ellipse cx="46" cy="30" rx="6" ry="5" fill="${shL}" stroke="${line}" stroke-width="1.4"/>
+        <circle cx="48" cy="27" r="1.4" fill="#111"/><circle cx="51" cy="28" r="1.2" fill="#111"/>`;
+  // Pincers.
+  s += `<path d="M48 32 Q54 36 56 32" stroke="${line}" stroke-width="3" fill="none"/>
+        <path d="M54 28 Q62 24 62 30 Q62 36 55 34 Z" fill="${shL}" stroke="${line}" stroke-width="1.3"/>
+        <path d="M58 30 L62 30" stroke="${line}" stroke-width="1.2"/>`;
+  return s;
+}
+for (let f = 0; f < 3; f++) save("scorpion_" + f, 64, 44, scorpion(f));
+
+// ---------- The boss: a hulking living boulder from the crater, magma glowing in its cracks ----------
+// 180 x 160, origin (90, 108) (its feet at y 156), facing right. Frames: standing, slamming
+// (fists raised), throwing (one fist back holding a rock), rolling (curled into a ball), stuck
+// in honey, hurt.
+function golem(f) {
+  const rk = "#6a5048", rkL = "#9a7a6a", rkD = "#3a2a24", line = "#140806", mag = "#ff7a1a", magL = "#ffd060";
+  let s = "";
+  const crack = (d) => `<path d="${d}" stroke="${line}" stroke-width="3.4" fill="none"/><path d="${d}" stroke="${mag}" stroke-width="1.8" fill="none"/>`;
+  if (f === 3) {
+    // Curled into a rolling ball of rock.
+    s += `<circle cx="90" cy="104" r="52" fill="url(#gol)" stroke="${line}" stroke-width="3"/>`;
+    s += crack("M60 70 L76 92 L64 118") + crack("M100 60 L96 86 L118 104 L110 134") + crack("M70 140 L92 120");
+    s += `<path d="M54 84 Q70 60 96 58" stroke="${rkL}" stroke-width="5" fill="none" opacity="0.6"/>`;
+    s += `<ellipse cx="118" cy="98" rx="6" ry="4" fill="${magL}"/>`;
+    return s;
+  }
+  const lift = f === 1 ? -36 : 0;
+  // Legs.
+  s += `<path d="M64 128 L58 154 L80 154 L82 130 Z" fill="${rkD}" stroke="${line}" stroke-width="2.4"/>
+        <path d="M98 130 L100 154 L122 154 L116 128 Z" fill="${rkD}" stroke="${line}" stroke-width="2.4"/>`;
+  // The far arm (behind the body).
+  const fist = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#gol)" stroke="${line}" stroke-width="2.6"/><path d="M${cx - r * 0.5} ${cy - r * 0.2} l${r * 0.4} ${r * 0.3} M${cx} ${cy - r * 0.5} l${r * 0.1} ${r * 0.5}" stroke="${rkD}" stroke-width="2"/>`;
+  if (f === 1) s += `<path d="M58 78 L40 ${40 + lift}" stroke="${line}" stroke-width="20" stroke-linecap="round"/><path d="M58 78 L40 ${40 + lift}" stroke="${rk}" stroke-width="15" stroke-linecap="round"/>` + fist(38, 34 + lift, 20);
+  else if (f === 2) s += `<path d="M58 84 L26 70" stroke="${line}" stroke-width="20" stroke-linecap="round"/><path d="M58 84 L26 70" stroke="${rk}" stroke-width="15" stroke-linecap="round"/>` + fist(22, 66, 20) + `<circle cx="14" cy="46" r="15" fill="#5a3a30" stroke="${line}" stroke-width="2.4"/><path d="M8 42 l8 6 l-4 8" stroke="${mag}" stroke-width="2" fill="none"/>`;
+  else s += `<path d="M52 92 L32 118" stroke="${line}" stroke-width="20" stroke-linecap="round"/><path d="M52 92 L32 118" stroke="${rk}" stroke-width="15" stroke-linecap="round"/>` + fist(30, 122, 20);
+  // The body: a great craggy boulder.
+  s += `<path d="M40 100 Q34 60 60 44 Q90 26 120 42 Q148 58 142 100 Q140 132 90 136 Q42 134 40 100 Z" fill="url(#gol)" stroke="${line}" stroke-width="3"/>`;
+  s += `<path d="M58 52 Q86 34 116 46" stroke="${rkL}" stroke-width="5" fill="none" opacity="0.55"/>`;
+  s += crack("M52 104 L66 116 L60 130") + crack("M128 66 L118 84 L132 96") + crack("M96 118 L104 128");
+  // Brows, eyes and mouth.
+  if (f === 4) {
+    // Stuck in honey: goo poured over its head, eyes squeezed, cross.
+    s += `<path d="M72 68 l10 4 M108 68 l-10 4" stroke="${line}" stroke-width="4" stroke-linecap="round"/>
+          <path d="M76 84 Q90 78 104 84" stroke="${line}" stroke-width="3" fill="none"/>`;
+  } else if (f === 5) {
+    s += `<path d="M70 66 l10 6 l-10 4 M110 66 l-10 6 l10 4" stroke="${line}" stroke-width="3" fill="none"/>
+          <ellipse cx="90" cy="92" rx="10" ry="7" fill="#2a0a04" stroke="${line}" stroke-width="2"/>`;
+  } else {
+    s += `<path d="M66 60 L84 68 M114 60 L96 68" stroke="${line}" stroke-width="6" stroke-linecap="round"/>
+          <ellipse cx="78" cy="74" rx="6" ry="5" fill="${magL}" stroke="${line}" stroke-width="1.6"/><circle cx="80" cy="75" r="2.6" fill="#8a1a06"/>
+          <ellipse cx="102" cy="74" rx="6" ry="5" fill="${magL}" stroke="${line}" stroke-width="1.6"/><circle cx="104" cy="75" r="2.6" fill="#8a1a06"/>
+          <path d="M74 92 Q90 ${f === 1 ? 108 : 100} 106 92 L102 96 L98 92 L94 97 L90 92 L86 97 L82 92 L78 96 Z" fill="#2a0a04" stroke="${line}" stroke-width="2"/>`;
+  }
+  // The near arm (in front).
+  if (f === 1) s += `<path d="M122 78 L140 ${40 + lift}" stroke="${line}" stroke-width="20" stroke-linecap="round"/><path d="M122 78 L140 ${40 + lift}" stroke="${rk}" stroke-width="15" stroke-linecap="round"/>` + fist(142, 34 + lift, 22);
+  else if (f === 2) s += `<path d="M124 90 L150 100" stroke="${line}" stroke-width="20" stroke-linecap="round"/><path d="M124 90 L150 100" stroke="${rk}" stroke-width="15" stroke-linecap="round"/>` + fist(154, 102, 22);
+  else s += `<path d="M128 92 L150 118" stroke="${line}" stroke-width="20" stroke-linecap="round"/><path d="M128 92 L150 118" stroke="${rk}" stroke-width="15" stroke-linecap="round"/>` + fist(152, 122, 22);
+  if (f === 4) {
+    // The honey: dripping down over it.
+    s += `<path d="M48 70 Q56 40 90 34 Q126 38 136 70 Q128 64 124 82 Q118 66 110 76 Q104 60 96 84 Q90 62 82 78 Q74 62 68 84 Q62 66 56 80 Q52 68 48 70 Z" fill="#ffb81a" opacity="0.9" stroke="#8a5a06" stroke-width="1.6"/>
+          <ellipse cx="72" cy="46" rx="8" ry="4" fill="#fff4b0" opacity="0.9"/>`;
+  }
+  return s;
+}
+const golemDefs = `<radialGradient id="gol" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#9a7a6a"/><stop offset="0.6" stop-color="#6a5048"/><stop offset="1" stop-color="#3a2a24"/></radialGradient>`;
+for (let f = 0; f < 6; f++) save("golem_" + f, 180, 160, golem(f), golemDefs);
+
+// A chunk of glowing rock it throws, 28 x 26, origin centre.
+save("spr_lavarock", 28, 26,
+  `<path d="M4 14 L8 4 L20 2 L26 10 L24 22 L12 24 Z" fill="#5a3a30" stroke="#140806" stroke-width="1.8"/>
+   <path d="M9 9 L14 14 L11 20 M18 6 L17 13 L22 17" stroke="#ff7a1a" stroke-width="1.8" fill="none"/>`);
+
 Promise.all(jobs).then(() => console.log("made " + jobs.length + " images in " + OUT));

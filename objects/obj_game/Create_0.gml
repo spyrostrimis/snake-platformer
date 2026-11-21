@@ -239,10 +239,20 @@ place_parallax = function(_cx, _cy)
 {
     if (!variable_instance_exists(id, "bg_layers")) return;
     layer_x(bg_layers.Mountains, _cx * 0.82);
-    layer_y(bg_layers.Mountains, _cy * 0.85 + 70);
     layer_x(bg_layers.Clouds, _cx * 0.9 - frame * 0.15 * lvl.cloud_drift);
-    layer_y(bg_layers.Clouds, _cy * 0.92 + 8);
     layer_x(bg_layers.Hills, _cx * 0.6);
+    if (lvl.vertical)
+    {
+        // A tall level (the climb up the volcano): the scenery stays in view, sinking a little
+        // as the snakes climb.
+        var _up = max(0, lvl_h * TILE - 360 - _cy);
+        layer_y(bg_layers.Mountains, _cy + 60 + min(_up * 0.03, 90));
+        layer_y(bg_layers.Clouds, _cy + 8 + min(_up * 0.02, 40));
+        layer_y(bg_layers.Hills, _cy + 170 + min(_up * 0.06, 150));
+        return;
+    }
+    layer_y(bg_layers.Mountains, _cy * 0.85 + 70);
+    layer_y(bg_layers.Clouds, _cy * 0.92 + 8);
     layer_y(bg_layers.Hills, _cy * 0.75 + 190);
 };
 
@@ -452,7 +462,8 @@ load_level = function(_i, _with_player)
     var _sea = lvl.deco == "sea";
     var _ship = lvl.deco == "ship";
     var _beach = lvl.deco == "beach";
-    var _cave = lvl.deco == "cave" || _bonez || _sea;
+    var _volc = lvl.deco == "volcano";     // the volcano: glowing orange crystals, rock spikes under the ledges
+    var _cave = lvl.deco == "cave" || _bonez || _sea || _volc;
     var _deco = layer_create(95, "Deco");
     array_push(layers_made, _deco);
     random_set_seed(1000 + _i);
@@ -486,6 +497,7 @@ load_level = function(_i, _with_player)
                 {
                     var _cr = layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, _bonez ? spr_crystal_violet : (_cave ? spr_crystal : spr_flower));
                     if (_sea) layer_sprite_blend(_cr, make_colour_rgb(120, 230, 255));
+                    if (_volc) layer_sprite_blend(_cr, make_colour_rgb(255, 150, 60));
                     if (_cave) array_push(lights, { x: _x * TILE + 16, y: _y * TILE - 6, r: 0.7, torch: false });
                 }
                 else if (_roll == 1 && _bonez) layer_sprite_create(_deco, _x * TILE + 16, _y * TILE + 4, spr_bones);
@@ -500,6 +512,7 @@ load_level = function(_i, _with_player)
                 var _hang = layer_sprite_create(_deco, _x * TILE + 16, (_y + 1) * TILE - 4, _ship ? spr_rope : (_cave ? spr_stalactite : spr_vine));
                 if (_bonez) layer_sprite_blend(_hang, make_colour_rgb(190, 140, 200));
                 if (_sea) layer_sprite_blend(_hang, make_colour_rgb(140, 190, 210));
+                if (_volc) layer_sprite_blend(_hang, make_colour_rgb(150, 110, 100));
             }
         }
     }
@@ -540,6 +553,7 @@ load_level = function(_i, _with_player)
             case "boss_hive":
             case "boss_skeeter":
             case "boss_bombard":
+            case "boss_golem":
                 var _boss_obj = obj_boss_mouse;
                 if (_s.kind == "boss_hen") _boss_obj = obj_boss_hen;
                 else if (_s.kind == "boss_cat") _boss_obj = obj_boss_cat;
@@ -552,6 +566,7 @@ load_level = function(_i, _with_player)
                 else if (_s.kind == "boss_hive") _boss_obj = obj_boss_hive;
                 else if (_s.kind == "boss_skeeter") _boss_obj = obj_boss_skeeter;
                 else if (_s.kind == "boss_bombard") _boss_obj = obj_boss_bombard;
+                else if (_s.kind == "boss_golem") _boss_obj = obj_boss_golem;
                 boss = instance_create_layer(_px, _s.ty * TILE + 32 - 26, "Instances", _boss_obj);
                 boss.y = _s.ty * TILE + 32 - boss.hh;     // standing on the floor, whatever its size
                 boss.arena_x1 = lvl.arena[0] * TILE + 32;
@@ -622,6 +637,9 @@ load_level = function(_i, _with_player)
             case "gate":   instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_gate, { rows: _s.rows }); break;
             case "switch": instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_switch); break;
             case "crab":   _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 13, "Instances", obj_crab); break;
+            // The volcano: scorpions on the ledges, and Mango the monkey (his perches are in lvl.perches).
+            case "scorpion": _inst = instance_create_layer(_px, _s.ty * TILE + 32 - 12, "Instances", obj_scorpion); break;
+            case "monkey":   _inst = instance_create_layer(_px, _s.ty * TILE + 32, "Instances", obj_monkey); break;
             case "ship":
                 var _shl = layer_create(105, "Ship");
                 array_push(layers_made, _shl);

@@ -8,13 +8,15 @@ if (net_mirror())
     x = lerp(x, net_tx, 0.5);
     y = lerp(y, net_ty, 0.5);
     var _me = (array_length(_g.pl) == 2) ? _g.pl[_g.my_pid].inst : noone;
-    if (instance_exists(_me) && !_me.hidden && touches(_me))
+    // (The monkey's big honey is for the boss only: it passes snakes by.)
+    if (sprite_index != spr_honeybig && instance_exists(_me) && !_me.hidden && touches(_me))
     {
         if (lasts())
         {
             // A boulder or puddle stays; only a boosting snake smashes a boulder.
             if (!lasting_hit(_me)) exit;
         }
+        else if (sprite_index == spr_honey) with (_me) honey_stick();
         else if (_me.ball) _g.burst(x, y, c_white, 6);
         else with (_me) take_hit(sign(x - other.x));
         if (sprite_index == spr_ink && !_me.ball) _me.inked = 170;
@@ -91,6 +93,21 @@ if (boomer != 0)
     exit;
 }
 
+// ---------- The monkey's big honey: thrown at the boss, it sticks to it ----------
+if (sprite_index == spr_honeybig)
+{
+    vy += grav;
+    x += vx;
+    y += vy;
+    image_angle += vx * 4;
+    life--;
+    var _done = life <= 0 || y > _g.lvl_h * TILE;
+    with (obj_boss_golem) if (!_done && abs(x - other.x) < hw + 14 && abs(y - other.y) < hh + 14) { honey_stick(); _done = true; }
+    if (!_done && is_blocking(tile_at(x, y + 6))) { _g.burst(x, y, make_colour_rgb(255, 190, 40), 8); _done = true; }
+    if (_done) instance_destroy();
+    exit;
+}
+
 t += 0.1;
 if (curve != 0)
 {
@@ -151,6 +168,7 @@ with (obj_player) if (!remote && !hidden && _hit == noone && other.touches(id)) 
 if (_hit != noone)
 {
     if (lasts()) lasting_hit(_hit);
+    else if (sprite_index == spr_honey) { with (_hit) honey_stick(); _g.burst(x, y, make_colour_rgb(255, 190, 40), 6); instance_destroy(); }
     else
     {
         if (_hit.ball) _g.burst(x, y, c_white, 6);

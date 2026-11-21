@@ -12,6 +12,16 @@ if (note_hold_snake(id)) exit;
 
 // Online, each PC plays one snake with the one-player keys (or any gamepad).
 var _in = read_controls(pid, (_g.net_mode != "") ? 1 : _g.players_n);
+// Stuck in honey: the snake can't move, jump or attack; pressing Jump (or Tongue, or Boost)
+// wriggles it free sooner.
+if (honey_cd > 0) honey_cd--;
+if (honey_t > 0)
+{
+    honey_t -= (_in.jump_pressed || _in.tongue || _in.boost) ? 14 : 1;
+    if (honey_t <= 0) { honey_t = 0; honey_cd = 120; _g.play_sfx(_g.sfx.pop); _g.burst(x, y - 4, make_colour_rgb(255, 190, 40), 8); }
+    _in = { left: false, right: false, down: false, jump_pressed: false, jump_held: false, tongue: false, tongue_held: false, roll_held: false, boost: false };
+    if (on_ground) vx = 0;
+}
 var _left  = _in.left;
 var _right = _in.right;
 var _down  = _in.down;
@@ -316,7 +326,7 @@ with (obj_enemy)
         }
         // Just after a hit a boss can't hurt the snake bouncing off it. The bristling cat stays
         // dangerous for most of that time, so her Fur Storm pounce still counts.
-        else if (other.invuln == 0 && !(_is_boss && hurt_t > (spiky_back() ? 78 : 30))) with (other) take_hit(sign(x - other.x));
+        else if (other.invuln == 0 && !(_is_boss && (hurt_t > (spiky_back() ? 78 : 30) || touch_safe()))) with (other) take_hit(sign(x - other.x));
     }
 }
 
